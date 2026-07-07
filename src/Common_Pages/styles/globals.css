@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+  /* Prevent horizontal scrolling on small screens */
+  overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+  /* Padding and borders are included in element width (easier responsive sizing) */
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  /* Inter for body text (loaded in index.html); system fonts as fallback. */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Sora gives headings a more distinctive, premium character. */
+h1,
+h2,
+h3,
+h4 {
+  font-family: 'Sora', 'Inter', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* ---- Text selection: on-brand gold highlight ------------------------- */
+::selection {
+  background-color: rgba(227, 194, 74, 0.3);
+  color: #ffffff;
+}
+
+/* ---- Slim, on-brand scrollbar ---------------------------------------- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(227, 194, 74, 0.35) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(227, 194, 74, 0.3);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(227, 194, 74, 0.5);
+}
+
+/* ---- Keyboard focus: consistent gold ring everywhere ----------------- */
+:focus-visible {
+  outline: 2px solid rgba(227, 194, 74, 0.6);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+/* ---- Reusable helpers ------------------------------------------------ */
+@layer utilities {
+  /* Gentle lift + stronger shadow on hover for interactive cards. */
+  .card-hover {
+    transition: transform 0.25s ease, box-shadow 0.25s ease,
+      border-color 0.25s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-3px);
+  }
+
+  /* Stagger children entrances (used on grids/lists after they mount). */
+  .animate-stagger > * {
+    animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .animate-stagger > *:nth-child(1) { animation-delay: 0.04s; }
+  .animate-stagger > *:nth-child(2) { animation-delay: 0.08s; }
+  .animate-stagger > *:nth-child(3) { animation-delay: 0.12s; }
+  .animate-stagger > *:nth-child(4) { animation-delay: 0.16s; }
+  .animate-stagger > *:nth-child(5) { animation-delay: 0.2s; }
+  .animate-stagger > *:nth-child(6) { animation-delay: 0.24s; }
+  .animate-stagger > *:nth-child(7) { animation-delay: 0.28s; }
+  .animate-stagger > *:nth-child(8) { animation-delay: 0.32s; }
+  .animate-stagger > *:nth-child(9) { animation-delay: 0.36s; }
+}
+
+/* ---- Respect users who prefer reduced motion ------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
