@@ -38,3 +38,23 @@ export async function getAllProjects(
     return []
   }
 }
+
+// Save the (edited) report HTML and move it to a new review status.
+export async function draftAction(
+  projectId: string,
+  status: string,
+  reportHtml?: string,
+  reason = '',
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch('/api/manager/drafts/action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectId, status, reportHtml, reason }),
+    })
+    const body = await res.json().catch(() => ({}))
+    return res.ok && body.ok ? { ok: true } : { ok: false, error: body.error || 'Action failed.' }
+  } catch {
+    return { ok: false, error: 'Could not reach the server.' }
+  }
+}
