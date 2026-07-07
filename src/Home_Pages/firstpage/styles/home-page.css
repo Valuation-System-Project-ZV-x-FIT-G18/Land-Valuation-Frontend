@@ -1,0 +1,4 @@
+/* Homepage-specific styles.
+   This project styles mostly with Tailwind utility classes, so this file is
+   for any extra homepage CSS that Tailwind can't easily express.
+   It is imported by pages/HomePage.tsx. */
