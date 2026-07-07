@@ -22,3 +22,19 @@ export const STATUS_LABEL: Record<string, string> = {
   pending_l1: 'Submitted to L1',
   locked: '🔒 Locked',
 }
+
+export async function getAllProjects(
+  level: string,
+  view: 'check' | 'corrections' | 'final' = 'check',
+): Promise<ManagerProject[]> {
+  try {
+    const res = await fetch(
+      `/api/manager/drafts/projects?level=${encodeURIComponent(level)}&view=${view}`,
+    )
+    if (!res.ok) return []
+    const body = await res.json()
+    return (body.projects as ManagerProject[]) ?? []
+  } catch {
+    return []
+  }
+}
