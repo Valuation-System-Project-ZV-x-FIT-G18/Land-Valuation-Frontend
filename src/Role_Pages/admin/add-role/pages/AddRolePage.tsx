@@ -1,0 +1,240 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import Card from '@/Common_Pages/components/ui/Card'
+import Button from '@/Common_Pages/components/ui/Button'
+import Modal from '@/Common_Pages/components/ui/Modal'
+import FormField from '@/Common_Pages/components/ui/FormField'
+import SelectField from '@/Common_Pages/components/ui/SelectField'
+import GradientText from '@/Common_Pages/components/ui/GradientText'
+import { useAuth } from '@/Common_Pages/components/auth/useAuth'
+import { validateEmail } from '@/Common_Pages/validation/validateEmail'
+import { addRole, type NewRole } from '@/Role_Pages/admin/add-role/api/add-role'
+
+const roleOptions = [
+  { value: '', label: 'Select a role' },
+  { value: 'Coordinator', label: 'Coordinator' },
+  { value: 'Technical Officer', label: 'Technical Officer' },
+  { value: 'Manager L1', label: 'Manager L1' },
+  { value: 'Manager L2', label: 'Manager L2' },
+  { value: 'Manager L3', label: 'Manager L3' },
+  { value: 'Bank', label: 'Bank' },
+  { value: 'Admin', label: 'Admin' },
+]
+
+// Licensed commercial banks in Sri Lanka — the admin picks one when creating a
+// Bank account. The chosen name feeds the New Valuation bank dropdown.
+const BANK_NAMES = [
+  'Bank of Ceylon',
+  "People's Bank",
+  'Commercial Bank of Ceylon',
+  'Hatton National Bank',
+  'Sampath Bank',
+  'Seylan Bank',
+  'National Development Bank (NDB)',
+  'DFCC Bank',
+  'Nations Trust Bank',
+  'Pan Asia Banking Corporation',
+  'Union Bank of Colombo',
+  'Amana Bank',
+  'Cargills Bank',
+  'HDFC Bank of Sri Lanka',
+  'National Savings Bank (NSB)',
+  'Regional Development Bank (RDB)',
+  'Standard Chartered Bank',
+  'HSBC Sri Lanka',
+]
+
+const bankOptions = [
+  { value: '', label: 'Select a bank' },
+  ...BANK_NAMES.map((b) => ({ value: b, label: b })),
+]
+
+const fields: { name: keyof NewRole; label: string; type?: string }[] = [
+  { name: 'firstName', label: 'First Name *' },
+  { name: 'lastName', label: 'Last Name *' },
+  { name: 'initials', label: 'Name with Initials' },
+  { name: 'nic', label: 'NIC *' },
+  { name: 'email', label: 'Email *', type: 'email' },
+  { name: 'phone', label: 'Phone' },
+  { name: 'district', label: 'District' },
+  { name: 'province', label: 'Province' },
+  { name: 'city', label: 'City' },
+  { name: 'postalCode', label: 'Postal Code' },
+  { name: 'address', label: 'Address' },
+  { name: 'dateOfBirth', label: 'Date of Birth', type: 'date' },
+  { name: 'password', label: 'Password *', type: 'password' },
+]
+
+const empty: NewRole = {
+  role: '', firstName: '', lastName: '', initials: '', nic: '', email: '', phone: '',
+  district: '', province: '', city: '', postalCode: '', address: '', dateOfBirth: '',
+  branchCode: '', branchName: '', bankName: '', designation: '', password: '',
+}
+
+// Admin > Add Role. Create a staff account; the person is emailed their login.
+const AddRolePage = () => {
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const [form, setForm] = useState<NewRole>(empty)
+  const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [createdId, setCreatedId] = useState('')
+
+  // Only admins may create accounts.
+  if (user && user.role !== 'Admin') {
+    return (
+      <Card className="mx-auto max-w-lg p-8 text-center">
+        <p className="font-semibold text-gold-200">Admins only</p>
+        <p className="mt-1 text-sm text-emerald-100/70">
+          You don&apos;t have permission to add roles.
+        </p>
+      </Card>
+    )
+  }
+
+  const set = (name: keyof NewRole, value: string) => {
+    setForm((f) => ({ ...f, [name]: value }))
+    setError('')
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!form.role) return setError('Please choose a role.')
+    if (!form.firstName || !form.lastName || !form.nic || !form.email || !form.password) {
+      return setError('Please fill in all required (*) fields.')
+    }
+    if (form.role === 'Bank' && !form.bankName.trim()) {
+      return setError('Please choose the Bank Name for a Bank account.')
+    }
+    if (form.role === 'Bank' && !form.branchCode.trim()) {
+      return setError('Branch Code is required for a Bank account (it is the bank’s login ID).')
+    }
+    const emailErr = validateEmail(form.email)
+    if (emailErr) return setError(emailErr)
+    if (form.password.length < 8) return setError('Password must be at least 8 characters.')
+
+    setSubmitting(true)
+    const res = await addRole(form)
+    setSubmitting(false)
+    if (res.ok) {
+      setCreatedId(res.userId ?? '')
+      setForm(empty)
+    } else {
+      setError(res.error ?? 'Could not create the account.')
+    }
+  }
+
+  return (
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold text-white sm:text-4xl">
+          Add <GradientText>Role</GradientText>
+        </h1>
+        <p className="mx-auto mt-2 max-w-md text-emerald-100/70">
+          Create a staff account. Their login ID is generated automatically and
+          emailed to them with the password.
+        </p>
+      </div>
+
+      <Card className="p-6 sm:p-8">
+        <form onSubmit={handleSubmit} noValidate className="space-y-5">
+          <SelectField
+            label="Role *"
+            name="role"
+            value={form.role}
+            onChange={(e) => set('role', e.target.value)}
+            options={roleOptions}
+          />
+
+          {form.role === 'Bank' && (
+            <>
+              <SelectField
+                label="Bank Name *"
+                name="bankName"
+                value={form.bankName}
+                onChange={(e) => set('bankName', e.target.value)}
+                options={bankOptions}
+              />
+              <div className="grid gap-5 sm:grid-cols-2">
+                <FormField
+                  label="Branch Name"
+                  name="branchName"
+                  value={form.branchName}
+                  onChange={(e) => set('branchName', e.target.value)}
+                  placeholder="e.g. Nugegoda"
+                />
+                <FormField
+                  label="Branch Code * (login ID)"
+                  name="branchCode"
+                  value={form.branchCode}
+                  onChange={(e) => set('branchCode', e.target.value)}
+                  placeholder="e.g. SMPNGD045"
+                />
+                <FormField
+                  label="Designation"
+                  name="designation"
+                  value={form.designation}
+                  onChange={(e) => set('designation', e.target.value)}
+                  placeholder="e.g. Branch Manager"
+                />
+              </div>
+              <p className="-mt-2 text-xs text-emerald-200/60">
+                The bank signs in on the External Login page as “Bank” using this Branch Code.
+              </p>
+            </>
+          )}
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            {fields
+              // A Bank account has no date of birth.
+              .filter((f) => !(form.role === 'Bank' && f.name === 'dateOfBirth'))
+              .map((f) => (
+                <FormField
+                  key={f.name}
+                  label={f.label}
+                  name={f.name}
+                  type={f.type ?? 'text'}
+                  value={form[f.name]}
+                  onChange={(e) => set(f.name, e.target.value)}
+                />
+              ))}
+          </div>
+
+          {error && <p className="text-sm text-red-300">{error}</p>}
+
+          <Button type="submit" fullWidth disabled={submitting}>
+            {submitting ? 'Creating…' : 'Add Role'}
+          </Button>
+        </form>
+      </Card>
+
+      {/* Success popup */}
+      <Modal open={!!createdId} onClose={() => setCreatedId('')}>
+        <div className="text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-400/15 text-2xl">
+            ✓
+          </div>
+          <h3 className="mt-4 text-2xl">
+            <GradientText>Account Created</GradientText>
+          </h3>
+          <p className="mx-auto mt-2 max-w-xs text-sm text-emerald-100/70">
+            The new login ID is{' '}
+            <span className="font-semibold text-gold-300">{createdId}</span>. An email
+            with the ID and password has been sent, asking them to change it on first
+            login.
+          </p>
+          <div className="mt-5 flex gap-3">
+            <Button type="button" fullWidth onClick={() => setCreatedId('')}>
+              Add Another
+            </Button>
+            <Button type="button" variant="outline" fullWidth onClick={() => navigate('/dashboard')}>
+              Done
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </div>
+  )
+}
+
+export default AddRolePage
