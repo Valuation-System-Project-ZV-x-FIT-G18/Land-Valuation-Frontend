@@ -1,0 +1,144 @@
+// API for the technical officer's AI-generated report descriptions.
+
+// Section keys used everywhere in this feature.
+export type SectionKey =
+  | 'landDescription'
+  | 'localityDescription'
+  | 'localityFacilities'
+  | 'legalParagraph'
+  | 'localAuthorityTax'
+  | 'streetLineBuildingLimits'
+  | 'mandatoryRequirements'
+  | 'conclusion'
+  | 'valuation'
+  | 'evidence'
+  | 'imageAnalysis'
+
+export type Descriptions = Record<SectionKey, string>
+
+// Section 11 — Contractor's Test Method valuation figures.
+export type Valuation = {
+  extentText: string
+  totalPerches: number
+  ratePerPerch: number
+  landValue: number
+  buildingValue: number
+  marketValue: number
+  say: number
+  notes: string[]
+}
+
+// Section 9 — evidence pulled from the nearby-lands analysis.
+export type EvidenceComp = {
+  refNo: string
+  date: string
+  extentPerches: number
+  distanceKm: number
+  pricePerPerch: number
+  evidenceType: string
+  source: string
+}
+export type Evidence = { comparables: EvidenceComp[]; rangeLow: number; rangeHigh: number; hasAnalysis: boolean }
+
+export async function getValuation(projectId: string): Promise<Valuation | null> {
+  try {
+    const res = await fetch(`/api/technical-officer/descriptions/valuation?projectId=${encodeURIComponent(projectId)}`)
+    return res.ok ? await res.json() : null
+  } catch {
+    return null
+  }
+}
+
+export async function getEvidence(projectId: string): Promise<Evidence | null> {
+  try {
+    const res = await fetch(`/api/technical-officer/descriptions/evidence?projectId=${encodeURIComponent(projectId)}`)
+    return res.ok ? await res.json() : null
+  } catch {
+    return null
+  }
+}
+
+// One editable source input feeding a section.
+export type SourceField = { key: string; label: string; value: string }
+// A section together with the source fields that feed it.
+export type SourceSection = { section: SectionKey; label: string; fields: SourceField[] }
+
+// The editable sources per section + the list of uploaded site photos.
+export async function getSources(
+  projectId: string,
+): Promise<{ sources: SourceSection[]; photos: string[]; error?: string }> {
+  try {
+    const res = await fetch(
+      `/api/technical-officer/descriptions/sources?projectId=${encodeURIComponent(projectId)}`,
+    )
+    const body = await res.json().catch(() => ({}) as Record<string, unknown>)
+    if (!res.ok || body.error) return { sources: [], photos: [], error: (body.error as string) || 'Could not load sources.' }
+    return { sources: body.sources ?? [], photos: body.photos ?? [] }
+  } catch {
+    return { sources: [], photos: [], error: 'Could not reach the server.' }
+  }
+}
+
+// (Re)generate ONE section from the given (possibly edited) source field values.
+export async function generateSection(
+  projectId: string,
+  section: SectionKey,
+  fields: Record<string, string>,
+): Promise<{ text: string; aiUsed: boolean; error?: string }> {
+  try {
+    const res = await fetch('/api/technical-officer/descriptions/generate-one', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectId, section, fields }),
+    })
+    if (!res.ok) return { text: '', aiUsed: false, error: 'Could not generate.' }
+    return await res.json()
+  } catch {
+    return { text: '', aiUsed: false, error: 'Could not reach the server.' }
+  }
+}
+
+// Project IDs whose descriptions have already been saved (drop off the to-do list).
+export async function getCompletedProjects(): Promise<string[]> {
+  try {
+    const res = await fetch('/api/technical-officer/descriptions/completed')
+    if (!res.ok) return []
+    const body = await res.json()
+    return (body.projectIds as string[]) ?? []
+  } catch {
+    return []
+  }
+}
+
+// The previously saved descriptions (or null).
+export async function getDescriptions(projectId: string): Promise<Descriptions | null> {
+  try {
+    const res = await fetch(
+      `/api/technical-officer/descriptions?projectId=${encodeURIComponent(projectId)}`,
+    )
+    if (!res.ok) return null
+    const body = await res.json()
+    return (body.data as Descriptions) ?? null
+  } catch {
+    return null
+  }
+}
+
+// Save the edited descriptions.
+export async function saveDescriptions(
+  projectId: string,
+  data: Descriptions,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch('/api/technical-officer/descriptions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectId, data }),
+    })
+    const body = await res.json().catch(() => ({}) as Record<string, unknown>)
+    if (res.ok && body.ok) return { ok: true }
+    return { ok: false, error: (body.error as string) || 'Could not save.' }
+  } catch {
+    return { ok: false, error: 'Could not reach the server.' }
+  }
+}
