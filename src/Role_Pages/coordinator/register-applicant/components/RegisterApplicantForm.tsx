@@ -197,7 +197,7 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
           <Button type="button" variant="outline" onClick={() => navigate(-1)}>
             Cancel
           </Button>
-          <Button type="submit" disabled={submitting}>
+          <Button type="submit" disabled={submitting || Object.keys(validate()).length > 0}>
             {submitting ? 'Registering…' : 'Register applicant'}
           </Button>
         </div>

@@ -122,12 +122,15 @@ export function useForm<T extends Record<string, string>>(opts: UseFormOptions<T
     setSubmitted(true)
   }
 
+  const isValid = Object.keys(validate(values)).length === 0
+
   return {
     values,
     errors,
     submitting,
     serverError,
     submitted,
+    isValid,
     handleChange,
     handleBlur,
     handleSubmit,

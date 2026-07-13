@@ -101,7 +101,7 @@ const ValuationForm = () => {
             <p className="text-sm text-red-300">{f.serverError}</p>
           )}
 
-          <Button type="submit" fullWidth disabled={f.submitting}>
+          <Button type="submit" fullWidth disabled={f.submitting || !f.isValid}>
             {f.submitting ? 'Submitting…' : 'Submit Request'}
           </Button>
         </form>

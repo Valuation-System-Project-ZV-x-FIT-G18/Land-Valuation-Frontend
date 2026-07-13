@@ -97,7 +97,7 @@ const ContactForm = () => {
               <p className="text-sm text-red-300">{f.serverError}</p>
             )}
 
-            <Button type="submit" fullWidth disabled={f.submitting}>
+            <Button type="submit" fullWidth disabled={f.submitting || !f.isValid}>
               {f.submitting ? 'Sending…' : 'Send Message'}
             </Button>
           </form>

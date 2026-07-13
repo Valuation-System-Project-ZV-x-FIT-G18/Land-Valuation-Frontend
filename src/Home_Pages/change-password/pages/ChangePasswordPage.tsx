@@ -7,6 +7,19 @@ import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import { submitChangePassword } from '@/Home_Pages/change-password/api/change-password'
 
+type PwErrors = { current?: string; next?: string; confirm?: string }
+
+function validatePw(current: string, next: string, confirm: string): PwErrors {
+  const e: PwErrors = {}
+  if (!current) e.current = 'Current password is required.'
+  if (!next) e.next = 'New password is required.'
+  else if (next.length < 8) e.next = 'New password must be at least 8 characters.'
+  else if (next === current) e.next = 'New password must differ from the current one.'
+  if (!confirm) e.confirm = 'Please confirm your new password.'
+  else if (confirm !== next) e.confirm = 'Passwords do not match.'
+  return e
+}
+
 // First-login change-password screen. Loan applicants land here after signing in
 // with the temporary password from their welcome email; once changed, they go to
 // the dashboard like every other role.
@@ -17,40 +30,34 @@ const ChangePasswordPage = () => {
   const [current, setCurrent] = useState('')
   const [next, setNext] = useState('')
   const [confirm, setConfirm] = useState('')
-  const [error, setError] = useState('')
+  const [errors, setErrors] = useState<PwErrors>({})
+  const [serverError, setServerError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   if (!user) return null
 
-  const firstLogin = user.mustChangePassword
+  const isValid = Object.keys(validatePw(current, next, confirm)).length === 0
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const name = e.target.name as keyof PwErrors
+    const found = validatePw(current, next, confirm)
+    setErrors((p) => ({ ...p, [name]: found[name] }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!current || !next || !confirm) {
-      setError('Please fill in all fields.')
-      return
-    }
-    if (next.length < 8) {
-      setError('New password must be at least 8 characters.')
-      return
-    }
-    if (next !== confirm) {
-      setError('New password and confirmation do not match.')
-      return
-    }
-    if (next === current) {
-      setError('New password must be different from the current one.')
-      return
-    }
-    setError('')
+    const found = validatePw(current, next, confirm)
+    if (Object.keys(found).length > 0) { setErrors(found); return }
+    setErrors({})
+    setServerError('')
     setSubmitting(true)
     const res = await submitChangePassword(user.userId, current, next)
     setSubmitting(false)
     if (res.ok) {
-      login(res.user) // flag now false -> dashboard is unlocked
+      login(res.user)
       navigate('/dashboard')
     } else {
-      setError(res.error)
+      setServerError(res.error)
     }
   }
 
@@ -61,7 +68,7 @@ const ChangePasswordPage = () => {
           Change <GradientText>Password</GradientText>
         </h1>
         <p className="mx-auto mt-2 max-w-sm text-emerald-100/70">
-          {firstLogin
+          {user.mustChangePassword
             ? 'For your security, please set a new password before continuing.'
             : 'Update your account password.'}
         </p>
@@ -74,7 +81,9 @@ const ChangePasswordPage = () => {
             name="current"
             type="password"
             value={current}
-            onChange={(e) => { setCurrent(e.target.value); setError('') }}
+            onChange={(e) => { setCurrent(e.target.value); setErrors((p) => ({ ...p, current: undefined })); setServerError('') }}
+            onBlur={handleBlur}
+            error={errors.current}
             placeholder="The password from your email"
           />
           <FormField
@@ -82,7 +91,9 @@ const ChangePasswordPage = () => {
             name="next"
             type="password"
             value={next}
-            onChange={(e) => { setNext(e.target.value); setError('') }}
+            onChange={(e) => { setNext(e.target.value); setErrors((p) => ({ ...p, next: undefined, confirm: undefined })); setServerError('') }}
+            onBlur={handleBlur}
+            error={errors.next}
             placeholder="At least 8 characters"
           />
           <FormField
@@ -90,13 +101,15 @@ const ChangePasswordPage = () => {
             name="confirm"
             type="password"
             value={confirm}
-            onChange={(e) => { setConfirm(e.target.value); setError('') }}
+            onChange={(e) => { setConfirm(e.target.value); setErrors((p) => ({ ...p, confirm: undefined })); setServerError('') }}
+            onBlur={handleBlur}
+            error={errors.confirm}
             placeholder="Re-enter the new password"
           />
 
-          {error && <p className="text-sm text-red-300">{error}</p>}
+          {serverError && <p className="text-sm text-red-300">{serverError}</p>}
 
-          <Button type="submit" fullWidth disabled={submitting}>
+          <Button type="submit" fullWidth disabled={submitting || !isValid}>
             {submitting ? 'Saving…' : 'Change Password'}
           </Button>
         </form>

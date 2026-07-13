@@ -4,8 +4,8 @@ import Button from '@/Common_Pages/components/ui/Button'
 import FormField from '@/Common_Pages/components/ui/FormField'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
-import { validateEmail } from '@/Common_Pages/validation/validateEmail'
 import { getProfile, updateProfile } from '@/Home_Pages/settings/api/settings'
+import { validateSettings, type SettingsErrors } from '@/Home_Pages/settings/pages/validateSettings'
 import type { Profile } from '@/Home_Pages/settings/types/settings'
 
 // Editable personal fields (identity fields user_id / role / nic are read-only).
@@ -30,47 +30,55 @@ const SettingsPage = () => {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
+  const [errors, setErrors] = useState<SettingsErrors>({})
+  const [serverError, setServerError] = useState('')
   const [notice, setNotice] = useState('')
 
   useEffect(() => {
     if (!user) return
     getProfile(user.userId).then((res) => {
       if (res.profile) setProfile(res.profile)
-      else setError(res.error ?? 'Could not load your profile.')
+      else setServerError(res.error ?? 'Could not load your profile.')
       setLoading(false)
     })
   }, [user])
 
   if (!user) return null
   if (loading) return <p className="text-center text-sm text-emerald-200/60">Loading your settings…</p>
-  if (!profile) return <p className="text-center text-sm text-red-300">{error || 'Profile not found.'}</p>
+  if (!profile) return <p className="text-center text-sm text-red-300">{serverError || 'Profile not found.'}</p>
 
   const set = (name: keyof Profile, value: string) => {
     setProfile((p) => (p ? { ...p, [name]: value } : p))
-    setError('')
+    setErrors((prev) => ({ ...prev, [name]: undefined }))
     setNotice('')
+    setServerError('')
+  }
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (!profile) return
+    const name = e.target.name as keyof Profile
+    const found = validateSettings(profile)
+    setErrors((prev) => ({ ...prev, [name]: found[name] }))
   }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    const emailErr = validateEmail(profile.email)
-    if (emailErr) {
-      setError(emailErr)
-      return
-    }
+    const found = validateSettings(profile)
+    if (Object.keys(found).length > 0) { setErrors(found); return }
+    setErrors({})
     setSaving(true)
     const res = await updateProfile(profile)
     setSaving(false)
     if (res.ok && res.profile) {
       setProfile(res.profile)
-      // Keep the header/dashboard name in sync with the saved changes.
       login({ ...user, name: `${res.profile.firstName} ${res.profile.lastName}` })
       setNotice('Your changes have been saved.')
     } else {
-      setError(res.error ?? 'Could not save your changes.')
+      setServerError(res.error ?? 'Could not save your changes.')
     }
   }
+
+  const isValid = Object.keys(validateSettings(profile)).length === 0
 
   const identity: [string, string][] = [
     ['Login ID', profile.userId],
@@ -110,14 +118,16 @@ const SettingsPage = () => {
               type={f.type ?? 'text'}
               value={profile[f.name] ?? ''}
               onChange={(e) => set(f.name, e.target.value)}
+              onBlur={handleBlur}
+              error={errors[f.name]}
             />
           ))}
 
-          {error && <p className="text-sm text-red-300 sm:col-span-2">{error}</p>}
+          {serverError && <p className="text-sm text-red-300 sm:col-span-2">{serverError}</p>}
           {notice && <p className="text-sm text-emerald-200 sm:col-span-2">{notice}</p>}
 
           <div className="sm:col-span-2">
-            <Button type="submit" fullWidth disabled={saving}>
+            <Button type="submit" fullWidth disabled={saving || !isValid}>
               {saving ? 'Saving…' : 'Save Changes'}
             </Button>
           </div>
