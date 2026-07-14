@@ -6,6 +6,8 @@ import { getBuildValues, getSavedReport } from '@/Role_Pages/technical-officer/d
 import { buildReportHtml } from '@/Role_Pages/technical-officer/draft/utils/buildReportHtml'
 import { getValuation, getEvidence } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
 import { draftAction, STATUS_LABEL } from '@/Role_Pages/manager/drafts/api/manager-drafts'
+import { downloadReportPdf } from '@/Common_Pages/utils/downloadReportPdf'
+import { downloadReportWord } from '@/Common_Pages/utils/downloadReportWord'
 
 type Props = {
   projectId: string
@@ -79,12 +81,8 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
     await run(target, 'Reject', reasonText.trim())
   }
 
-  const download = () => {
-    const doc = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"></head><body style="margin:40px">${current()}</body></html>`
-    const blob = new Blob(['﻿', doc], { type: 'application/msword' })
-    const url = URL.createObjectURL(blob); const a = document.createElement('a')
-    a.href = url; a.download = `Valuation-Report-${projectId}-V${valuationId}.doc`; a.click(); URL.revokeObjectURL(url)
-  }
+  const download = () => downloadReportPdf(current(), `Valuation-Report-${projectId}-V${valuationId}`)
+  const downloadWord = () => downloadReportWord(current(), `Valuation-Report-${projectId}-V${valuationId}`)
 
   return (
     <div className="mx-auto max-w-4xl space-y-4">
@@ -109,7 +107,8 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
         {!locked && (
           <Button type="button" variant="outline" onClick={save} disabled={!!busy} className="!px-5 !py-2 text-sm">{busy === 'Save' ? 'Saving…' : '💾 Save edits'}</Button>
         )}
-        <Button type="button" variant="outline" onClick={download} className="!px-5 !py-2 text-sm">⬇ Download</Button>
+        <Button type="button" variant="outline" onClick={download} className="!px-5 !py-2 text-sm">⬇ Download PDF</Button>
+        <Button type="button" variant="outline" onClick={downloadWord} className="!px-5 !py-2 text-sm">⬇ Download Word</Button>
         {level === 'L3' && (reviewStatus === 'pending_l3' || reviewStatus === 'draft' || reviewStatus === 'rejected_l3') && (
           <>
             <Button type="button" variant="outline" onClick={() => reject('rejected_to_to', 'Technical Officer')} disabled={!!busy} className="!px-5 !py-2 text-sm !border-amber-400/50 !text-amber-200">

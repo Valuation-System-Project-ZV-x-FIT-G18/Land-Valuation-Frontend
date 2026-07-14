@@ -4,6 +4,8 @@ import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { getBuildValues, getSavedReport } from '@/Role_Pages/technical-officer/draft/api/draft'
 import { buildReportHtml } from '@/Role_Pages/technical-officer/draft/utils/buildReportHtml'
 import { getValuation, getEvidence } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
+import { downloadReportPdf } from '@/Common_Pages/utils/downloadReportPdf'
+import { downloadReportWord } from '@/Common_Pages/utils/downloadReportWord'
 
 // Read-only, finalised report for a bank client (no editing, no review actions).
 const ClientReportView = ({ projectId, onBack }: { projectId: string; onBack: () => void }) => {
@@ -23,12 +25,8 @@ const ClientReportView = ({ projectId, onBack }: { projectId: string; onBack: ()
     })()
   }, [projectId])
 
-  const download = () => {
-    const doc = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"></head><body style="margin:40px">${html}</body></html>`
-    const blob = new Blob(['﻿', doc], { type: 'application/msword' })
-    const url = URL.createObjectURL(blob); const a = document.createElement('a')
-    a.href = url; a.download = `Valuation-Report-${projectId}.doc`; a.click(); URL.revokeObjectURL(url)
-  }
+  const download = () => downloadReportPdf(html, `Valuation-Report-${projectId}`)
+  const downloadWord = () => downloadReportWord(html, `Valuation-Report-${projectId}`)
 
   return (
     <div className="mx-auto max-w-4xl space-y-4">
@@ -37,7 +35,8 @@ const ClientReportView = ({ projectId, onBack }: { projectId: string; onBack: ()
         <h1 className="text-2xl font-bold text-white sm:text-3xl">Valuation Report — <GradientText>{projectId}</GradientText></h1>
       </div>
       <div className="text-center">
-        <Button type="button" variant="outline" onClick={download} className="!px-5 !py-2 text-sm">⬇ Download as Word</Button>
+        <Button type="button" variant="outline" onClick={download} className="!px-5 !py-2 text-sm">⬇ Download PDF</Button>
+        <Button type="button" variant="outline" onClick={downloadWord} className="!px-5 !py-2 text-sm">⬇ Download Word</Button>
       </div>
       {loading ? (
         <p className="text-center text-sm text-emerald-200/60">Loading the report…</p>
