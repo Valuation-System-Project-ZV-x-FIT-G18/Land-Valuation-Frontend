@@ -23,9 +23,32 @@ export const STATUS_LABEL: Record<string, string> = {
   locked: '🔒 Locked',
 }
 
+// Badge colour per review state — shared by every manager table.
+export const STATUS_TONE: Record<string, 'gold' | 'info' | 'success' | 'warning' | 'neutral'> = {
+  locked: 'gold',
+  pending_l2: 'info',
+  pending_l1: 'info',
+  rejected_l2: 'warning',
+  rejected_l3: 'warning',
+  rejected_to_to: 'warning',
+}
+
+// Free-text filter over a manager project list — matches Project ID, owner
+// name or location, case-insensitively.
+export function filterProjects(projects: ManagerProject[], query: string): ManagerProject[] {
+  const q = query.trim().toLowerCase()
+  if (!q) return projects
+  return projects.filter(
+    (p) =>
+      p.projectId.toLowerCase().includes(q) ||
+      p.ownerName.toLowerCase().includes(q) ||
+      p.location.toLowerCase().includes(q),
+  )
+}
+
 export async function getAllProjects(
   level: string,
-  view: 'check' | 'corrections' | 'final' = 'check',
+  view: 'check' | 'corrections' | 'final' | 'approved' | 'rejected' = 'check',
 ): Promise<ManagerProject[]> {
   try {
     const res = await fetch(

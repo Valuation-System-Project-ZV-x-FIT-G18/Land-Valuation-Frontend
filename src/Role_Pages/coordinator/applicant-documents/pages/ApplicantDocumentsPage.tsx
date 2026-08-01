@@ -5,6 +5,7 @@ import Input from '@/Common_Pages/components/ui/Input'
 import Badge from '@/Common_Pages/components/ui/Badge'
 import PageHeader from '@/Common_Pages/components/ui/PageHeader'
 import EmptyState from '@/Common_Pages/components/ui/EmptyState'
+import SuccessBanner from '@/Common_Pages/components/ui/SuccessBanner'
 import { validateNIC } from '@/Common_Pages/validation/validateNIC'
 import { documentSections } from '@/Role_Pages/loan-applicant/documents/constants/documentTypes'
 import {
@@ -13,21 +14,32 @@ import {
   setDocumentStatus,
   type UploadedDoc,
 } from '@/Role_Pages/loan-applicant/documents/api/documents'
+import { searchProjects } from '@/Role_Pages/coordinator/project-status/api/project-status'
+import type { ProjectRow } from '@/Role_Pages/coordinator/project-status/types/project-status'
 
 // Flat lookup of docType -> label for showing readable names.
 const labelOf: Record<string, string> = {}
 documentSections.forEach((s) => s.docs.forEach((d) => (labelOf[d.key] = d.label)))
 
 // Coordinator > Applicant Documents: view + review a loan applicant's uploads.
+// An applicant can have more than one project — pick which one to review.
 const ApplicantDocumentsPage = () => {
   const [nic, setNic] = useState('')
   const [searchedNic, setSearchedNic] = useState('')
+  const [projects, setProjects] = useState<ProjectRow[]>([])
+  const [projectId, setProjectId] = useState('')
   const [docs, setDocs] = useState<UploadedDoc[]>([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
   // Track which doc + action is updating so its button shows a spinner.
   const [reviewing, setReviewing] = useState('')
+
+  const loadDocs = async (n: string, p: string) => {
+    const r = await getDocuments(n, p)
+    setDocs(r.documents)
+  }
 
   const search = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,19 +47,37 @@ const ApplicantDocumentsPage = () => {
     if (err) return setError(err)
     setError('')
     setLoading(true)
-    const res = await getDocuments(nic.trim())
-    setDocs(res.documents)
-    setSearchedNic(nic.trim())
+    const n = nic.trim()
+    const res = await searchProjects(n)
+    setProjects(res.projects)
+    const first = res.projects[0]?.projectId ?? ''
+    setProjectId(first)
+    setSearchedNic(n)
+    if (first) await loadDocs(n, first)
+    else setDocs([])
     setSearched(true)
+    setLoading(false)
+  }
+
+  const selectProject = async (p: string) => {
+    setProjectId(p)
+    setLoading(true)
+    await loadDocs(searchedNic, p)
     setLoading(false)
   }
 
   const review = async (doc: UploadedDoc, status: string) => {
     setReviewing(doc.docType + status)
-    const res = await setDocumentStatus(searchedNic, doc.docType, status, labelOf[doc.docType] ?? doc.docType)
+    setError(''); setNotice('')
+    const label = labelOf[doc.docType] ?? doc.docType
+    const res = await setDocumentStatus(searchedNic, projectId, doc.docType, status, label)
     if (res.ok) {
-      const r = await getDocuments(searchedNic)
-      setDocs(r.documents)
+      await loadDocs(searchedNic, projectId)
+      setNotice(
+        status === 'Approved'
+          ? `"${label}" has been approved. The applicant has been notified.`
+          : `"${label}" has been sent back for resubmission. The applicant has been notified.`,
+      )
     } else setError(res.error ?? 'Could not update.')
     setReviewing('')
   }
@@ -77,11 +107,41 @@ const ApplicantDocumentsPage = () => {
         </form>
       </Card>
 
-      {searched && !loading && docs.length === 0 && (
+      {notice && <SuccessBanner message={notice} />}
+
+      {searched && !loading && projects.length === 0 && (
+        <EmptyState
+          icon="📄"
+          title="No projects"
+          message="No project was found for this NIC."
+        />
+      )}
+
+      {projects.length > 1 && (
+        <Card className="flex flex-wrap items-center gap-2 p-4">
+          <span className="text-sm text-emerald-100/70">Project:</span>
+          {projects.map((p) => (
+            <button
+              key={p.projectId}
+              type="button"
+              onClick={() => selectProject(p.projectId)}
+              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                p.projectId === projectId
+                  ? 'border-gold-400/60 bg-gold-400/15 text-gold-200'
+                  : 'border-white/15 bg-white/5 text-emerald-100/70 hover:border-gold-400/40'
+              }`}
+            >
+              {p.projectId} · {p.propertyType || 'Property'}
+            </button>
+          ))}
+        </Card>
+      )}
+
+      {searched && !loading && projects.length > 0 && docs.length === 0 && (
         <EmptyState
           icon="📄"
           title="No documents"
-          message="This applicant hasn't uploaded any documents yet."
+          message="This applicant hasn't uploaded any documents yet for this project."
         />
       )}
 
@@ -92,7 +152,7 @@ const ApplicantDocumentsPage = () => {
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-white">{labelOf[d.docType] ?? d.docType}</p>
                 {d.fileName && (
-                  <a href={documentUrl(searchedNic, d.docType)} className="mt-0.5 inline-flex items-center gap-1 text-xs text-gold-200 underline">
+                  <a href={documentUrl(searchedNic, projectId, d.docType)} className="mt-0.5 inline-flex items-center gap-1 text-xs text-gold-200 underline">
                     📎 {d.fileName}
                   </a>
                 )}

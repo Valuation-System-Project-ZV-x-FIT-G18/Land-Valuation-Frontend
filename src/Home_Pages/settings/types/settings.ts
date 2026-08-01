@@ -4,6 +4,7 @@ export type Profile = {
   userId: string
   role: string
   nic: string
+  photoPath: string
   // Editable personal fields.
   firstName: string
   lastName: string

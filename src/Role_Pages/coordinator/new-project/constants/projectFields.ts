@@ -1,8 +1,6 @@
 import type { SectionConfig, UploadConfig } from '@/Role_Pages/coordinator/new-project/types/new-project'
+import { provinces, districtsByProvince } from '@/Role_Pages/coordinator/register-applicant/constants/sriLanka'
 
-// Static option lists.
-const provinces = ['Western', 'Central', 'Southern', 'Northern', 'Eastern', 'North Western', 'North Central', 'Uva', 'Sabaragamuwa']
-const districts = ['Colombo', 'Gampaha', 'Kalutara', 'Kandy', 'Matale', 'Nuwara Eliya', 'Galle', 'Matara', 'Hambantota', 'Jaffna', 'Kilinochchi', 'Mannar', 'Vavuniya', 'Mullaitivu', 'Batticaloa', 'Ampara', 'Trincomalee', 'Kurunegala', 'Puttalam', 'Anuradhapura', 'Polonnaruwa', 'Badulla', 'Monaragala', 'Ratnapura', 'Kegalle']
 const YN = ['Yes', 'No']
 const DOC = '.pdf,.jpg,.jpeg,.png'
 
@@ -18,8 +16,8 @@ export const projectSections: SectionConfig[] = [
       { name: 'villageTown', label: 'Village / Town', required: true },
       { name: 'gnDivision', label: 'GN Division (Grama Niladhari)' },
       { name: 'dsDivision', label: 'DS Division (Divisional Secretariat)' },
-      { name: 'district', label: 'District', type: 'select', options: districts, required: true, placeholder: 'Select district' },
       { name: 'province', label: 'Province', type: 'select', options: provinces, required: true, placeholder: 'Select province' },
+      { name: 'district', label: 'District', type: 'select', optionsBy: { field: 'province', map: districtsByProvince }, required: true },
       { name: 'postalCode', label: 'Postal Code', type: 'number' },
     ],
   },

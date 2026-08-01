@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Button from '@/Common_Pages/components/ui/Button'
 import Modal from '@/Common_Pages/components/ui/Modal'
+import SuccessModal from '@/Common_Pages/components/ui/SuccessModal'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { getBuildValues, getSavedReport } from '@/Role_Pages/technical-officer/draft/api/draft'
 import { buildReportHtml } from '@/Role_Pages/technical-officer/draft/utils/buildReportHtml'
@@ -12,7 +13,7 @@ import { downloadReportWord } from '@/Common_Pages/utils/downloadReportWord'
 type Props = {
   projectId: string
   valuationId: number
-  level: 'L1' | 'L2' | 'L3' | 'COORD' | 'TO'
+  level: 'L1' | 'L2' | 'L3' | 'COORD' | 'TO' | 'VIEW'
   reviewStatus: string
   rejectReason: string
   onBack: () => void
@@ -30,6 +31,9 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
   // Styled rejection dialog: who it goes back to + the typed reason.
   const [rejectTo, setRejectTo] = useState<{ target: string; backTo: string } | null>(null)
   const [reasonText, setReasonText] = useState('')
+  // Blocking "✓ done" card shown after an action that leaves this page
+  // (submit / lock / reject) — closing it navigates back via onDone.
+  const [success, setSuccess] = useState<{ title: string; message: string } | null>(null)
 
   useEffect(() => {
     ;(async () => {
@@ -46,13 +50,12 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
 
   const current = () => paperRef.current?.innerHTML ?? html
 
-  const run = async (status: string, label: string, reason = '') => {
-    setBusy(label); setError(''); setNotice('')
+  const run = async (status: string, busyLabel: string, successTitle: string, successMessage: string, reason = '') => {
+    setBusy(busyLabel); setError('')
     const res = await draftAction(projectId, status, current(), reason)
     setBusy('')
     if (!res.ok) return setError(res.error ?? 'Action failed.')
-    setNotice(`✓ Saved — ${label} done.`)
-    setTimeout(onDone, 1000)
+    setSuccess({ title: successTitle, message: successMessage })
   }
 
   const save = async () => {
@@ -63,6 +66,8 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
   }
 
   const locked = reviewStatus === 'locked'
+  // A plain "view the draft" mode (Approved Drafts) — always read-only, no review actions.
+  const readOnly = locked || level === 'VIEW'
   // Which rejection reason banner this level should see.
   const showReason =
     (level === 'L3' && reviewStatus === 'rejected_l3') ||
@@ -76,9 +81,15 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
   }
   const confirmReject = async () => {
     if (!rejectTo) return
-    const { target } = rejectTo
+    const { target, backTo } = rejectTo
     setRejectTo(null)
-    await run(target, 'Reject', reasonText.trim())
+    await run(
+      target,
+      'Reject',
+      `Sent back to ${backTo}`,
+      `The draft has been returned to ${backTo} along with your feedback.`,
+      reasonText.trim(),
+    )
   }
 
   const download = () => downloadReportPdf(current(), `Valuation-Report-${projectId}-V${valuationId}`)
@@ -104,7 +115,7 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
       )}
 
       <div className="flex flex-wrap items-center justify-center gap-3">
-        {!locked && (
+        {!readOnly && (
           <Button type="button" variant="outline" onClick={save} disabled={!!busy} className="!px-5 !py-2 text-sm">{busy === 'Save' ? 'Saving…' : '💾 Save edits'}</Button>
         )}
         <Button type="button" variant="outline" onClick={download} className="!px-5 !py-2 text-sm">⬇ Download PDF</Button>
@@ -114,7 +125,12 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
             <Button type="button" variant="outline" onClick={() => reject('rejected_to_to', 'Technical Officer')} disabled={!!busy} className="!px-5 !py-2 text-sm !border-amber-400/50 !text-amber-200">
               {busy === 'Reject' ? 'Sending…' : '✖ Send back to Technical Officer'}
             </Button>
-            <Button type="button" onClick={() => run('pending_l2', 'Submit to L2')} disabled={!!busy} className="!px-5 !py-2 text-sm">
+            <Button
+              type="button"
+              onClick={() => run('pending_l2', 'Submit to L2', 'Submitted to L2', 'The draft has been sent to Manager L2 for review.')}
+              disabled={!!busy}
+              className="!px-5 !py-2 text-sm"
+            >
               {busy === 'Submit to L2' ? 'Submitting…' : '➡ Submit to L2'}
             </Button>
           </>
@@ -126,7 +142,12 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
                 {busy === 'Reject' ? 'Rejecting…' : '✖ Reject to L3'}
               </Button>
             )}
-            <Button type="button" onClick={() => run('pending_l1', 'Submit to L1')} disabled={!!busy} className="!px-5 !py-2 text-sm">
+            <Button
+              type="button"
+              onClick={() => run('pending_l1', 'Submit to L1', 'Submitted to L1', 'The draft has been sent to Manager L1 for review.')}
+              disabled={!!busy}
+              className="!px-5 !py-2 text-sm"
+            >
               {busy === 'Submit to L1' ? 'Submitting…' : '✔ Submit to L1'}
             </Button>
           </>
@@ -136,7 +157,12 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
             <Button type="button" variant="outline" onClick={() => reject('rejected_l2', 'L2')} disabled={!!busy} className="!px-5 !py-2 text-sm !border-amber-400/50 !text-amber-200">
               {busy === 'Reject' ? 'Rejecting…' : '✖ Reject to L2'}
             </Button>
-            <Button type="button" onClick={() => run('locked', 'Lock')} disabled={!!busy} className="!px-5 !py-2 text-sm">
+            <Button
+              type="button"
+              onClick={() => run('locked', 'Lock', 'Report Locked', 'The valuation report has been finalised. The applicant has been notified to complete payment.')}
+              disabled={!!busy}
+              className="!px-5 !py-2 text-sm"
+            >
               {busy === 'Lock' ? 'Locking…' : '🔒 Lock report'}
             </Button>
           </>
@@ -149,7 +175,7 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
         <p className="text-center text-sm text-emerald-200/60">Loading the report…</p>
       ) : (
         <div className="rounded-xl bg-white p-2 shadow-2xl">
-          <div ref={paperRef} contentEditable={!locked} suppressContentEditableWarning className="min-h-[60vh] rounded-md bg-white p-8 outline-none" style={{ color: '#111' }} dangerouslySetInnerHTML={{ __html: html }} />
+          <div ref={paperRef} contentEditable={!readOnly} suppressContentEditableWarning className="min-h-[60vh] rounded-md bg-white p-8 outline-none" style={{ color: '#111' }} dangerouslySetInnerHTML={{ __html: html }} />
         </div>
       )}
 
@@ -180,6 +206,14 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
           </div>
         </div>
       </Modal>
+
+      {/* Confirmation card — acknowledging it returns to the list. */}
+      <SuccessModal
+        open={!!success}
+        title={success?.title ?? ''}
+        message={success?.message}
+        onClose={() => { setSuccess(null); onDone() }}
+      />
     </div>
   )
 }

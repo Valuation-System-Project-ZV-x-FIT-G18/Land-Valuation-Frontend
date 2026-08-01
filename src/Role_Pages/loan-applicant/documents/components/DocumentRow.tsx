@@ -14,12 +14,13 @@ const statusTone = (s: string) => {
 
 type DocumentRowProps = {
   nic: string
+  projectId: string
   doc: DocType
   uploaded?: UploadedDoc
   onUpload: (docType: string, file: File) => Promise<{ ok: boolean; error?: string }>
 }
 
-const DocumentRow = ({ nic, doc, uploaded, onUpload }: DocumentRowProps) => {
+const DocumentRow = ({ nic, projectId, doc, uploaded, onUpload }: DocumentRowProps) => {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -46,7 +47,7 @@ const DocumentRow = ({ nic, doc, uploaded, onUpload }: DocumentRowProps) => {
         </p>
         {uploaded?.fileName && (
           <a
-            href={documentUrl(nic, doc.key)}
+            href={documentUrl(nic, projectId, doc.key)}
             className="mt-0.5 inline-flex items-center gap-1 text-xs text-gold-200 underline"
           >
             📎 {uploaded.fileName}

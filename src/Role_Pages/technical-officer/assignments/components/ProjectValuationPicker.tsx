@@ -27,10 +27,31 @@ const ProjectValuationPicker = ({ toId, actionLabel = 'Open →', onSelect, comp
 
   useEffect(() => {
     if (!toId) return
-    getAssignments(toId).then((r) => {
-      setAssignments(statusFilter ? r.assignments.filter(statusFilter) : r.assignments)
-      setLoading(false)
-    })
+    let cancelled = false
+    const load = () => {
+      getAssignments(toId).then((r) => {
+        if (cancelled) return
+        setAssignments(statusFilter ? r.assignments.filter(statusFilter) : r.assignments)
+        setLoading(false)
+      })
+    }
+    load()
+    // Re-check when this tab regains focus/visibility, so an assignment made
+    // by a coordinator in another tab shows up without a manual page reload.
+    // Also poll periodically as a fallback, since focus/visibility events are
+    // not consistently fired across every browser and window setup.
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') load()
+    }
+    window.addEventListener('focus', load)
+    document.addEventListener('visibilitychange', onVisible)
+    const interval = setInterval(load, 15000)
+    return () => {
+      cancelled = true
+      window.removeEventListener('focus', load)
+      document.removeEventListener('visibilitychange', onVisible)
+      clearInterval(interval)
+    }
   }, [toId, statusFilter])
 
   // Distinct projects (each with its valuations, ordered).

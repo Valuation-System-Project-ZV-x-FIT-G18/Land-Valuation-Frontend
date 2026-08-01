@@ -15,6 +15,10 @@ const ROLE_SECTIONS: { prefix: string; allow: (role: string) => boolean }[] = [
   { prefix: '/bank', allow: (r) => r === 'Bank' },
 ]
 
+// Routes that live under a role's URL prefix but are shared with every role
+// (e.g. Project Status is under /coordinator but every role links to it).
+const SHARED_ROUTES = ['/coordinator/project-states']
+
 // App shell for all internal (logged-in staff) pages.
 // Fixed sidebar on the left (256px); content fills the area beside it.
 // On mobile the sidebar becomes a slide-in drawer opened from the top bar.
@@ -31,9 +35,10 @@ const InternalLayout = () => {
     return <Navigate to="/change-password" replace />
   }
 
-  // Role guard: block a section that doesn't belong to this user's role.
+  // Role guard: block a section that doesn't belong to this user's role,
+  // unless the exact path is explicitly shared across every role.
   const section = ROLE_SECTIONS.find((s) => location.pathname.startsWith(s.prefix))
-  if (section && !section.allow(user.role)) {
+  if (section && !section.allow(user.role) && !SHARED_ROUTES.includes(location.pathname)) {
     return <Navigate to="/dashboard" replace />
   }
 

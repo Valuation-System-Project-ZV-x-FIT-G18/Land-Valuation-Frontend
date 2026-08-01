@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import NotificationBell from '@/Common_Pages/components/layout/NotificationBell'
+import Avatar from '@/Common_Pages/components/ui/Avatar'
 
 // Top bar for internal pages. Right side: messages, notifications, user profile.
 // Left side (mobile only): the hamburger that opens the sidebar drawer.
@@ -31,24 +32,11 @@ const IconButton = ({
 )
 
 const InternalTopbar = ({ onMenu }: { onMenu: () => void }) => {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const onMessages = location.pathname === '/messages'
-  const initials = (user?.name ?? '')
-    .split(' ')
-    .map((w) => w[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join('')
-    .toUpperCase()
-
-  const handleLogout = () => {
-    setMenuOpen(false)
-    logout()
-    navigate('/')
-  }
 
   return (
     <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-white/10 bg-emerald-950/70 px-4 py-3 backdrop-blur-md sm:px-6">
@@ -85,7 +73,7 @@ const InternalTopbar = ({ onMenu }: { onMenu: () => void }) => {
 
         <NotificationBell />
 
-        {/* User profile — click to open a small dropdown (Settings / Logout). */}
+        {/* User profile — click to open a small dropdown with account details. */}
         <div className="relative ml-1">
           <button
             type="button"
@@ -94,9 +82,7 @@ const InternalTopbar = ({ onMenu }: { onMenu: () => void }) => {
             aria-expanded={menuOpen}
             className="flex items-center gap-3 rounded-xl px-1 py-1 pr-1 transition hover:bg-white/5 sm:pl-2"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-gold-400 text-xs font-bold text-emerald-950 shadow ring-2 ring-white/10">
-              {initials || '👤'}
-            </span>
+            <Avatar userId={user?.userId ?? ''} name={user?.name ?? ''} photoPath={user?.photoPath} size="sm" />
             <div className="hidden leading-tight sm:block">
               <p className="text-sm font-semibold text-white">{user?.name}</p>
               <p className="text-xs font-medium text-gold-300">{user?.role}</p>
@@ -120,28 +106,36 @@ const InternalTopbar = ({ onMenu }: { onMenu: () => void }) => {
                 className="fixed inset-0 z-40"
                 onClick={() => setMenuOpen(false)}
               />
-              <div className="absolute right-0 z-50 mt-2 w-52 origin-top-right animate-scale-in overflow-hidden rounded-2xl border border-white/10 bg-emerald-950/95 shadow-card-hover backdrop-blur-md">
-                <div className="border-b border-white/10 px-4 py-3 sm:hidden">
-                  <p className="text-sm font-semibold text-white">{user?.name}</p>
-                  <p className="text-xs font-medium text-gold-300">{user?.role}</p>
+              <div className="absolute right-0 z-50 mt-2 w-64 origin-top-right animate-scale-in overflow-hidden rounded-2xl border border-white/10 bg-emerald-950/95 shadow-card-hover backdrop-blur-md">
+                <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
+                  <Avatar userId={user?.userId ?? ''} name={user?.name ?? ''} photoPath={user?.photoPath} size="md" />
+                  <div className="leading-tight">
+                    <p className="text-sm font-semibold text-white">{user?.name}</p>
+                    <p className="text-xs font-medium text-gold-300">{user?.role}</p>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMenuOpen(false)
-                    navigate('/settings')
-                  }}
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-emerald-100/80 transition hover:bg-white/5 hover:text-white"
-                >
-                  <span>⚙️</span> Settings
-                </button>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-emerald-100/80 transition hover:bg-red-500/10 hover:text-red-300"
-                >
-                  <span>🚪</span> Logout
-                </button>
+                <dl className="space-y-2 px-4 py-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <dt className="text-emerald-200/60">User ID</dt>
+                    <dd className="font-medium text-white">{user?.userId}</dd>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <dt className="text-emerald-200/60">Role</dt>
+                    <dd className="font-medium text-white">{user?.role}</dd>
+                  </div>
+                </dl>
+                <div className="p-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false)
+                      navigate('/settings')
+                    }}
+                    className="w-full rounded-xl bg-gold-400/15 px-4 py-2 text-sm font-semibold text-gold-300 transition hover:bg-gold-400/25"
+                  >
+                    Edit Profile
+                  </button>
+                </div>
               </div>
             </>
           )}

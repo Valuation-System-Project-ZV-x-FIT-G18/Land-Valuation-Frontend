@@ -1,14 +1,23 @@
 import { useCallback, useEffect, useState } from 'react'
 import Card from '@/Common_Pages/components/ui/Card'
 import Button from '@/Common_Pages/components/ui/Button'
+import Badge from '@/Common_Pages/components/ui/Badge'
+import Table from '@/Common_Pages/components/ui/Table'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import ManagerReportView from '@/Role_Pages/manager/drafts/components/ManagerReportView'
-import { getAllProjects, STATUS_LABEL, type ManagerProject } from '@/Role_Pages/manager/drafts/api/manager-drafts'
+import SearchBox from '@/Role_Pages/manager/drafts/components/SearchBox'
+import {
+  getAllProjects, filterProjects, STATUS_LABEL, STATUS_TONE, type ManagerProject,
+} from '@/Role_Pages/manager/drafts/api/manager-drafts'
 
-// Manager > Check Drafts (view='check') or Corrections (view='corrections').
+type FinalRow = { project: ManagerProject; valuationId: number; status: string; technicalOfficerId: string }
+
+// Manager > Check Drafts (view='check'), Corrections (view='corrections') or
+// Final Reports (view='final', L1 only).
 //  check       — drafts newly arrived at this level to review.
 //  corrections — drafts sent BACK to this level to fix (mistakes).
+//  final       — locked, finalised reports (shown as a flat table).
 const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' | 'final' }) => {
   const { user } = useAuth()
   const level: 'L1' | 'L2' | 'L3' =
@@ -20,6 +29,8 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
   const [loading, setLoading] = useState(true)
   const [project, setProject] = useState<ManagerProject | null>(null)
   const [valuationId, setValuationId] = useState<number | null>(null)
+  const [viewingFinal, setViewingFinal] = useState<FinalRow | null>(null)
+  const [q, setQ] = useState('')
 
   const load = useCallback(() => {
     setLoading(true)
@@ -27,6 +38,9 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
   }, [level, view])
 
   useEffect(() => { load() }, [load])
+  useEffect(() => { setQ('') }, [view]) // clear the search when switching tabs
+
+  const filtered = filterProjects(projects, q)
 
   const card = 'group flex w-full items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 text-left transition hover:border-gold-400/40 hover:bg-white/10'
   const chip = 'shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-xs font-medium text-emerald-100/80 transition group-hover:border-gold-400/50 group-hover:text-gold-200'
@@ -36,6 +50,21 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
       : status.startsWith('pending') ? 'border-sky-400/40 bg-sky-400/10 text-sky-200'
       : 'border-white/15 bg-white/5 text-emerald-100/70'
     return <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${c}`}>{STATUS_LABEL[status] ?? status}</span>
+  }
+
+  // Final Reports — a report opened directly from the flat table.
+  if (isFinal && viewingFinal) {
+    return (
+      <ManagerReportView
+        projectId={viewingFinal.project.projectId}
+        valuationId={viewingFinal.valuationId}
+        level={level}
+        reviewStatus={viewingFinal.status}
+        rejectReason={viewingFinal.project.rejectReason}
+        onBack={() => setViewingFinal(null)}
+        onDone={() => { setViewingFinal(null); load() }}
+      />
+    )
   }
 
   // Level 3 — the report for the chosen valuation.
@@ -75,9 +104,26 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
     )
   }
 
+  // Final Reports — one row per valuation, as a flat table.
+  const finalRows: FinalRow[] = filtered.flatMap((p) => p.valuations.map((v) => ({
+    project: p, valuationId: v.valuationId, status: v.status, technicalOfficerId: v.technicalOfficerId,
+  })))
+  const finalTableRows = finalRows.map((r) => [
+    <span key="id" className="font-medium text-white">{r.project.projectId}</span>,
+    r.project.ownerName || '—',
+    r.project.location || '—',
+    `#${r.valuationId}`,
+    <Badge key="status" tone={STATUS_TONE[r.project.reviewStatus] ?? 'neutral'}>
+      {STATUS_LABEL[r.project.reviewStatus] ?? r.project.reviewStatus}
+    </Badge>,
+    <Button key="view" type="button" size="sm" variant="outline" onClick={() => setViewingFinal(r)}>View Report</Button>,
+  ])
+
+  const noResults = q.trim() !== '' && filtered.length === 0 && projects.length > 0
+
   // Level 1 — all projects.
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className={`mx-auto space-y-6 ${isFinal ? 'max-w-5xl' : 'max-w-3xl'}`}>
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           {isFinal ? <>Final <GradientText>Reports</GradientText></>
@@ -97,6 +143,8 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
         </p>
       </div>
 
+      {projects.length > 0 && <SearchBox value={q} onChange={setQ} />}
+
       {loading ? (
         <p className="text-center text-sm text-emerald-200/60">Loading projects…</p>
       ) : projects.length === 0 ? (
@@ -108,9 +156,29 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
               : 'Drafts waiting for your check will appear here.'}
           </p>
         </Card>
+      ) : noResults ? (
+        <Card className="p-8 text-center">
+          <p className="font-semibold text-gold-200">No matches</p>
+          <p className="mt-1 text-sm text-emerald-100/70">No project matches “{q.trim()}”. Try a different Project ID, owner or location.</p>
+        </Card>
+      ) : isFinal ? (
+        <Card className="overflow-hidden">
+          <div className="h-1 w-full bg-gradient-to-r from-amber-200 via-gold-300 to-amber-400" />
+          <div className="p-6 sm:p-8">
+            <p className="mb-4 text-sm text-emerald-100/70">
+              <span className="font-semibold text-white">{finalRows.length}</span> final report{finalRows.length === 1 ? '' : 's'}
+            </p>
+            <Table
+              columns={['Project ID', 'Owner', 'Location', 'Valuation', 'Status', 'Action']}
+              rows={finalTableRows}
+              emptyText="Locked, finalised reports will appear here."
+              minWidth={760}
+            />
+          </div>
+        </Card>
       ) : (
         <div className="space-y-3">
-          {projects.map((p) => (
+          {filtered.map((p) => (
             <button key={p.projectId} type="button" onClick={() => setProject(p)} className={card}>
               <div className="min-w-0">
                 <p className="flex items-center gap-2 font-semibold text-gold-300">{p.projectId} {badge(p.reviewStatus)}</p>

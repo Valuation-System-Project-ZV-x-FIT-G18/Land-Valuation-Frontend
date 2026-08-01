@@ -8,6 +8,10 @@ export type FieldConfig = {
   label: string
   type?: FieldType // default 'text'
   options?: string[] // for type 'select'
+  // For a 'select' whose options depend on another field's current value
+  // (e.g. District options change with the selected Province). Takes
+  // precedence over `options` when the referenced field has a value.
+  optionsBy?: { field: string; map: Record<string, string[]> }
   required?: boolean
   placeholder?: string
   // Only show/validate this field when another field has a given value.

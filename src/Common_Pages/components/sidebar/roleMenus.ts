@@ -6,7 +6,8 @@ export type SidebarItem = { label: string; to: string; icon: string }
 
 export const roleMenus: Record<string, SidebarItem[]> = {
   Admin: [
-    { label: 'Add Role', to: '/admin/add-role', icon: '➕' },
+    { label: 'Add User', to: '/admin/add-role', icon: '➕' },
+    { label: 'User Details', to: '/admin/user-details', icon: '👥' },
   ],
   Coordinator: [
     { label: 'New Requests', to: '/coordinator/new-requests', icon: '📨' },
@@ -33,14 +34,20 @@ export const roleMenus: Record<string, SidebarItem[]> = {
   'Manager L1': [
     { label: 'Check Drafts', to: '/manager/check-drafts', icon: '📑' },
     { label: 'Final Reports', to: '/manager/final-reports', icon: '🔒' },
+    { label: 'Approved Drafts', to: '/manager/approved-drafts', icon: '✅' },
+    { label: 'Rejected Drafts', to: '/manager/rejected-drafts', icon: '❌' },
   ],
   'Manager L2': [
     { label: 'Check Drafts', to: '/manager/check-drafts', icon: '📑' },
     { label: 'Corrections', to: '/manager/corrections', icon: '📝' },
+    { label: 'Approved Drafts', to: '/manager/approved-drafts', icon: '✅' },
+    { label: 'Rejected Drafts', to: '/manager/rejected-drafts', icon: '❌' },
   ],
   'Manager L3': [
     { label: 'Check Drafts', to: '/manager/check-drafts', icon: '📑' },
     { label: 'Corrections', to: '/manager/corrections', icon: '📝' },
+    { label: 'Approved Drafts', to: '/manager/approved-drafts', icon: '✅' },
+    { label: 'Rejected Drafts', to: '/manager/rejected-drafts', icon: '❌' },
   ],
   'Loan Applicant': [
     { label: 'My Documents', to: '/applicant/documents', icon: '📎' },

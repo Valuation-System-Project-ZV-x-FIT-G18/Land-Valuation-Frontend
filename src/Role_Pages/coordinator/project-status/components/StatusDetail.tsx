@@ -15,7 +15,7 @@ type StatusDetailProps = {
 }
 
 const StatusDetail = ({ status, onBack }: StatusDetailProps) => {
-  // The full 14-step lifecycle, computed on the server from the actual data.
+  // The full project lifecycle, computed on the server from the actual data.
   const [steps, setSteps] = useState<TimelineStep[]>([])
   useEffect(() => {
     getTimeline(status.rowId).then(setSteps)

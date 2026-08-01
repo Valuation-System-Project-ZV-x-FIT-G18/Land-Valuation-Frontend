@@ -36,3 +36,21 @@ export async function updateProfile(
     return { ok: false, error: 'Could not reach the server. Please try again.' }
   }
 }
+
+// Upload/replace the logged-in user's profile picture.
+export async function uploadAvatar(
+  userId: string,
+  file: File,
+): Promise<{ ok: boolean; photoPath?: string; error?: string }> {
+  try {
+    const form = new FormData()
+    form.append('userId', userId)
+    form.append('file', file)
+    const res = await fetch('/api/auth/avatar', { method: 'POST', body: form })
+    const body = await res.json().catch(() => ({}) as Record<string, unknown>)
+    if (res.ok && body.ok) return { ok: true, photoPath: body.photoPath as string }
+    return { ok: false, error: (body.error as string) || 'Could not upload your picture.' }
+  } catch {
+    return { ok: false, error: 'Could not reach the server. Please try again.' }
+  }
+}

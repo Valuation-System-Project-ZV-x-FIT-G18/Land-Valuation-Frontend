@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Card from '@/Common_Pages/components/ui/Card'
 import Button from '@/Common_Pages/components/ui/Button'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
+import SuccessBanner from '@/Common_Pages/components/ui/SuccessBanner'
 import {
   getPendingSlips, verifySlip, slipUrl, type PendingSlip,
 } from '@/Role_Pages/coordinator/payment-slips/api/payment-slips'
@@ -13,6 +14,7 @@ const PaymentSlipsPage = () => {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState('')
   const [notice, setNotice] = useState('')
+  const [error, setError] = useState('')
 
   const load = useCallback(() => {
     setLoading(true)
@@ -22,12 +24,13 @@ const PaymentSlipsPage = () => {
 
   const act = async (projectId: string, approve: boolean) => {
     setBusy(projectId)
+    setNotice(''); setError('')
     const res = await verifySlip(projectId, approve)
     setBusy('')
     if (res.ok) {
-      setNotice(approve ? `✓ Payment verified for ${projectId}. The report is released.` : `Slip rejected for ${projectId}.`)
+      setNotice(approve ? `Payment verified for ${projectId}. The report has been released.` : `Slip for ${projectId} has been rejected.`)
       load()
-    } else setNotice(res.error ?? 'Action failed.')
+    } else setError(res.error ?? 'Action failed.')
   }
 
   return (
@@ -38,7 +41,8 @@ const PaymentSlipsPage = () => {
           Verify the bank-transfer slips applicants uploaded. Approving releases the report.
         </p>
       </div>
-      {notice && <p className="text-center text-sm text-emerald-200">{notice}</p>}
+      {notice && <SuccessBanner message={notice} />}
+      {error && <p className="text-center text-sm text-amber-300">{error}</p>}
 
       {loading ? (
         <p className="text-center text-sm text-emerald-200/60">Loading…</p>

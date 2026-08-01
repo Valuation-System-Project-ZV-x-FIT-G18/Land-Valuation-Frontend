@@ -11,6 +11,7 @@ type SelectFieldProps = {
   onBlur?: (e: React.FocusEvent<HTMLSelectElement>) => void
   options: Option[]
   error?: string
+  disabled?: boolean
 }
 
 const SelectField = ({
@@ -21,6 +22,7 @@ const SelectField = ({
   onBlur,
   options,
   error,
+  disabled,
 }: SelectFieldProps) => {
   const borderClass = error
     ? 'border-red-400/70 focus:border-red-400 focus:ring-red-400/30'
@@ -40,7 +42,8 @@ const SelectField = ({
         value={value}
         onChange={onChange}
         onBlur={onBlur}
-        className={`w-full rounded-xl border bg-emerald-900 px-4 py-3 text-white outline-none transition focus:ring-2 ${borderClass}`}
+        disabled={disabled}
+        className={`w-full rounded-xl border bg-emerald-900 px-4 py-3 text-white outline-none transition focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${borderClass}`}
       >
         {options.map((o) => (
           <option key={o.value} value={o.value} className="bg-emerald-900">

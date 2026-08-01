@@ -15,6 +15,7 @@ import DashboardPage from '@/Home_Pages/dashboard/pages/DashboardPage'
 import ChangePasswordPage from '@/Home_Pages/change-password/pages/ChangePasswordPage'
 import SettingsPage from '@/Home_Pages/settings/pages/SettingsPage'
 import AddRolePage from '@/Role_Pages/admin/add-role/pages/AddRolePage'
+import UserDetailsPage from '@/Role_Pages/admin/user-details/pages/UserDetailsPage'
 import MessagesPage from '@/Home_Pages/messages/pages/MessagesPage'
 import NewRequestsPage from '@/Role_Pages/coordinator/website-inbox/pages/NewRequestsPage'
 import ContactMessagesPage from '@/Role_Pages/coordinator/website-inbox/pages/ContactMessagesPage'
@@ -28,6 +29,7 @@ import GpsMapPage from '@/Role_Pages/technical-officer/mapping/pages/GpsMapPage'
 import CreateDraftPage from '@/Role_Pages/technical-officer/draft/pages/CreateDraftPage'
 import TOCorrectionsPage from '@/Role_Pages/technical-officer/draft/pages/TOCorrectionsPage'
 import ManagerDraftsPage from '@/Role_Pages/manager/drafts/pages/ManagerDraftsPage'
+import ApprovedDraftsPage from '@/Role_Pages/manager/drafts/pages/ApprovedDraftsPage'
 import MakePaymentPage from '@/Role_Pages/client/pages/MakePaymentPage'
 import BankViewReportPage from '@/Role_Pages/client/pages/BankViewReportPage'
 import ApplicantDocumentsPage from '@/Role_Pages/coordinator/applicant-documents/pages/ApplicantDocumentsPage'
@@ -67,6 +69,7 @@ const App = () => {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/change-password" element={<ChangePasswordPage />} />
             <Route path="/admin/add-role" element={<AddRolePage />} />
+            <Route path="/admin/user-details" element={<UserDetailsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/messages" element={<MessagesPage />} />
             <Route path="/applicant/documents" element={<DocumentsPage />} />
@@ -117,6 +120,14 @@ const App = () => {
             <Route
               path="/manager/final-reports"
               element={<ManagerDraftsPage view="final" />}
+            />
+            <Route
+              path="/manager/approved-drafts"
+              element={<ApprovedDraftsPage />}
+            />
+            <Route
+              path="/manager/rejected-drafts"
+              element={<ApprovedDraftsPage view="rejected" />}
             />
             <Route path="/applicant/payment" element={<MakePaymentPage />} />
             <Route path="/bank/report" element={<BankViewReportPage />} />

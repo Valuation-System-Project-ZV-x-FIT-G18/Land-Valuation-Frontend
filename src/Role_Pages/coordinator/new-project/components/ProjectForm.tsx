@@ -38,8 +38,11 @@ const buildSampleValues = (): ProjectValues => {
   const v: ProjectValues = { latitude: '6.9271', longitude: '79.8612' }
   projectSections.forEach((s) =>
     s.fields.forEach((f) => {
-      if (f.type === 'select') v[f.name] = f.options?.[0] ?? ''
-      else if (f.type === 'date') v[f.name] = '2020-01-01'
+      if (f.type === 'select') {
+        // Dependent selects (e.g. District) draw from their parent's sample
+        // value, which was already set since it's declared earlier in the section.
+        v[f.name] = f.optionsBy ? (f.optionsBy.map[v[f.optionsBy.field]]?.[0] ?? '') : (f.options?.[0] ?? '')
+      } else if (f.type === 'date') v[f.name] = '2020-01-01'
       else if (f.type === 'number') v[f.name] = '10'
       else v[f.name] = `Sample ${f.label}`
     }),
@@ -102,8 +105,21 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
   const onChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
-    setValues((v) => ({ ...v, [e.target.name]: e.target.value }))
-    setErrors((p) => ({ ...p, [e.target.name]: '' }))
+    const { name, value } = e.target
+    setValues((v) => {
+      const next = { ...v, [name]: value }
+      // Changing a field (e.g. Province) can invalidate a dependent select's
+      // current choice (e.g. District) — clear it so a stale value isn't kept.
+      projectSections.forEach((s) =>
+        s.fields.forEach((f) => {
+          if (f.optionsBy?.field !== name) return
+          const stillValid = (f.optionsBy.map[value] ?? []).includes(next[f.name])
+          if (!stillValid) next[f.name] = ''
+        }),
+      )
+      return next
+    })
+    setErrors((p) => ({ ...p, [name]: '' }))
     setServerError('')
   }
   const onFile = (name: string, picked: File[]) => {
@@ -266,6 +282,7 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
                     key={f.name}
                     field={f}
                     value={values[f.name]}
+                    values={values}
                     error={errors[f.name]}
                     onChange={onChange}
                     onBlur={onBlur}

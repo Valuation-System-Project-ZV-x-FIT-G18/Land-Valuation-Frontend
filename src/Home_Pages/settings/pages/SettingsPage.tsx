@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Card from '@/Common_Pages/components/ui/Card'
 import Button from '@/Common_Pages/components/ui/Button'
 import FormField from '@/Common_Pages/components/ui/FormField'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
+import Avatar from '@/Common_Pages/components/ui/Avatar'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
-import { getProfile, updateProfile } from '@/Home_Pages/settings/api/settings'
+import { getProfile, updateProfile, uploadAvatar } from '@/Home_Pages/settings/api/settings'
 import { validateSettings, type SettingsErrors } from '@/Home_Pages/settings/pages/validateSettings'
 import type { Profile } from '@/Home_Pages/settings/types/settings'
 
@@ -33,6 +34,8 @@ const SettingsPage = () => {
   const [errors, setErrors] = useState<SettingsErrors>({})
   const [serverError, setServerError] = useState('')
   const [notice, setNotice] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!user) return
@@ -78,6 +81,23 @@ const SettingsPage = () => {
     }
   }
 
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file || !profile) return
+    setUploading(true)
+    setServerError('')
+    const res = await uploadAvatar(user.userId, file)
+    setUploading(false)
+    if (res.ok && res.photoPath) {
+      setProfile({ ...profile, photoPath: res.photoPath })
+      login({ ...user, photoPath: res.photoPath })
+      setNotice('Your profile picture has been updated.')
+    } else {
+      setServerError(res.error ?? 'Could not upload your picture.')
+    }
+  }
+
   const isValid = Object.keys(validateSettings(profile)).length === 0
 
   const identity: [string, string][] = [
@@ -96,6 +116,32 @@ const SettingsPage = () => {
           Update your personal information. These changes are saved to your account.
         </p>
       </div>
+
+      {/* Profile picture */}
+      <Card className="flex items-center gap-5 p-6">
+        <Avatar userId={user.userId} name={user.name} photoPath={profile.photoPath} size="lg" />
+        <div>
+          <p className="text-sm font-semibold text-white">Profile picture</p>
+          <p className="mt-0.5 text-xs text-emerald-100/60">JPG, PNG or WEBP. Max 5MB.</p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            className="hidden"
+            onChange={handleAvatarChange}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-3"
+            disabled={uploading}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {uploading ? 'Uploading…' : 'Change Photo'}
+          </Button>
+        </div>
+      </Card>
 
       {/* Read-only identity */}
       <Card className="grid gap-4 p-6 sm:grid-cols-3">

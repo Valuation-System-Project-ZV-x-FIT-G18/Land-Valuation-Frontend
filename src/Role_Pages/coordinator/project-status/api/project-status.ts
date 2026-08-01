@@ -54,7 +54,7 @@ export async function getValuationStatus(
 
 import type { TimelineStep } from '@/Role_Pages/coordinator/project-status/components/StatusTimeline'
 
-// The computed 14-step lifecycle for a valuation.
+// The computed lifecycle steps for a valuation.
 export async function getTimeline(rowId: number): Promise<TimelineStep[]> {
   try {
     const res = await fetch(`/api/coordinator/valuations/timeline?id=${encodeURIComponent(String(rowId))}`)
@@ -65,7 +65,7 @@ export async function getTimeline(rowId: number): Promise<TimelineStep[]> {
   }
 }
 
-// The 14-step lifecycle for a project (works even with no valuations yet).
+// The full lifecycle for a project (works even with no valuations yet).
 export async function getProjectTimeline(projectId: string): Promise<TimelineStep[]> {
   try {
     const res = await fetch(`/api/coordinator/valuations/project-timeline?projectId=${encodeURIComponent(projectId)}`)

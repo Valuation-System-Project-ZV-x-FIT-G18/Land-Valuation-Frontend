@@ -105,7 +105,7 @@ const AddRolePage = () => {
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
-          Add <GradientText>Role</GradientText>
+          Add <GradientText>User</GradientText>
         </h1>
         <p className="mx-auto mt-2 max-w-md text-emerald-100/70">
           Create a staff account. Their login ID is generated automatically and emailed to them with the password.
@@ -141,7 +141,7 @@ const AddRolePage = () => {
           {serverError && <p className="text-sm text-red-300">{serverError}</p>}
 
           <Button type="submit" fullWidth disabled={!isValid} loading={submitting}>
-            {submitting ? 'Creating…' : 'Add Role'}
+            {submitting ? 'Creating…' : 'Add User'}
           </Button>
         </form>
       </Card>

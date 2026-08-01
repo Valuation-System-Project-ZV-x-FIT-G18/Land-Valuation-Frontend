@@ -1,4 +1,4 @@
-// A vertical progress timeline for a valuation's 14-step lifecycle.
+// A vertical progress timeline for a project's full lifecycle.
 //  done    -> green ✓ (completed)
 //  current -> blue ● (the step happening now)
 //  waiting -> gray ○ (not reached yet)

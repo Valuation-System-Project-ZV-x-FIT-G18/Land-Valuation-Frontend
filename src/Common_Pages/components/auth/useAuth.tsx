@@ -9,6 +9,7 @@ export type AuthUser = {
   name: string
   role: string
   mustChangePassword?: boolean // true until a first-login password change
+  photoPath?: string // stored file name of the profile picture, if one was uploaded
 }
 
 type AuthValue = {

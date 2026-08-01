@@ -1,6 +1,6 @@
 import FormField from '@/Common_Pages/components/ui/FormField'
 import SelectField from '@/Common_Pages/components/ui/SelectField'
-import type { FieldConfig } from '@/Role_Pages/coordinator/new-project/types/new-project'
+import type { FieldConfig, ProjectValues } from '@/Role_Pages/coordinator/new-project/types/new-project'
 
 // Renders a single form field from its config:
 // text / number / date / textarea -> FormField, select -> SelectField.
@@ -8,6 +8,7 @@ import type { FieldConfig } from '@/Role_Pages/coordinator/new-project/types/new
 type FieldRendererProps = {
   field: FieldConfig
   value: string
+  values: ProjectValues // full form state, so a select can react to another field (e.g. District -> Province)
   error?: string
   onChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -17,14 +18,20 @@ type FieldRendererProps = {
   ) => void
 }
 
-const FieldRenderer = ({ field, value, error, onChange, onBlur }: FieldRendererProps) => {
+const FieldRenderer = ({ field, value, values, error, onChange, onBlur }: FieldRendererProps) => {
   const label = field.required ? `${field.label} *` : field.label
 
   if (field.type === 'select') {
-    const options = [
-      { value: '', label: field.placeholder ?? 'Select…' },
-      ...(field.options ?? []).map((o) => ({ value: o, label: o })),
-    ]
+    // A dependent select (e.g. District) draws its list from the parent
+    // field's current value (e.g. the chosen Province) instead of a fixed list.
+    const parentValue = field.optionsBy ? values[field.optionsBy.field] : undefined
+    const waitingOnParent = !!field.optionsBy && !parentValue
+    const choices = field.optionsBy ? (parentValue ? (field.optionsBy.map[parentValue] ?? []) : []) : (field.options ?? [])
+    const parentName = field.optionsBy?.field ?? ''
+    const placeholder = waitingOnParent
+      ? `Select the ${parentName.charAt(0).toUpperCase()}${parentName.slice(1)} first`
+      : (field.placeholder ?? 'Select…')
+    const options = [{ value: '', label: placeholder }, ...choices.map((o) => ({ value: o, label: o }))]
     return (
       <SelectField
         label={label}
@@ -33,6 +40,7 @@ const FieldRenderer = ({ field, value, error, onChange, onBlur }: FieldRendererP
         onChange={onChange}
         options={options}
         error={error}
+        disabled={waitingOnParent}
       />
     )
   }
