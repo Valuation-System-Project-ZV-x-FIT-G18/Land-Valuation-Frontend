@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import { searchApplicantByNic } from '@/Role_Pages/coordinator/create-project/api/create-project'
+import { getProjectDetailsDraft } from '@/Role_Pages/loan-applicant/fill-form/api/fill-form'
 import { useSessionState } from '@/Common_Pages/hooks/useSessionState'
 import { useSessionFiles, clearSessionFiles } from '@/Common_Pages/hooks/useSessionFiles'
 import Button from '@/Common_Pages/components/ui/Button'
@@ -68,14 +69,20 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
   const [values, setValues] = useSessionState<ProjectValues>('createProject:values', buildEmptyValues())
   const [files, setFiles] = useSessionFiles('createProject:files', buildEmptyFiles())
 
-  // Arriving from Register Applicant / applicant search passes a NIC — a NEW
-  // project. Use that NIC and START WITH AN EMPTY FORM (no leftover values from a
-  // previous project); the detail fields only fill when Auto-fill is clicked.
+  // Start a NEW project's form with whatever this applicant has already sent
+  // in via their own "Fill Form" page, if anything — still fully editable,
+  // this is just a starting point. Falls back to an empty form.
+  const fillFromApplicant = async (nic: string) => {
+    const res = await getProjectDetailsDraft(nic)
+    setValues(res.form ? { ...buildEmptyValues(), ...res.form.data } : buildEmptyValues())
+  }
+
+  // Arriving from Register Applicant / applicant search passes a NIC — a NEW project.
   useEffect(() => {
     const incoming = (location.state as { nic?: string } | null)?.nic
     if (!incoming) return
     setApplicantNic(incoming)
-    setValues(buildEmptyValues())
+    fillFromApplicant(incoming)
     searchApplicantByNic(incoming).then((res) => setOwnerName(res.found ? res.applicant?.name ?? '' : ''))
     navigate(location.pathname, { replace: true }) // consume the state so a refresh keeps the session
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -256,7 +263,7 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
           onConfirmed={(nic, name) => {
             setApplicantNic(nic)
             setOwnerName(name)
-            setValues(buildEmptyValues()) // start the new project's form empty
+            fillFromApplicant(nic) // start from whatever the applicant already sent in, if anything
           }}
         />
       )}

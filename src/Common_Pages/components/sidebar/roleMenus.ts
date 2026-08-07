@@ -50,6 +50,7 @@ export const roleMenus: Record<string, SidebarItem[]> = {
     { label: 'Rejected Drafts', to: '/manager/rejected-drafts', icon: '❌' },
   ],
   'Loan Applicant': [
+    { label: 'Fill Form', to: '/applicant/fill-form', icon: '🧾' },
     { label: 'My Documents', to: '/applicant/documents', icon: '📎' },
     { label: 'Make Payment', to: '/applicant/payment', icon: '💳' },
   ],

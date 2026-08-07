@@ -20,6 +20,7 @@ import MessagesPage from '@/Home_Pages/messages/pages/MessagesPage'
 import NewRequestsPage from '@/Role_Pages/coordinator/website-inbox/pages/NewRequestsPage'
 import ContactMessagesPage from '@/Role_Pages/coordinator/website-inbox/pages/ContactMessagesPage'
 import DocumentsPage from '@/Role_Pages/loan-applicant/documents/pages/DocumentsPage'
+import FillFormPage from '@/Role_Pages/loan-applicant/fill-form/pages/FillFormPage'
 import AssignedProjectsPage from '@/Role_Pages/technical-officer/assignments/pages/AssignedProjectsPage'
 import InspectionDataPage from '@/Role_Pages/technical-officer/inspections/pages/InspectionDataPage'
 import SitePhotoPage from '@/Role_Pages/technical-officer/site-photos/pages/SitePhotoPage'
@@ -73,6 +74,7 @@ const App = () => {
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/messages" element={<MessagesPage />} />
             <Route path="/applicant/documents" element={<DocumentsPage />} />
+            <Route path="/applicant/fill-form" element={<FillFormPage />} />
             <Route
               path="/technical-officer/assignments"
               element={<AssignedProjectsPage />}
