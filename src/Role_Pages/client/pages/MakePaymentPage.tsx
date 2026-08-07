@@ -4,6 +4,7 @@ import Button from '@/Common_Pages/components/ui/Button'
 import Modal from '@/Common_Pages/components/ui/Modal'
 import FormField from '@/Common_Pages/components/ui/FormField'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
+import SuccessModal from '@/Common_Pages/components/ui/SuccessModal'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import {
   getApplicantReports, payForReport, payWithSlip, type ClientReport,
@@ -79,12 +80,17 @@ const MakePaymentPage = () => {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      <SuccessModal
+        open={!!notice}
+        title="Payment Update Successful"
+        message={notice}
+        closeLabel="Done"
+        onClose={() => setNotice('')}
+      />
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">Make <GradientText>Payment</GradientText></h1>
         <p className="mx-auto mt-2 max-w-md text-emerald-100/70">Pay the professional valuation fee to release your finalised report to your bank.</p>
       </div>
-      {notice && <p className="text-center text-sm text-emerald-200">{notice}</p>}
-
       {loading ? (
         <p className="text-center text-sm text-emerald-200/60">Loading…</p>
       ) : reports.length === 0 ? (

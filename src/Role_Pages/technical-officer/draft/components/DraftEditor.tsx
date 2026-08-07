@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import Button from '@/Common_Pages/components/ui/Button'
 import Spinner from '@/Common_Pages/components/ui/Spinner'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
+import SuccessModal from '@/Common_Pages/components/ui/SuccessModal'
 import { getBuildValues, getSavedReport, saveReport } from '@/Role_Pages/technical-officer/draft/api/draft'
 import { buildReportHtml } from '@/Role_Pages/technical-officer/draft/utils/buildReportHtml'
 import { downloadReportPdf } from '@/Common_Pages/utils/downloadReportPdf'
@@ -17,6 +18,7 @@ const DraftEditor = ({ projectId, onBack }: Props) => {
   const [saving, setSaving] = useState(false)
   const [rebuilding, setRebuilding] = useState(false)
   const [notice, setNotice] = useState('')
+  const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
 
   // Assemble the styled report HTML from all the project data.
@@ -62,7 +64,7 @@ const DraftEditor = ({ projectId, onBack }: Props) => {
     const res = await saveReport(projectId, current)
     setSaving(false)
     res.ok
-      ? setNotice('✓ Draft saved and submitted for the L3 check. The applicant has been notified.')
+      ? setSuccess('The draft was saved and submitted for the L3 check. The applicant has been notified.')
       : setError(res.error ?? 'Could not save.')
   }
 
@@ -86,6 +88,13 @@ const DraftEditor = ({ projectId, onBack }: Props) => {
 
   return (
     <div className="mx-auto max-w-4xl space-y-5">
+      <SuccessModal
+        open={!!success}
+        title="Draft Submitted"
+        message={success}
+        closeLabel="Done"
+        onClose={() => setSuccess('')}
+      />
       <Button type="button" variant="ghost" size="sm" onClick={onBack}>← Back to projects</Button>
       <div className="text-center">
         <h1 className="text-2xl font-bold text-white sm:text-3xl">Valuation Report Draft — <GradientText>{projectId}</GradientText></h1>

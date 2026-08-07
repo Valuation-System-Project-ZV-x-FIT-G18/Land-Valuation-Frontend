@@ -8,6 +8,7 @@ import Badge from '@/Common_Pages/components/ui/Badge'
 import Table from '@/Common_Pages/components/ui/Table'
 import Avatar from '@/Common_Pages/components/ui/Avatar'
 import ProvinceDistrictFields from '@/Common_Pages/components/ui/ProvinceDistrictFields'
+import SuccessModal from '@/Common_Pages/components/ui/SuccessModal'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import { validateNamePart } from '@/Common_Pages/validation/validateName'
 import { validateLocalPhone } from '@/Common_Pages/validation/validateLocalPhone'
@@ -29,6 +30,7 @@ const UserDetailsPage = () => {
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState('')
   const [notice, setNotice] = useState('')
+  const [error, setError] = useState('')
   const [editing, setEditing] = useState<RegisteredUser | null>(null)
   const [form, setForm] = useState<EditableUser>(emptyForm)
   const [errors, setErrors] = useState<Partial<Record<keyof EditableUser, string>>>({})
@@ -40,7 +42,7 @@ const UserDetailsPage = () => {
     setLoading(true)
     getUsers().then((res) => {
       setUsers(res.users)
-      if (res.error) setNotice(res.error)
+      if (res.error) setError(res.error)
       setLoading(false)
     })
   }
@@ -104,7 +106,8 @@ const UserDetailsPage = () => {
     setRemoving(true)
     const res = await deleteUser(deleting.userId)
     setRemoving(false)
-    setNotice(res.ok ? `${deleting.userId} was deleted.` : (res.error ?? 'Could not delete this user.'))
+    if (res.ok) setNotice(`${deleting.userId} was deleted.`)
+    else setError(res.error ?? 'Could not delete this user.')
     setDeleting(null)
     if (res.ok) load()
   }
@@ -139,6 +142,13 @@ const UserDetailsPage = () => {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
+      <SuccessModal
+        open={!!notice}
+        title={notice.includes('deleted') ? 'User Deleted' : 'User Updated'}
+        message={notice}
+        closeLabel="Done"
+        onClose={() => setNotice('')}
+      />
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           User <GradientText>Details</GradientText>
@@ -147,7 +157,7 @@ const UserDetailsPage = () => {
           Every registered account. Edit personal details or remove an account.
         </p>
       </div>
-      {notice && <p className="text-center text-sm text-emerald-200">{notice}</p>}
+      {error && <p className="text-center text-sm text-red-300">{error}</p>}
       <Card className="overflow-hidden">
         <div className="h-1 w-full bg-gradient-to-r from-amber-200 via-gold-300 to-amber-400" />
         <div className="p-6 sm:p-8">

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Card from '@/Common_Pages/components/ui/Card'
 import Button from '@/Common_Pages/components/ui/Button'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
-import SuccessBanner from '@/Common_Pages/components/ui/SuccessBanner'
+import SuccessModal from '@/Common_Pages/components/ui/SuccessModal'
 import {
   getPendingSlips, verifySlip, slipUrl, type PendingSlip,
 } from '@/Role_Pages/coordinator/payment-slips/api/payment-slips'
@@ -35,13 +35,19 @@ const PaymentSlipsPage = () => {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      <SuccessModal
+        open={!!notice}
+        title="Action Completed"
+        message={notice}
+        closeLabel="Done"
+        onClose={() => setNotice('')}
+      />
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">Payment <GradientText>Slips</GradientText></h1>
         <p className="mx-auto mt-2 max-w-md text-emerald-100/70">
           Verify the bank-transfer slips applicants uploaded. Approving releases the report.
         </p>
       </div>
-      {notice && <SuccessBanner message={notice} />}
       {error && <p className="text-center text-sm text-amber-300">{error}</p>}
 
       {loading ? (

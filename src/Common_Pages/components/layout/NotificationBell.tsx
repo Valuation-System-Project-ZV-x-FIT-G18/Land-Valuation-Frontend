@@ -20,10 +20,11 @@ const NotificationBell = () => {
   const [unread, setUnread] = useState(0)
 
   const load = useCallback(async () => {
-    if (!user) return
+    if (!user) return { notifications: [] as Notification[], unread: 0 }
     const res = await getNotifications(user.userId)
     setItems(res.notifications)
     setUnread(res.unread)
+    return res
   }, [user])
 
   useEffect(() => {
@@ -33,11 +34,19 @@ const NotificationBell = () => {
   }, [load])
 
   const toggle = async () => {
-    const next = !open
-    setOpen(next)
-    if (next && unread > 0 && user) {
+    if (open) {
+      setOpen(false)
+      return
+    }
+
+    // Fetch on demand so a notification created moments ago is visible as
+    // soon as the bell is clicked instead of waiting for the polling timer.
+    const latest = await load()
+    setOpen(true)
+    if ((latest?.unread ?? 0) > 0 && user) {
       await markNotificationsRead(user.userId)
       setUnread(0)
+      setItems((current) => current.map((item) => ({ ...item, read: true })))
     }
   }
 

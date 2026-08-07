@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Card from '@/Common_Pages/components/ui/Card'
 import Button from '@/Common_Pages/components/ui/Button'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
+import SuccessModal from '@/Common_Pages/components/ui/SuccessModal'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import DraftEditor from '@/Role_Pages/loan-applicant/fill-form/components/DraftEditor'
 import {
@@ -61,7 +62,7 @@ const FillFormPage = () => {
 
   const handleSaved = async () => {
     setEditing(null)
-    setNotice('Sent! Your coordinator will see this when they create your project.')
+    setNotice('Your property details were successfully sent to the coordinator.')
     await load()
   }
 
@@ -96,7 +97,13 @@ const FillFormPage = () => {
         </p>
       </div>
 
-      {notice && <p className="text-center text-sm text-emerald-200">{notice}</p>}
+      <SuccessModal
+        open={!!notice}
+        title="Successfully Sent"
+        message={notice}
+        closeLabel="Done"
+        onClose={() => setNotice('')}
+      />
 
       <Button type="button" fullWidth onClick={() => { setNotice(''); setEditing('new') }}>
         + New Property

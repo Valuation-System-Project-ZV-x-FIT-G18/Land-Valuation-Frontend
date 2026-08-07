@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import type { ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 
 // Reusable popup/modal dialog.
 // Closes on the X button, on clicking the dark backdrop, or pressing Escape.
@@ -28,9 +29,13 @@ const Modal = ({ open, onClose, title, children }: ModalProps) => {
 
   if (!open) return null
 
-  return (
+  // Render at document.body instead of inside an animated page container.
+  // CSS transforms on page transitions otherwise make `position: fixed`
+  // relative to the full page, which can place the dialog below the viewport
+  // when the user has scrolled down.
+  return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] flex h-[100dvh] w-screen items-center justify-center overflow-y-auto p-4 sm:p-6"
       role="dialog"
       aria-modal="true"
     >
@@ -41,7 +46,7 @@ const Modal = ({ open, onClose, title, children }: ModalProps) => {
       />
 
       {/* Panel */}
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-gold-400/25 bg-emerald-950 p-6 shadow-2xl">
+      <div className="relative z-10 max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border border-gold-400/25 bg-emerald-950 p-6 shadow-2xl sm:max-h-[calc(100dvh-3rem)]">
         <button
           type="button"
           onClick={onClose}
@@ -54,7 +59,8 @@ const Modal = ({ open, onClose, title, children }: ModalProps) => {
         {title && <h3 className="mb-4 text-xl font-bold text-white">{title}</h3>}
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 

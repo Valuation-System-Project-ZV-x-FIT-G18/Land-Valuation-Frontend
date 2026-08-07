@@ -3,6 +3,7 @@ import Card from '@/Common_Pages/components/ui/Card'
 import Button from '@/Common_Pages/components/ui/Button'
 import FormField from '@/Common_Pages/components/ui/FormField'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
+import SuccessModal from '@/Common_Pages/components/ui/SuccessModal'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import {
   getLeaves, markLeave, removeLeave, type LeaveEntry,
@@ -41,6 +42,13 @@ const TOAttendancePage = () => {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      <SuccessModal
+        open={!!notice}
+        title="Attendance Updated"
+        message={notice}
+        closeLabel="Done"
+        onClose={() => setNotice('')}
+      />
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           My <GradientText>Attendance</GradientText>
@@ -60,7 +68,6 @@ const TOAttendancePage = () => {
           </div>
         </div>
         {error && <p className="mt-3 text-sm text-red-300">{error}</p>}
-        {notice && <p className="mt-3 text-sm text-emerald-200">{notice}</p>}
         <Button type="button" fullWidth className="mt-4" onClick={submit}>Mark my Leave</Button>
       </Card>
 

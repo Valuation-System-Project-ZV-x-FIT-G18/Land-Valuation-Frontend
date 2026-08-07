@@ -5,7 +5,7 @@ import Input from '@/Common_Pages/components/ui/Input'
 import Badge from '@/Common_Pages/components/ui/Badge'
 import PageHeader from '@/Common_Pages/components/ui/PageHeader'
 import EmptyState from '@/Common_Pages/components/ui/EmptyState'
-import SuccessBanner from '@/Common_Pages/components/ui/SuccessBanner'
+import SuccessModal from '@/Common_Pages/components/ui/SuccessModal'
 import { validateNIC } from '@/Common_Pages/validation/validateNIC'
 import { documentSections } from '@/Role_Pages/loan-applicant/documents/constants/documentTypes'
 import {
@@ -85,6 +85,13 @@ const ApplicantDocumentsPage = () => {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      <SuccessModal
+        open={!!notice}
+        title="Document Updated"
+        message={notice}
+        closeLabel="Done"
+        onClose={() => setNotice('')}
+      />
       <PageHeader
         title="Applicant"
         accent="Documents"
@@ -107,8 +114,6 @@ const ApplicantDocumentsPage = () => {
           </Button>
         </form>
       </Card>
-
-      {notice && <SuccessBanner message={notice} />}
 
       {searched && !loading && projects.length === 0 && docs.length > 0 && (
         <p className="text-center text-sm text-emerald-200/70">

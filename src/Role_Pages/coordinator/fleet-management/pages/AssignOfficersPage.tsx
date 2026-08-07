@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import Button from '@/Common_Pages/components/ui/Button'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
+import SuccessModal from '@/Common_Pages/components/ui/SuccessModal'
 import FleetTable from '@/Role_Pages/coordinator/fleet-management/components/FleetTable'
 import AssignOfficerForm from '@/Role_Pages/coordinator/fleet-management/components/AssignOfficerForm'
 import { baseCols, officerCells } from '@/Role_Pages/coordinator/fleet-management/components/officerRows'
@@ -50,6 +51,13 @@ const AssignOfficersPage = () => {
 
   return (
     <div className="space-y-6">
+      <SuccessModal
+        open={!!notice}
+        title="Assignment Updated"
+        message={notice}
+        closeLabel="Done"
+        onClose={() => setNotice('')}
+      />
       <Button
         type="button"
         variant="outline"
@@ -70,12 +78,6 @@ const AssignOfficersPage = () => {
           {error}
         </p>
       )}
-      {notice && (
-        <p className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-3 text-center text-sm text-emerald-200">
-          {notice}
-        </p>
-      )}
-
       {/* Assign action */}
       <AssignOfficerForm
         officers={available}

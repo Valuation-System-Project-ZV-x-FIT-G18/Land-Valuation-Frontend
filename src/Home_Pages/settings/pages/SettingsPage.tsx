@@ -5,6 +5,7 @@ import FormField from '@/Common_Pages/components/ui/FormField'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import Avatar from '@/Common_Pages/components/ui/Avatar'
 import ProvinceDistrictFields from '@/Common_Pages/components/ui/ProvinceDistrictFields'
+import SuccessModal from '@/Common_Pages/components/ui/SuccessModal'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import { getProfile, updateProfile, uploadAvatar } from '@/Home_Pages/settings/api/settings'
 import { validateSettings, type SettingsErrors } from '@/Home_Pages/settings/pages/validateSettings'
@@ -132,6 +133,13 @@ const SettingsPage = () => {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      <SuccessModal
+        open={!!notice}
+        title="Update Successful"
+        message={notice}
+        closeLabel="Done"
+        onClose={() => setNotice('')}
+      />
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           <GradientText>Settings</GradientText>
@@ -208,8 +216,6 @@ const SettingsPage = () => {
           />
 
           {serverError && <p className="text-sm text-red-300 sm:col-span-2">{serverError}</p>}
-          {notice && <p className="text-sm text-emerald-200 sm:col-span-2">{notice}</p>}
-
           <div className="sm:col-span-2">
             <Button type="submit" fullWidth disabled={saving || !isValid}>
               {saving ? 'Saving…' : 'Save Changes'}

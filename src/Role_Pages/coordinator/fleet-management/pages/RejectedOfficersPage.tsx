@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Card from '@/Common_Pages/components/ui/Card'
 import Button from '@/Common_Pages/components/ui/Button'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
+import SuccessModal from '@/Common_Pages/components/ui/SuccessModal'
 import { getFleetOfficers, acceptRejection } from '@/Role_Pages/coordinator/fleet-management/api/fleet'
 import type { RejectedItem } from '@/Role_Pages/coordinator/fleet-management/types/fleet'
 
@@ -12,6 +13,7 @@ const RejectedOfficersPage = () => {
   const [rejected, setRejected] = useState<RejectedItem[]>([])
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState('')
+  const [error, setError] = useState('')
 
   const load = useCallback(() => {
     setLoading(true)
@@ -21,13 +23,21 @@ const RejectedOfficersPage = () => {
   useEffect(() => { load() }, [load])
 
   const accept = async (rowId: number) => {
+    setError('')
     const res = await acceptRejection(rowId)
     if (res.ok) { setNotice('Rejection accepted — the officer is available again.'); load() }
-    else setNotice(res.error ?? 'Could not accept.')
+    else setError(res.error ?? 'Could not accept.')
   }
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      <SuccessModal
+        open={!!notice}
+        title="Assignment Updated"
+        message={notice}
+        closeLabel="Done"
+        onClose={() => setNotice('')}
+      />
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           Rejected <GradientText>Assignments</GradientText>
@@ -38,7 +48,7 @@ const RejectedOfficersPage = () => {
         </p>
       </div>
 
-      {notice && <p className="text-center text-sm text-emerald-200">{notice}</p>}
+      {error && <p className="text-center text-sm text-red-300">{error}</p>}
 
       {loading ? (
         <p className="text-center text-sm text-emerald-200/60">Loading…</p>
