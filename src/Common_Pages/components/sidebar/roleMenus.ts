@@ -15,7 +15,6 @@ export const roleMenus: Record<string, SidebarItem[]> = {
     { label: 'Register Applicant', to: '/coordinator/create-project', icon: '🧾' },
     { label: 'Create Project', to: '/coordinator/new-project', icon: '🗂️' },
     { label: 'New Valuation', to: '/coordinator/new-valuation', icon: '🧮' },
-    { label: 'Applicant Documents', to: '/coordinator/applicant-documents', icon: '📂' },
     { label: 'Fleet Management', to: '/coordinator/fleet-management', icon: '🚚' },
     { label: 'Payment Slips', to: '/coordinator/payment-slips', icon: '🧾' },
     { label: 'Rejected', to: '/coordinator/rejected-officers', icon: '⛔' },
@@ -51,7 +50,6 @@ export const roleMenus: Record<string, SidebarItem[]> = {
   ],
   'Loan Applicant': [
     { label: 'Fill Form', to: '/applicant/fill-form', icon: '🧾' },
-    { label: 'My Documents', to: '/applicant/documents', icon: '📎' },
     { label: 'Make Payment', to: '/applicant/payment', icon: '💳' },
   ],
   Bank: [

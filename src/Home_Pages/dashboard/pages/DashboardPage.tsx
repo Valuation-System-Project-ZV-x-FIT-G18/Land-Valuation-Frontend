@@ -14,7 +14,7 @@ const ROLE_TAGLINE: Record<string, string> = {
   'Manager L2': 'Review drafts from L3, correct issues, then reject or pass to L1.',
   'Manager L3': 'Check technical officers’ drafts and submit them up the review chain.',
   Admin: 'Add roles and oversee the whole valuation workflow.',
-  'Loan Applicant': 'Upload your documents and pay to release your valuation report.',
+  'Loan Applicant': 'Submit property details and pay to release your valuation report.',
   Bank: 'View the finalised valuation reports for your projects once released.',
 }
 
