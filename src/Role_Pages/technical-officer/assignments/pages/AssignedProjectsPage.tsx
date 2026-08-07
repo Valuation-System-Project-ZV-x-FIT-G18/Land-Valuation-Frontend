@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Button from '@/Common_Pages/components/ui/Button'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
@@ -15,6 +15,28 @@ const AssignedProjectsPage = () => {
   const [selected, setSelected] = useState<Assignment | null>(null)
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
+  const selectionKey = toId ? `to-assigned-project-selection:${toId}` : ''
+  const projectKey = toId ? `to-assigned-project-open:${toId}` : ''
+
+  useEffect(() => {
+    if (!selectionKey) return
+    try {
+      const saved = localStorage.getItem(selectionKey)
+      if (saved) setSelected(JSON.parse(saved) as Assignment)
+    } catch {
+      localStorage.removeItem(selectionKey)
+    }
+  }, [selectionKey])
+
+  const selectAssignment = (assignment: Assignment) => {
+    setSelected(assignment)
+    if (selectionKey) localStorage.setItem(selectionKey, JSON.stringify(assignment))
+  }
+
+  const clearSelection = () => {
+    setSelected(null)
+    if (selectionKey) localStorage.removeItem(selectionKey)
+  }
 
   const reject = async () => {
     if (!selected) return
@@ -25,7 +47,7 @@ const AssignedProjectsPage = () => {
     setBusy(false)
     if (res.ok) {
       setMsg('Assignment rejected. It now awaits the coordinator’s acceptance.')
-      setSelected(null)
+      clearSelection()
     } else {
       setMsg(res.error ?? 'Could not reject.')
     }
@@ -36,7 +58,7 @@ const AssignedProjectsPage = () => {
     return (
       <div className="mx-auto max-w-3xl space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Button type="button" variant="outline" onClick={() => setSelected(null)} className="!px-5 !py-2.5 text-sm">
+          <Button type="button" variant="outline" onClick={clearSelection} className="!px-5 !py-2.5 text-sm">
             ← Back to projects
           </Button>
           {isAssigned && (
@@ -67,7 +89,12 @@ const AssignedProjectsPage = () => {
         </p>
       </div>
       {msg && <p className="text-center text-sm text-emerald-200">{msg}</p>}
-      <ProjectValuationPicker toId={toId} actionLabel="View details →" onSelect={setSelected} />
+      <ProjectValuationPicker
+        toId={toId}
+        actionLabel="View details →"
+        onSelect={selectAssignment}
+        persistenceKey={projectKey}
+      />
     </div>
   )
 }

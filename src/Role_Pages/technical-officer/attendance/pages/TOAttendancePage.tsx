@@ -29,6 +29,9 @@ const TOAttendancePage = () => {
 
   const submit = async () => {
     if (!date) return setError('Pick a date.')
+    if (leaves.some((leave) => leave.date === date)) {
+      return setError('You have already marked leave for this date.')
+    }
     setError(''); setNotice('')
     const res = await markLeave(toId, reason, date)
     if (res.ok) { setNotice('Marked. You will be shown as on leave that day.'); setReason(''); load() }
