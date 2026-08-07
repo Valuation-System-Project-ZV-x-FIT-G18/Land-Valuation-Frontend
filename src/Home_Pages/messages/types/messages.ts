@@ -15,6 +15,20 @@ export type Message = {
   fileName: string // original attachment name ('' if none)
   read: boolean
   createdAt: string
+  formId?: number // set when this message represents a Project Details Form
+}
+
+// A Project Details Form sent from a coordinator to a loan applicant, to be
+// filled in and sent back (same fields as the Create Project form, minus
+// document uploads).
+export type ProjectDetailsForm = {
+  id: number
+  coordinatorId: string
+  applicantId: string
+  status: 'Sent' | 'Submitted'
+  data: Record<string, string>
+  createdAt: string
+  submittedAt: string | null
 }
 
 // A conversation summary in the inbox list.

@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Card from '@/Common_Pages/components/ui/Card'
 import Button from '@/Common_Pages/components/ui/Button'
-import { attachmentUrl } from '@/Home_Pages/messages/api/messages'
+import { useAuth } from '@/Common_Pages/components/auth/useAuth'
+import { attachmentUrl, sendForm } from '@/Home_Pages/messages/api/messages'
 import type { Message, Partner } from '@/Home_Pages/messages/types/messages'
 
 type ConversationProps = {
@@ -10,6 +12,7 @@ type ConversationProps = {
   messages: Message[]
   onSend: (body: string, file: File | null) => Promise<{ ok: boolean; error?: string }>
   onBack: () => void
+  onFormSent: () => void
 }
 
 const time = (iso: string) => {
@@ -17,13 +20,28 @@ const time = (iso: string) => {
   return isNaN(d.getTime()) ? '' : d.toLocaleString(undefined, { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' })
 }
 
-const Conversation = ({ me, partner, messages, onSend, onBack }: ConversationProps) => {
+const Conversation = ({ me, partner, messages, onSend, onBack, onFormSent }: ConversationProps) => {
+  const { user } = useAuth()
+  const navigate = useNavigate()
   const [text, setText] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
+  const [sendingForm, setSendingForm] = useState(false)
   const endRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  // Only a Coordinator can send the Project Details Form, and only to a Loan Applicant.
+  const canSendForm = user?.role === 'Coordinator' && partner.role === 'Loan Applicant'
+
+  const handleSendForm = async () => {
+    setSendingForm(true)
+    setError('')
+    const res = await sendForm(me, partner.userId)
+    setSendingForm(false)
+    if (res.ok) onFormSent()
+    else setError(res.error ?? 'Could not send the form.')
+  }
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -52,10 +70,22 @@ const Conversation = ({ me, partner, messages, onSend, onBack }: ConversationPro
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/40 to-gold-500/30 text-sm font-bold text-white">
           {partner.name.charAt(0).toUpperCase()}
         </span>
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-white">{partner.name}</p>
           <p className="text-xs text-emerald-200/50">{partner.role} · {partner.userId}</p>
         </div>
+        {canSendForm && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            loading={sendingForm}
+            onClick={handleSendForm}
+            className="shrink-0"
+          >
+            📋 Send Form
+          </Button>
+        )}
       </div>
 
       {/* Messages */}
@@ -69,6 +99,15 @@ const Conversation = ({ me, partner, messages, onSend, onBack }: ConversationPro
               <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm ${mine ? 'bg-gradient-to-r from-amber-300 to-gold-400 text-emerald-950' : 'border border-white/10 bg-white/10 text-emerald-50'}`}>
                   {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
+                  {m.formId != null && (
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/messages/form/${m.formId}`)}
+                      className={`mt-1 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium underline ${mine ? 'bg-emerald-950/10 text-emerald-900' : 'bg-white/10 text-gold-200'}`}
+                    >
+                      📋 Open Form
+                    </button>
+                  )}
                   {m.fileName && (
                     <a
                       href={attachmentUrl(m.id, me)}
