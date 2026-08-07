@@ -3,6 +3,7 @@ import Card from '@/Common_Pages/components/ui/Card'
 import Button from '@/Common_Pages/components/ui/Button'
 import FormField from '@/Common_Pages/components/ui/FormField'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
+import { useSessionState } from '@/Common_Pages/hooks/useSessionState'
 import FieldRenderer from '@/Role_Pages/coordinator/new-project/components/FieldRenderer'
 import { validateField } from '@/Role_Pages/coordinator/new-project/validation/validateField'
 import {
@@ -43,8 +44,15 @@ type DraftEditorProps = {
 // document upload slots — used both for a brand-new draft and for editing an
 // existing one.
 const DraftEditor = ({ draft, nic, onSubmit, onSaved, onCancel }: DraftEditorProps) => {
-  const [label, setLabel] = useState(draft?.label ?? '')
-  const [values, setValues] = useState<ProjectValues>({ ...buildEmptyValues(), ...(draft?.data ?? {}) })
+  // Keep unsaved typing across refreshes. The key includes the applicant NIC
+  // and the draft being edited, so entries can never leak between accounts
+  // or between an applicant's own properties in the same browser tab.
+  const draftKey = `fillForm:${nic}:${draft?.id ?? 'new'}`
+  const [label, setLabel] = useSessionState<string>(`${draftKey}:label`, draft?.label ?? '')
+  const [values, setValues] = useSessionState<ProjectValues>(draftKey, {
+    ...buildEmptyValues(),
+    ...(draft?.data ?? {}),
+  })
   const [errors, setErrors] = useState<ProjectErrors>({})
   const [saving, setSaving] = useState(false)
   const [serverError, setServerError] = useState('')
@@ -121,6 +129,11 @@ const DraftEditor = ({ draft, nic, onSubmit, onSaved, onCancel }: DraftEditorPro
         return
       }
     }
+    // Saved for real — drop the refresh-persistence copy so a later "New
+    // Property" (or re-opening this one) doesn't resurrect stale typing.
+    sessionStorage.removeItem(draftKey)
+    sessionStorage.removeItem(`${draftKey}:label`)
+
     setSaving(false)
     onSaved()
   }

@@ -10,6 +10,8 @@ import { getProfile, updateProfile, uploadAvatar } from '@/Home_Pages/settings/a
 import { validateSettings, type SettingsErrors } from '@/Home_Pages/settings/pages/validateSettings'
 import type { Profile } from '@/Home_Pages/settings/types/settings'
 
+const today = new Date().toISOString().slice(0, 10)
+
 // Editable personal fields (identity fields user_id / role / nic are read-only).
 // Province/District are rendered separately as a cascading select pair.
 const fields: { name: keyof Profile; label: string; type?: string }[] = [
@@ -193,6 +195,7 @@ const SettingsPage = () => {
               prefix={f.name === 'phone' ? '+94' : undefined}
               maxLength={f.name === 'phone' ? 9 : undefined}
               inputMode={f.name === 'phone' ? 'numeric' : undefined}
+              max={f.type === 'date' ? today : undefined}
             />
           ))}
 

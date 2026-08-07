@@ -14,6 +14,8 @@ import { deriveInitials } from '@/Common_Pages/lib/deriveInitials'
 import { addRole, type NewRole } from '@/Role_Pages/admin/add-role/api/add-role'
 import { validateAddRole, type RoleErrors } from '@/Role_Pages/admin/add-role/pages/validateAddRole'
 
+const today = new Date().toISOString().slice(0, 10)
+
 const roleOptions = [
   { value: '', label: 'Select a role' },
   { value: 'Coordinator', label: 'Coordinator' },
@@ -199,7 +201,7 @@ const AddRolePage = () => {
             {addressFields
               .filter((f) => !(form.role === 'Bank' && f.name === 'dateOfBirth'))
               .map((f) => (
-                <FormField key={f.name} label={f.label} name={f.name} type={f.type ?? 'text'} value={form[f.name]} onChange={(e) => set(f.name, e.target.value)} onBlur={handleBlur} error={errors[f.name]} />
+                <FormField key={f.name} label={f.label} name={f.name} type={f.type ?? 'text'} value={form[f.name]} onChange={(e) => set(f.name, e.target.value)} onBlur={handleBlur} error={errors[f.name]} max={f.type === 'date' ? today : undefined} />
               ))}
 
             <FormField label="Password *" name="password" type="password" value={password} onChange={handlePasswordChange} onBlur={handleBlur} error={errors.password} />

@@ -354,6 +354,7 @@ const ValuationForm = ({ onDone }: ValuationFormProps) => {
                     key={f.name}
                     field={f}
                     value={values[f.name]}
+                    values={values}
                     error={errors[f.name]}
                     onChange={onChange}
                     onBlur={onBlur}
