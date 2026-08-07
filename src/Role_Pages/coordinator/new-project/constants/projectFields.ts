@@ -1,5 +1,5 @@
 import type { SectionConfig, UploadConfig } from '@/Role_Pages/coordinator/new-project/types/new-project'
-import { provinces, districtsByProvince } from '@/Role_Pages/coordinator/register-applicant/constants/sriLanka'
+import { provinces, districtsByProvince } from '@/Common_Pages/constants/sriLanka'
 
 const YN = ['Yes', 'No']
 const DOC = '.pdf,.jpg,.jpeg,.png'

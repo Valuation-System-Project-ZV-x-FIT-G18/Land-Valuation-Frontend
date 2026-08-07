@@ -6,8 +6,9 @@ import type { SectionProps } from '@/Role_Pages/coordinator/register-applicant/t
 const noop = () => {}
 
 // Personal information > Name. Shows the full name + the auto-derived parts.
+// "Name with initials" defaults from the full name but stays editable.
 const NameSection = ({ values, errors, onChange, onBlur }: SectionProps) => {
-  const { firstName, lastName, nameWithInitials } = deriveName(values.fullName)
+  const { firstName, lastName } = deriveName(values.fullName)
 
   return (
     <FormSection icon="👤" title="Personal information">
@@ -33,7 +34,15 @@ const NameSection = ({ values, errors, onChange, onBlur }: SectionProps) => {
       <div className="grid gap-4 sm:grid-cols-3">
         <FormField label="First name (auto)" name="firstName" value={firstName || '—'} onChange={noop} readOnly />
         <FormField label="Last name (auto)" name="lastName" value={lastName || '—'} onChange={noop} readOnly />
-        <FormField label="Name with initials (auto)" name="initials" value={nameWithInitials || '—'} onChange={noop} readOnly />
+        <FormField
+          label="Name with initials (auto)"
+          name="initials"
+          value={values.initials}
+          onChange={onChange}
+          onBlur={onBlur}
+          error={errors.initials}
+          placeholder="e.g. C.P. Senarathne"
+        />
       </div>
     </FormSection>
   )

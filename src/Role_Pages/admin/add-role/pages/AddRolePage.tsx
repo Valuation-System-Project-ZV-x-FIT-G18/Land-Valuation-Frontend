@@ -5,8 +5,12 @@ import Button from '@/Common_Pages/components/ui/Button'
 import Modal from '@/Common_Pages/components/ui/Modal'
 import FormField from '@/Common_Pages/components/ui/FormField'
 import SelectField from '@/Common_Pages/components/ui/SelectField'
+import ProvinceDistrictFields from '@/Common_Pages/components/ui/ProvinceDistrictFields'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
+import { useAutoField } from '@/Common_Pages/hooks/useAutoField'
+import { useSessionState } from '@/Common_Pages/hooks/useSessionState'
+import { deriveInitials } from '@/Common_Pages/lib/deriveInitials'
 import { addRole, type NewRole } from '@/Role_Pages/admin/add-role/api/add-role'
 import { validateAddRole, type RoleErrors } from '@/Role_Pages/admin/add-role/pages/validateAddRole'
 
@@ -34,37 +38,46 @@ const bankOptions = [
   ...BANK_NAMES.map((b) => ({ value: b, label: b })),
 ]
 
-const fields: { name: keyof NewRole; label: string; type?: string }[] = [
+type PersistedRole = Omit<NewRole, 'password'>
+
+// Field groups, rendered in this exact order:
+// First Name, Last Name, [Name with Initials], NIC, Email, Phone,
+// [Province, District], City, Postal Code, Address, Date of Birth, Password.
+const nameFields: { name: keyof PersistedRole; label: string; type?: string }[] = [
   { name: 'firstName', label: 'First Name *' },
   { name: 'lastName', label: 'Last Name *' },
-  { name: 'initials', label: 'Name with Initials' },
+]
+const contactFields: { name: keyof PersistedRole; label: string; type?: string }[] = [
   { name: 'nic', label: 'NIC *' },
   { name: 'email', label: 'Email *', type: 'email' },
   { name: 'phone', label: 'Phone' },
-  { name: 'district', label: 'District' },
-  { name: 'province', label: 'Province' },
+]
+const addressFields: { name: keyof PersistedRole; label: string; type?: string }[] = [
   { name: 'city', label: 'City' },
   { name: 'postalCode', label: 'Postal Code' },
   { name: 'address', label: 'Address' },
   { name: 'dateOfBirth', label: 'Date of Birth', type: 'date' },
-  { name: 'password', label: 'Password *', type: 'password' },
 ]
 
-const empty: NewRole = {
+const empty: PersistedRole = {
   role: '', firstName: '', lastName: '', initials: '', nic: '', email: '', phone: '',
   district: '', province: '', city: '', postalCode: '', address: '', dateOfBirth: '',
-  branchCode: '', branchName: '', bankName: '', designation: '', password: '',
+  branchCode: '', branchName: '', bankName: '', designation: '',
 }
 
 // Admin > Add Role. Create a staff account; the person is emailed their login.
 const AddRolePage = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [form, setForm] = useState<NewRole>(empty)
+  // Everything except the password survives a refresh; the password is never stored.
+  const [form, setForm] = useSessionState<PersistedRole>('addRole', empty)
+  const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<RoleErrors>({})
   const [serverError, setServerError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [createdId, setCreatedId] = useState('')
+
+  const full: NewRole = { ...form, password }
 
   if (user && user.role !== 'Admin') {
     return (
@@ -75,29 +88,43 @@ const AddRolePage = () => {
     )
   }
 
-  const set = (name: keyof NewRole, value: string) => {
+  const set = (name: keyof PersistedRole, value: string) => {
     setForm((f) => ({ ...f, [name]: value }))
     setErrors((prev) => ({ ...prev, [name]: undefined }))
     setServerError('')
   }
 
+  // Initials default to "F. Last" from the name fields, but stay editable —
+  // once the admin types their own value, it stops auto-updating.
+  const { onManualChange: onInitialsChange } = useAutoField(
+    deriveInitials(form.firstName, form.lastName),
+    form.initials,
+    (v) => set('initials', v),
+  )
+
   const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const name = e.target.name as keyof NewRole
-    const found = validateAddRole({ ...form, [name]: e.target.value })
+    const found = validateAddRole({ ...full, [name]: e.target.value })
     setErrors((prev) => ({ ...prev, [name]: found[name] }))
   }
 
-  const isValid = Object.keys(validateAddRole(form)).length === 0
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setPassword(e.target.value)
+    setErrors((prev) => ({ ...prev, password: undefined }))
+    setServerError('')
+  }
+
+  const isValid = Object.keys(validateAddRole(full)).length === 0
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const found = validateAddRole(form)
+    const found = validateAddRole(full)
     if (Object.keys(found).length > 0) { setErrors(found); return }
     setErrors({})
     setSubmitting(true)
-    const res = await addRole(form)
+    const res = await addRole(full)
     setSubmitting(false)
-    if (res.ok) { setCreatedId(res.userId ?? ''); setForm(empty) }
+    if (res.ok) { setCreatedId(res.userId ?? ''); setForm(empty); setPassword('') }
     else setServerError(res.error ?? 'Could not create the account.')
   }
 
@@ -131,11 +158,51 @@ const AddRolePage = () => {
           )}
 
           <div className="grid gap-5 sm:grid-cols-2">
-            {fields
+            {nameFields.map((f) => (
+              <FormField key={f.name} label={f.label} name={f.name} type={f.type ?? 'text'} value={form[f.name]} onChange={(e) => set(f.name, e.target.value)} onBlur={handleBlur} error={errors[f.name]} />
+            ))}
+
+            <FormField
+              label="Name with Initials (auto)"
+              name="initials"
+              value={form.initials}
+              onChange={(e) => onInitialsChange(e.target.value)}
+              onBlur={handleBlur}
+              error={errors.initials}
+              placeholder="e.g. K. Perera"
+            />
+
+            {contactFields.map((f) => (
+              <FormField
+                key={f.name}
+                label={f.label}
+                name={f.name}
+                type={f.type ?? 'text'}
+                value={form[f.name]}
+                onChange={(e) => set(f.name, e.target.value)}
+                onBlur={handleBlur}
+                error={errors[f.name]}
+                prefix={f.name === 'phone' ? '+94' : undefined}
+                maxLength={f.name === 'phone' ? 9 : undefined}
+                inputMode={f.name === 'phone' ? 'numeric' : undefined}
+              />
+            ))}
+
+            <ProvinceDistrictFields
+              province={form.province}
+              district={form.district}
+              onChange={(name, value) => set(name, value)}
+              provinceError={errors.province}
+              districtError={errors.district}
+            />
+
+            {addressFields
               .filter((f) => !(form.role === 'Bank' && f.name === 'dateOfBirth'))
               .map((f) => (
                 <FormField key={f.name} label={f.label} name={f.name} type={f.type ?? 'text'} value={form[f.name]} onChange={(e) => set(f.name, e.target.value)} onBlur={handleBlur} error={errors[f.name]} />
               ))}
+
+            <FormField label="Password *" name="password" type="password" value={password} onChange={handlePasswordChange} onBlur={handleBlur} error={errors.password} />
           </div>
 
           {serverError && <p className="text-sm text-red-300">{serverError}</p>}

@@ -6,6 +6,7 @@ import type { NewBank } from '@/Role_Pages/coordinator/register-bank/api/registe
 import { validateEmail } from '@/Common_Pages/validation/validateEmail'
 import { validateBranchCode } from '@/Common_Pages/validation/validateBranchCode'
 import { validateNIC } from '@/Common_Pages/validation/validateNIC'
+import { validateNamePart } from '@/Common_Pages/validation/validateName'
 
 // Accept any Sri Lankan landline or mobile: starts with 0, 9–10 digits total.
 const slNumberPattern = /^0\d{8,9}$/
@@ -21,8 +22,7 @@ export function validateBank(form: NewBank): BankErrors {
 
   errors.branchCode = validateBranchCode(form.branchCode)
 
-  if (!form.officerName.trim()) errors.officerName = "Officer's name is required."
-  else if (form.officerName.trim().length < 2) errors.officerName = 'Please enter at least 2 characters.'
+  errors.officerName = validateNamePart(form.officerName, "Officer's name")
 
   errors.officerNic = validateNIC(form.officerNic)
 

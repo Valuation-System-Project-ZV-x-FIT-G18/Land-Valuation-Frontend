@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 
 // A reusable form field: label + input (or textarea) + error message.
@@ -47,6 +48,11 @@ const FormField = ({
   readOnly = false,
   max,
 }: FormFieldProps) => {
+  // Password fields get a show/hide (eye) toggle instead of staying masked.
+  const [reveal, setReveal] = useState(false)
+  const isPassword = type === 'password'
+  const inputType = isPassword && reveal ? 'text' : type
+
   // Border/ring turns red when there is an error, gold otherwise.
   // Read-only (auto) fields are dimmed and not editable.
   const borderClass = error
@@ -89,7 +95,7 @@ const FormField = ({
         ) : (
           <input
             id={name}
-            type={type}
+            type={inputType}
             name={name}
             value={value}
             onChange={onChange}
@@ -101,6 +107,18 @@ const FormField = ({
             max={max}
             className={`${field} ${readOnly ? 'cursor-default text-emerald-100/70' : ''}`}
           />
+        )}
+
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setReveal((r) => !r)}
+            tabIndex={-1}
+            aria-label={reveal ? 'Hide password' : 'Show password'}
+            className="flex select-none items-center px-3 text-emerald-100/60 transition hover:text-emerald-100"
+          >
+            {reveal ? '🙈' : '👁️'}
+          </button>
         )}
       </div>
 

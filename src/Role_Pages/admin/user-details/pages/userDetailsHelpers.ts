@@ -20,13 +20,12 @@ export const ROLE_TONE: Record<string, 'gold' | 'info' | 'success' | 'warning' |
   'Loan Applicant': 'neutral',
 }
 
+// Province/District are rendered separately as a cascading select pair.
 export const editFields: { name: keyof EditableUser; label: string; type?: string }[] = [
   { name: 'firstName', label: 'First Name *' },
   { name: 'lastName', label: 'Last Name' },
   { name: 'email', label: 'Email', type: 'email' },
   { name: 'phone', label: 'Phone' },
-  { name: 'province', label: 'Province' },
-  { name: 'district', label: 'District' },
   { name: 'city', label: 'City' },
 ]
 

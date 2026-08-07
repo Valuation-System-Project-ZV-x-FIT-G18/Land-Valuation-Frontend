@@ -3,6 +3,7 @@
 // What the form collects (full name is split into parts on submit).
 export type RegisterApplicantValues = {
   fullName: string
+  initials: string
   nic: string
   dateOfBirth: string
   phone: string

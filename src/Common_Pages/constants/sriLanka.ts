@@ -1,4 +1,6 @@
 // Sri Lankan provinces and the districts in each (for the address dropdowns).
+// Shared by every form that collects a Province / District — the District
+// choices are always filtered down to the selected Province.
 
 export const provinces = [
   'Western',
