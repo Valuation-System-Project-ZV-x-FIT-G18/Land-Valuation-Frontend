@@ -33,46 +33,89 @@ const FileField = ({ label, name, accept, files, onChange, multiple, error }: Fi
 
   const remove = (i: number) => onChange(name, files.filter((_, idx) => idx !== i))
 
+  const view = (file: File) => {
+    const url = URL.createObjectURL(file)
+    window.open(url, '_blank', 'noopener,noreferrer')
+    // Keep the object URL alive long enough for the new tab to load it.
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
+  }
+
   const shownError = error || localError
 
   return (
     <div>
       <label className="mb-1.5 block text-sm font-medium text-emerald-100">{label}</label>
 
-      <label
-        className={`flex cursor-pointer items-center gap-2 rounded-xl border border-dashed px-4 py-3 text-sm transition ${
+      <input
+        id={`${name}-upload`}
+        type="file"
+        accept={accept}
+        multiple={multiple}
+        onChange={handle}
+        className="hidden"
+      />
+
+      <div
+        className={`rounded-xl border border-dashed px-4 py-3 text-sm transition ${
           shownError
             ? 'border-red-400/70 text-red-200'
-            : 'border-white/20 text-emerald-100/70 hover:border-gold-400/50 hover:text-gold-200'
+            : files.length
+              ? 'border-gold-400/35 bg-gold-400/5 text-emerald-100/80'
+              : 'border-white/20 text-emerald-100/70 hover:border-gold-400/50'
         }`}
       >
-        <span>📎 Choose file{multiple ? 's' : ''}</span>
-        <span className="ml-auto text-xs text-emerald-200/40">{accept} · max 5MB</span>
-        <input type="file" accept={accept} multiple={multiple} onChange={handle} className="hidden" />
-      </label>
-
-      {files.length > 0 && (
-        <ul className="mt-2 space-y-1">
-          {files.map((f, i) => (
-            <li
-              key={`${f.name}-${i}`}
-              className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-1.5 text-xs text-emerald-100/80"
-            >
-              <span className="truncate">
-                {f.name}{' '}
-                <span className="text-emerald-200/40">({(f.size / 1024).toFixed(0)} KB)</span>
-              </span>
-              <button
-                type="button"
-                onClick={() => remove(i)}
-                className="ml-2 shrink-0 text-emerald-200/60 transition hover:text-red-300"
-              >
-                ✕
-              </button>
+        {files.length === 0 ? (
+          <label
+            htmlFor={`${name}-upload`}
+            className="flex cursor-pointer items-center gap-2 transition hover:text-gold-200"
+          >
+            <span>📎 Choose file{multiple ? 's' : ''}</span>
+            <span className="ml-auto text-xs text-emerald-200/40">{accept} · max 5MB</span>
+          </label>
+        ) : (
+          <ul className="space-y-2">
+            {files.map((f, i) => (
+              <li key={`${f.name}-${i}`} className="flex min-w-0 items-center gap-3">
+                <span aria-hidden className="shrink-0 text-gold-300">📄</span>
+                <span className="min-w-0 flex-1 truncate text-xs">
+                  {f.name}{' '}
+                  <span className="text-emerald-200/40">({(f.size / 1024).toFixed(0)} KB)</span>
+                </span>
+                <span className="flex shrink-0 items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => view(f)}
+                    className="font-medium text-gold-300 transition hover:text-gold-200 hover:underline"
+                  >
+                    View
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => remove(i)}
+                    aria-label={`Remove ${f.name}`}
+                    className="text-emerald-200/60 transition hover:text-red-300"
+                  >
+                    ✕
+                  </button>
+                </span>
+              </li>
+            ))}
+            <li className="border-t border-white/10 pt-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-[11px] text-emerald-200/50">
+                  Ready — stored in the database when the project is created.
+                </span>
+                <label
+                  htmlFor={`${name}-upload`}
+                  className="cursor-pointer text-xs font-medium text-emerald-200/70 transition hover:text-gold-200 hover:underline"
+                >
+                  {multiple ? '+ Add more files' : '↻ Replace file'}
+                </label>
+              </div>
             </li>
-          ))}
-        </ul>
-      )}
+          </ul>
+        )}
+      </div>
 
       {shownError && <p className="mt-1.5 text-xs text-red-300">{shownError}</p>}
     </div>

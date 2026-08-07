@@ -209,13 +209,28 @@ const DraftEditor = ({ draft, nic, onSubmit, onSaved, onCancel }: DraftEditorPro
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-white">{u.label}</p>
                     {chosen ? (
-                      <p className="mt-0.5 truncate text-xs text-gold-200">📎 {chosen.name}</p>
+                      <div className="mt-0.5 flex min-w-0 items-center gap-2 text-xs text-gold-200">
+                        <span className="truncate">📎 {chosen.name}</span>
+                        <button
+                          type="button"
+                          className="shrink-0 font-medium underline hover:text-gold-100"
+                          onClick={() => {
+                            const url = URL.createObjectURL(chosen)
+                            window.open(url, '_blank', 'noopener,noreferrer')
+                            window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
+                          }}
+                        >
+                          View
+                        </button>
+                      </div>
                     ) : existing && draft ? (
                       <a
                         href={draftFileUrl(draft.id, u.name)}
+                        target="_blank"
+                        rel="noreferrer"
                         className="mt-0.5 inline-flex items-center gap-1 text-xs text-gold-200 underline"
                       >
-                        📎 {existing}
+                        📎 {existing} · View
                       </a>
                     ) : null}
                   </div>

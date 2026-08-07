@@ -48,9 +48,11 @@ const DocumentRow = ({ nic, projectId, doc, uploaded, onUpload }: DocumentRowPro
         {uploaded?.fileName && (
           <a
             href={documentUrl(nic, projectId, doc.key)}
+            target="_blank"
+            rel="noreferrer"
             className="mt-0.5 inline-flex items-center gap-1 text-xs text-gold-200 underline"
           >
-            📎 {uploaded.fileName}
+            📎 {uploaded.fileName} · View
           </a>
         )}
         {error && <p className="mt-0.5 text-xs text-red-300">{error}</p>}
