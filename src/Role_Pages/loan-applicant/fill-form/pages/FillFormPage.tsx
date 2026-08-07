@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Card from '@/Common_Pages/components/ui/Card'
 import Button from '@/Common_Pages/components/ui/Button'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
+import { useSessionState } from '@/Common_Pages/hooks/useSessionState'
 import FieldRenderer from '@/Role_Pages/coordinator/new-project/components/FieldRenderer'
 import { validateField } from '@/Role_Pages/coordinator/new-project/validation/validateField'
 import { projectSections } from '@/Role_Pages/coordinator/new-project/constants/projectFields'
@@ -26,8 +27,14 @@ const buildEmptyValues = (): ProjectValues => {
 const FillFormPage = () => {
   const { user } = useAuth()
   const nic = user?.userId ?? '' // a loan applicant's user_id is their NIC
+  const draftKey = `fillForm:${nic}`
+  const hadLocalDraft = useRef(
+    typeof sessionStorage !== 'undefined' && sessionStorage.getItem(draftKey) !== null,
+  )
 
-  const [values, setValues] = useState<ProjectValues>(buildEmptyValues())
+  // Keep unsaved typing across refreshes. The key includes the applicant NIC,
+  // so drafts can never leak between accounts using the same browser tab.
+  const [values, setValues] = useSessionState<ProjectValues>(draftKey, buildEmptyValues())
   const [errors, setErrors] = useState<ProjectErrors>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -37,10 +44,15 @@ const FillFormPage = () => {
   useEffect(() => {
     if (!nic) return
     getProjectDetailsDraft(nic).then((res) => {
-      if (res.form) setValues({ ...buildEmptyValues(), ...res.form.data })
+      // A local draft is newer than the last explicit server save, so never
+      // overwrite it during page startup. With no local draft, initialise from
+      // the applicant's most recently saved server version.
+      if (res.form && !hadLocalDraft.current) {
+        setValues({ ...buildEmptyValues(), ...res.form.data })
+      }
       setLoading(false)
     })
-  }, [nic])
+  }, [nic, setValues])
 
   const onChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
