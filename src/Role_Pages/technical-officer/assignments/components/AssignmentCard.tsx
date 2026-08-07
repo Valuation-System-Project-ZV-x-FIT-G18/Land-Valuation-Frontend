@@ -49,8 +49,6 @@ const AssignmentCard = ({ a }: { a: Assignment }) => {
         <div className="sm:col-span-2">
           <Detail label="Address" value={a.location.address} />
         </div>
-        <Detail label="GN Division" value={a.location.gnDivision} />
-        <Detail label="DS Division" value={a.location.dsDivision} />
         <Detail label="District" value={a.location.district} />
         <Detail label="Province" value={a.location.province} />
         {hasCoords && (
@@ -72,12 +70,6 @@ const AssignmentCard = ({ a }: { a: Assignment }) => {
         <Detail label="NIC" value={a.owner.nic} />
         <Detail label="Phone" value={a.owner.phone} />
         <Detail label="Email" value={a.owner.email} />
-        <div className="sm:col-span-2">
-          <Detail label="Owner (as per deed)" value={a.owner.nameAsPerDeed} />
-        </div>
-        <div className="sm:col-span-2">
-          <Detail label="Address" value={a.owner.address} />
-        </div>
       </Section>
     </Card>
   )

@@ -48,6 +48,10 @@ const ValuationAssignRow = ({ valuation: v, officers, onAssign }: Props) => {
       setError('Choose an officer, a date and a time.')
       return
     }
+    if (time < '08:00' || time > '17:00') {
+      setError('Visit time must be between 8:00 AM and 5:00 PM.')
+      return
+    }
     setError('')
     setSubmitting(true)
     const res = await onAssign(toId, date, time)
@@ -116,9 +120,14 @@ const ValuationAssignRow = ({ valuation: v, officers, onAssign }: Props) => {
             label="Visit Time"
             name={`time-${v.rowId}`}
             type="time"
+            min="08:00"
+            max="17:00"
             value={time}
             onChange={(e) => { setTime(e.target.value); setError('') }}
           />
+          <p className="-mt-2 text-xs text-emerald-200/60 sm:col-start-2">
+            Available hours: 8:00 AM–5:00 PM
+          </p>
           {error && <p className="text-sm text-red-300 sm:col-span-2">{error}</p>}
           <div className="sm:col-span-2">
             <Button type="button" fullWidth disabled={submitting} onClick={submit}>
