@@ -17,7 +17,6 @@ import SettingsPage from '@/Home_Pages/settings/pages/SettingsPage'
 import AddRolePage from '@/Role_Pages/admin/add-role/pages/AddRolePage'
 import UserDetailsPage from '@/Role_Pages/admin/user-details/pages/UserDetailsPage'
 import MessagesPage from '@/Home_Pages/messages/pages/MessagesPage'
-import FormRequestPage from '@/Home_Pages/messages/pages/FormRequestPage'
 import NewRequestsPage from '@/Role_Pages/coordinator/website-inbox/pages/NewRequestsPage'
 import ContactMessagesPage from '@/Role_Pages/coordinator/website-inbox/pages/ContactMessagesPage'
 import DocumentsPage from '@/Role_Pages/loan-applicant/documents/pages/DocumentsPage'
@@ -73,7 +72,6 @@ const App = () => {
             <Route path="/admin/user-details" element={<UserDetailsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/messages" element={<MessagesPage />} />
-            <Route path="/messages/form/:formId" element={<FormRequestPage />} />
             <Route path="/applicant/documents" element={<DocumentsPage />} />
             <Route
               path="/technical-officer/assignments"

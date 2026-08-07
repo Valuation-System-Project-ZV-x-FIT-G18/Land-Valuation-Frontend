@@ -119,10 +119,6 @@ const MessagesPage = () => {
               messages={messages}
               onSend={handleSend}
               onBack={() => setActive(null)}
-              onFormSent={async () => {
-                await loadConversation()
-                loadThreads()
-              }}
             />
           ) : (
             <Card className="flex h-[70vh] items-center justify-center p-8 text-center">
