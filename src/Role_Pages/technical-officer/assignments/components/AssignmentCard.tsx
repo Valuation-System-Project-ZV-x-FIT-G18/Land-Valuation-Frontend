@@ -1,5 +1,6 @@
 import Card from '@/Common_Pages/components/ui/Card'
 import StatusBadge from '@/Role_Pages/coordinator/project-status/components/StatusBadge'
+import MiniMap from '@/Role_Pages/technical-officer/mapping/components/MiniMap'
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 
 // A small labeled definition list used within a card section.
@@ -20,9 +21,11 @@ const Section = ({ icon, title, children }: { icon: string; title: string; child
 )
 
 const AssignmentCard = ({ a }: { a: Assignment }) => {
-  const hasCoords = a.location.latitude && a.location.longitude
+  const lat = Number(a.location.latitude)
+  const lng = Number(a.location.longitude)
+  const hasCoords = Number.isFinite(lat) && Number.isFinite(lng)
   const mapUrl = hasCoords
-    ? `https://www.google.com/maps?q=${a.location.latitude},${a.location.longitude}`
+    ? `https://www.google.com/maps?q=${lat},${lng}`
     : ''
 
   return (
@@ -55,11 +58,16 @@ const AssignmentCard = ({ a }: { a: Assignment }) => {
           <div className="sm:col-span-2">
             <dt className="text-xs uppercase tracking-wide text-emerald-200/50">Coordinates</dt>
             <dd className="text-sm font-medium text-white">
-              {a.location.latitude}, {a.location.longitude}{' '}
+              {lat.toFixed(5)}, {lng.toFixed(5)}{' '}
               <a href={mapUrl} target="_blank" rel="noreferrer" className="ml-1 text-gold-200 underline">
                 Open in Maps ↗
               </a>
             </dd>
+          </div>
+        )}
+        {hasCoords && (
+          <div className="sm:col-span-2">
+            <MiniMap lat={lat} lng={lng} variant="satellite" zoom={18} />
           </div>
         )}
       </Section>

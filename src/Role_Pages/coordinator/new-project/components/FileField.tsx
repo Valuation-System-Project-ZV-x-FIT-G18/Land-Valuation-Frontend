@@ -14,9 +14,23 @@ type FileFieldProps = {
   onChange: (name: string, files: File[]) => void
   multiple?: boolean
   error?: string
+  existingFileName?: string
+  existingFileUrl?: string
+  onRemoveExisting?: (name: string) => void
 }
 
-const FileField = ({ label, name, accept, files, onChange, multiple, error }: FileFieldProps) => {
+const FileField = ({
+  label,
+  name,
+  accept,
+  files,
+  onChange,
+  multiple,
+  error,
+  existingFileName,
+  existingFileUrl,
+  onRemoveExisting,
+}: FileFieldProps) => {
   const [localError, setLocalError] = useState('')
 
   const handle = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,6 +130,33 @@ const FileField = ({ label, name, accept, files, onChange, multiple, error }: Fi
           </ul>
         )}
       </div>
+
+      {files.length === 0 && existingFileName && (
+        <div className="mt-2 flex items-center justify-between rounded-lg border border-gold-400/20 bg-gold-400/10 px-3 py-1.5 text-xs text-gold-100">
+          <span className="min-w-0 truncate">
+            Attached by applicant: <span className="font-medium">{existingFileName}</span>
+          </span>
+          {existingFileUrl && (
+            <a
+              href={existingFileUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="ml-2 shrink-0 underline transition hover:text-white"
+            >
+              View
+            </a>
+          )}
+          {onRemoveExisting && (
+            <button
+              type="button"
+              onClick={() => onRemoveExisting(name)}
+              className="ml-2 shrink-0 text-gold-100/70 transition hover:text-red-300"
+            >
+              Remove
+            </button>
+          )}
+        </div>
+      )}
 
       {shownError && <p className="mt-1.5 text-xs text-red-300">{shownError}</p>}
     </div>
