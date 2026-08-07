@@ -2,6 +2,8 @@ import FormField from '@/Common_Pages/components/ui/FormField'
 import SelectField from '@/Common_Pages/components/ui/SelectField'
 import type { FieldConfig, ProjectValues } from '@/Role_Pages/coordinator/new-project/types/new-project'
 
+const today = new Date().toISOString().slice(0, 10)
+
 // Renders a single form field from its config:
 // text / number / date / textarea -> FormField, select -> SelectField.
 
@@ -59,6 +61,7 @@ const FieldRenderer = ({ field, value, values, error, onChange, onBlur }: FieldR
       onBlur={onBlur}
       error={error}
       placeholder={field.placeholder}
+      max={field.type === 'date' ? today : undefined}
     />
   )
 }
