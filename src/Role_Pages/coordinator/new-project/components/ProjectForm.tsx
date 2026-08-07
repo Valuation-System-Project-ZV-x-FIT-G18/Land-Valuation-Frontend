@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import { searchApplicantByNic } from '@/Role_Pages/coordinator/create-project/api/create-project'
-import { getProjectDetailsDraft } from '@/Role_Pages/loan-applicant/fill-form/api/fill-form'
+import { listDrafts, markDraftUsed, type ProjectDetailsDraft } from '@/Role_Pages/loan-applicant/fill-form/api/fill-form'
 import { useSessionState } from '@/Common_Pages/hooks/useSessionState'
 import { useSessionFiles, clearSessionFiles } from '@/Common_Pages/hooks/useSessionFiles'
 import Button from '@/Common_Pages/components/ui/Button'
@@ -56,6 +56,10 @@ const isVisible = (
   values: ProjectValues,
 ) => !dependsOn || values[dependsOn.field] === dependsOn.value
 
+// A short line to tell an applicant's drafts apart at a glance.
+const summarizeDraft = (data: Record<string, string>) =>
+  [data.propertyNumber, data.streetName, data.villageTown].filter(Boolean).join(', ')
+
 type ProjectFormProps = { onDone: (projectId: string, nic: string) => void }
 
 const ProjectForm = ({ onDone }: ProjectFormProps) => {
@@ -69,12 +73,28 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
   const [values, setValues] = useSessionState<ProjectValues>('createProject:values', buildEmptyValues())
   const [files, setFiles] = useSessionFiles('createProject:files', buildEmptyFiles())
 
-  // Start a NEW project's form with whatever this applicant has already sent
-  // in via their own "Fill Form" page, if anything — still fully editable,
-  // this is just a starting point. Falls back to an empty form.
-  const fillFromApplicant = async (nic: string) => {
-    const res = await getProjectDetailsDraft(nic)
-    setValues(res.form ? { ...buildEmptyValues(), ...res.form.data } : buildEmptyValues())
+  // The applicant's own submitted drafts (Fill Form) — an applicant can have
+  // more than one property, so this is a picker, not a blind auto-fill. The
+  // one actually used only gets marked "Used" once the project is created.
+  const [applicantDrafts, setApplicantDrafts] = useState<ProjectDetailsDraft[]>([])
+  const [selectedDraftId, setSelectedDraftId] = useSessionState<number | null>('createProject:draftId', null)
+  const [showDraftPicker, setShowDraftPicker] = useState(false)
+
+  const loadApplicantDrafts = async (nic: string) => {
+    const res = await listDrafts(nic)
+    setApplicantDrafts(res.drafts)
+    setShowDraftPicker(res.drafts.length > 0)
+  }
+
+  const useDraft = (draft: ProjectDetailsDraft) => {
+    setValues({ ...buildEmptyValues(), ...draft.data })
+    setSelectedDraftId(draft.id)
+    setShowDraftPicker(false)
+  }
+  const startBlank = () => {
+    setValues(buildEmptyValues())
+    setSelectedDraftId(null)
+    setShowDraftPicker(false)
   }
 
   // Arriving from Register Applicant / applicant search passes a NIC — a NEW project.
@@ -82,7 +102,9 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
     const incoming = (location.state as { nic?: string } | null)?.nic
     if (!incoming) return
     setApplicantNic(incoming)
-    fillFromApplicant(incoming)
+    setValues(buildEmptyValues())
+    setSelectedDraftId(null)
+    loadApplicantDrafts(incoming)
     searchApplicantByNic(incoming).then((res) => setOwnerName(res.found ? res.applicant?.name ?? '' : ''))
     navigate(location.pathname, { replace: true }) // consume the state so a refresh keeps the session
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -172,8 +194,13 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
     setSubmitting(false)
     if (!res.ok) return setServerError(res.error ?? 'Could not create the project.')
 
+    // Only now — the project actually got created — mark the applicant's
+    // draft (if one was used) as used, so it won't get offered again for an
+    // unrelated later project.
+    if (selectedDraftId != null) void markDraftUsed(selectedDraftId)
+
     // Clear persisted data, then hand the id + NIC to the success popup.
-    ;['createProject:nic', 'createProject:owner', 'createProject:values'].forEach((k) =>
+    ;['createProject:nic', 'createProject:owner', 'createProject:values', 'createProject:draftId'].forEach((k) =>
       sessionStorage.removeItem(k),
     )
     clearSessionFiles('createProject:files')
@@ -215,6 +242,16 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
               <span className="text-emerald-200/60">· NIC {applicantNic}</span>
             </p>
             <div className="flex gap-3">
+              {applicantDrafts.length > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="!px-5 !py-2.5 text-sm"
+                  onClick={() => setShowDraftPicker((v) => !v)}
+                >
+                  {showDraftPicker ? 'Hide' : `Applicant's forms (${applicantDrafts.length})`}
+                </Button>
+              )}
               {existingProjects.length > 0 && (
                 <Button
                   type="button"
@@ -238,6 +275,49 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
               </Button>
             </div>
           </div>
+
+          {showDraftPicker && applicantDrafts.length > 0 && (
+            <div className="mt-4 space-y-2 border-t border-white/10 pt-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-emerald-200/60">
+                This applicant sent in the following — pick one to start from (still fully
+                editable), or fill the form in yourself below.
+              </p>
+              {applicantDrafts.map((d) => (
+                <div
+                  key={d.id}
+                  className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2 ${
+                    selectedDraftId === d.id
+                      ? 'border-gold-400/50 bg-gold-400/10'
+                      : 'border-white/10 bg-white/5'
+                  }`}
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-white">
+                      {d.label || 'Untitled property'}
+                      {d.status === 'Used' && (
+                        <span className="ml-2 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-200">
+                          Used before
+                        </span>
+                      )}
+                    </p>
+                    <p className="truncate text-xs text-emerald-200/60">
+                      {summarizeDraft(d.data) || 'No details filled in'}
+                    </p>
+                  </div>
+                  <Button type="button" variant="outline" size="sm" onClick={() => useDraft(d)}>
+                    {selectedDraftId === d.id ? '✓ Selected' : 'Use this'}
+                  </Button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={startBlank}
+                className="text-xs text-emerald-200/60 underline hover:text-emerald-100"
+              >
+                Start with a blank form instead
+              </button>
+            </div>
+          )}
 
           {showProjects && existingProjects.length > 0 && (
             <div className="mt-4 space-y-1.5 border-t border-white/10 pt-4">
@@ -263,7 +343,9 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
           onConfirmed={(nic, name) => {
             setApplicantNic(nic)
             setOwnerName(name)
-            fillFromApplicant(nic) // start from whatever the applicant already sent in, if anything
+            setValues(buildEmptyValues()) // start empty; the draft picker offers a starting point
+            setSelectedDraftId(null)
+            loadApplicantDrafts(nic) // offer whatever this applicant already sent in, if anything
           }}
         />
       )}
