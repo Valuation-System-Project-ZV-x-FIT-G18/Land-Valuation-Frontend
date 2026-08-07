@@ -3,12 +3,8 @@ import { MapContainer, TileLayer, CircleMarker, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 
 // Read-only, zoomed view of the chosen location.
-//  - variant "satellite": free Esri World Imagery (no API key)
-//  - variant "map": OpenStreetMap street map
 type Props = { lat: number; lng: number; variant: 'satellite' | 'map'; zoom?: number }
 
-// MapContainer only reads center/zoom once, so keep the view in sync when the
-// selected coordinates change (otherwise the mini-map stays on the first spot).
 const Recenter = ({ lat, lng, zoom }: { lat: number; lng: number; zoom: number }) => {
   const map = useMap()
   useEffect(() => {
@@ -20,11 +16,13 @@ const Recenter = ({ lat, lng, zoom }: { lat: number; lng: number; zoom: number }
 const LAYERS = {
   satellite: {
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics',
+    attribution: 'Tiles &copy; Esri',
+    maxNativeZoom: 18,
   },
   map: {
     url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: '&copy; OpenStreetMap contributors',
+    maxNativeZoom: 19,
   },
 }
 
@@ -35,11 +33,21 @@ const MiniMap = ({ lat, lng, variant, zoom = 18 }: Props) => {
       center={[lat, lng]}
       zoom={zoom}
       scrollWheelZoom={false}
+      maxZoom={20}
       className="h-72 w-full overflow-hidden rounded-xl border border-white/15"
     >
-      <TileLayer attribution={layer.attribution} url={layer.url} maxZoom={variant === 'satellite' ? 20 : 19} />
+      <TileLayer
+        attribution={layer.attribution}
+        url={layer.url}
+        maxZoom={20}
+        maxNativeZoom={layer.maxNativeZoom}
+      />
       <Recenter lat={lat} lng={lng} zoom={zoom} />
-      <CircleMarker center={[lat, lng]} radius={10} pathOptions={{ color: '#E3C24A', fillColor: '#E3C24A', fillOpacity: 0.6 }} />
+      <CircleMarker
+        center={[lat, lng]}
+        radius={10}
+        pathOptions={{ color: '#E3C24A', fillColor: '#E3C24A', fillOpacity: 0.6 }}
+      />
     </MapContainer>
   )
 }

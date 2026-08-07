@@ -118,6 +118,7 @@ const MapPicker = ({ lat, lng, onPick }: MapPickerProps) => {
       <MapContainer
         center={[latNum, lngNum]}
         zoom={hasPoint ? 16 : 8}
+        maxZoom={20}
         scrollWheelZoom
         maxBounds={SRI_LANKA_BOUNDS}
         maxBoundsViscosity={0.8}
@@ -129,19 +130,22 @@ const MapPicker = ({ lat, lng, onPick }: MapPickerProps) => {
               attribution="Tiles &copy; Esri"
               url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
               maxZoom={20}
+              maxNativeZoom={18}
             />
             <TileLayer
               attribution="&copy; OpenStreetMap contributors"
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               opacity={0.28}
-              maxZoom={19}
+              maxZoom={20}
+              maxNativeZoom={19}
             />
           </>
         ) : (
           <TileLayer
             attribution="&copy; OpenStreetMap contributors"
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            maxZoom={19}
+            maxZoom={20}
+            maxNativeZoom={19}
           />
         )}
         <ClickCapture onPick={onPick} />
