@@ -33,7 +33,9 @@ const DocumentsPage = () => {
   }, [nic])
 
   const load = useCallback(async () => {
-    if (!nic || !projectId) { setLoading(false); return }
+    // No projectId ('') is valid — it's the "general" bucket used before a
+    // coordinator has created a project for this applicant yet.
+    if (!nic) { setLoading(false); return }
     setLoading(true)
     const res = await getDocuments(nic, projectId)
     const map: Record<string, UploadedDoc> = {}
@@ -94,14 +96,16 @@ const DocumentsPage = () => {
         </Card>
       )}
 
-      {projects.length === 0 ? (
-        <Card className="p-8 text-center">
-          <p className="font-semibold text-gold-200">No project yet</p>
-          <p className="mt-1 text-sm text-emerald-100/70">
-            Your documents will appear here once a coordinator creates a project for you.
+      {projects.length === 0 && (
+        <Card className="p-4 text-center">
+          <p className="text-sm text-emerald-100/70">
+            No project has been created for you yet — that&apos;s fine, go ahead and upload your
+            documents now. Your coordinator will review them and create a project for you.
           </p>
         </Card>
-      ) : loading ? (
+      )}
+
+      {loading ? (
         <p className="text-center text-sm text-emerald-200/60">Loading your documents…</p>
       ) : (
         documentSections.map((section) => (

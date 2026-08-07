@@ -1,13 +1,14 @@
-// Validation for a Sri Lankan mobile number in local format (e.g. 0771234567).
-// Must be 10 digits starting with "07". Returns an error message, or undefined.
+// Validation for a Sri Lankan mobile number (the 9-digit local part after
+// the fixed "+94" prefix, e.g. 771234567). Must be 9 digits starting 71-79.
+// Returns an error message, or undefined.
 
-const pattern = /^07\d{8}$/
+const pattern = /^7[1-9]\d{7}$/
 
 export function validateLocalPhone(value: string): string | undefined {
   const v = value.trim()
   if (!v) return 'Mobile number is required.'
   if (!pattern.test(v)) {
-    return 'Enter a valid mobile number: 10 digits starting 07 (e.g. 0771234567).'
+    return 'Enter a valid mobile number: 9 digits starting with 7 (e.g. 771234567).'
   }
   return undefined
 }

@@ -8,6 +8,7 @@ import FormField from '@/Common_Pages/components/ui/FormField'
 import SelectField from '@/Common_Pages/components/ui/SelectField'
 import PageHeader from '@/Common_Pages/components/ui/PageHeader'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
+import { useSessionState } from '@/Common_Pages/hooks/useSessionState'
 import { registerBank, type NewBank } from '@/Role_Pages/coordinator/register-bank/api/register-bank'
 import { validateBank, type BankErrors } from '@/Role_Pages/coordinator/register-bank/pages/validateBank'
 
@@ -41,7 +42,11 @@ const RegisterBankPage = () => {
   const location = useLocation()
   const incomingNic = (location.state as { nic?: string } | null)?.nic ?? ''
 
-  const [form, setForm] = useState<NewBank>(() => ({ ...empty, projectRef: incomingNic }))
+  // Survives a refresh, keyed per applicant/project so different registrations don't mix.
+  const [form, setForm] = useSessionState<NewBank>(
+    `registerBank:${incomingNic || 'new'}`,
+    { ...empty, projectRef: incomingNic },
+  )
   const [errors, setErrors] = useState<BankErrors>({})
   const [serverError, setServerError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -88,8 +93,12 @@ const RegisterBankPage = () => {
     setSubmitting(true)
     const res = await registerBank(form)
     setSubmitting(false)
-    if (res.ok) { setCreatedRef(form.projectRef); setDone(true); setForm(empty) }
-    else setServerError(res.error ?? 'Could not register the bank.')
+    if (res.ok) {
+      setCreatedRef(form.projectRef)
+      setDone(true)
+      setForm(empty)
+      sessionStorage.removeItem(`registerBank:${incomingNic || 'new'}`)
+    } else setServerError(res.error ?? 'Could not register the bank.')
   }
 
   const bankOptions = [{ value: '', label: 'Select a bank' }, ...banks.map((b) => ({ value: b, label: b }))]

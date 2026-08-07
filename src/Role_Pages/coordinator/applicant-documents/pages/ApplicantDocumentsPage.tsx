@@ -50,11 +50,12 @@ const ApplicantDocumentsPage = () => {
     const n = nic.trim()
     const res = await searchProjects(n)
     setProjects(res.projects)
+    // No project yet ('') is valid — it's the "general" bucket an applicant
+    // can upload to right after registering, before a project exists.
     const first = res.projects[0]?.projectId ?? ''
     setProjectId(first)
     setSearchedNic(n)
-    if (first) await loadDocs(n, first)
-    else setDocs([])
+    await loadDocs(n, first)
     setSearched(true)
     setLoading(false)
   }
@@ -109,12 +110,11 @@ const ApplicantDocumentsPage = () => {
 
       {notice && <SuccessBanner message={notice} />}
 
-      {searched && !loading && projects.length === 0 && (
-        <EmptyState
-          icon="📄"
-          title="No projects"
-          message="No project was found for this NIC."
-        />
+      {searched && !loading && projects.length === 0 && docs.length > 0 && (
+        <p className="text-center text-sm text-emerald-200/70">
+          No project has been created for this applicant yet — these are documents they uploaded
+          before a project existed.
+        </p>
       )}
 
       {projects.length > 1 && (
@@ -137,11 +137,11 @@ const ApplicantDocumentsPage = () => {
         </Card>
       )}
 
-      {searched && !loading && projects.length > 0 && docs.length === 0 && (
+      {searched && !loading && docs.length === 0 && (
         <EmptyState
           icon="📄"
           title="No documents"
-          message="This applicant hasn't uploaded any documents yet for this project."
+          message="This applicant hasn't uploaded any documents yet."
         />
       )}
 

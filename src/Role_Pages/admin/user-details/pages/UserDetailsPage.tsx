@@ -7,7 +7,11 @@ import GradientText from '@/Common_Pages/components/ui/GradientText'
 import Badge from '@/Common_Pages/components/ui/Badge'
 import Table from '@/Common_Pages/components/ui/Table'
 import Avatar from '@/Common_Pages/components/ui/Avatar'
+import ProvinceDistrictFields from '@/Common_Pages/components/ui/ProvinceDistrictFields'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
+import { validateNamePart } from '@/Common_Pages/validation/validateName'
+import { validateLocalPhone } from '@/Common_Pages/validation/validateLocalPhone'
+import { validateCity } from '@/Common_Pages/validation/validateCity'
 import {
   getUsers,
   updateUser,
@@ -55,7 +59,11 @@ const UserDetailsPage = () => {
     const [firstName, ...rest] = u.name.split(' ')
     setForm({
       firstName: firstName ?? '', lastName: rest.join(' '), email: u.email,
-      phone: u.phone, province: u.province, district: u.district, city: u.city,
+      // Strip the fixed "+94" prefix back off — the edit form's phone field
+      // only takes the 9-digit local part (the prefix is a fixed display
+      // element, re-added by the backend when the edit is saved).
+      phone: u.phone.replace(/^\+94/, ''),
+      province: u.province, district: u.district, city: u.city,
     })
     setErrors({})
     setEditing(u)
@@ -63,8 +71,14 @@ const UserDetailsPage = () => {
 
   const validate = (f: EditableUser) => {
     const found: Partial<Record<keyof EditableUser, string>> = {}
-    if (!f.firstName.trim()) found.firstName = 'First name is required.'
+    found.firstName = validateNamePart(f.firstName, 'First name')
+    if (f.lastName.trim()) found.lastName = validateNamePart(f.lastName, 'Last name')
     if (!emailOk(f.email)) found.email = 'Enter a valid email address.'
+    if (f.phone.trim()) found.phone = validateLocalPhone(f.phone)
+    if (f.city.trim()) found.city = validateCity(f.city)
+    ;(Object.keys(found) as (keyof EditableUser)[]).forEach((k) => {
+      if (!found[k]) delete found[k]
+    })
     return found
   }
 
@@ -177,8 +191,18 @@ const UserDetailsPage = () => {
               value={form[f.name]}
               onChange={(e) => setForm((p) => ({ ...p, [f.name]: e.target.value }))}
               error={errors[f.name]}
+              prefix={f.name === 'phone' ? '+94' : undefined}
+              maxLength={f.name === 'phone' ? 9 : undefined}
+              inputMode={f.name === 'phone' ? 'numeric' : undefined}
             />
           ))}
+          <ProvinceDistrictFields
+            province={form.province}
+            district={form.district}
+            onChange={(name, value) => setForm((p) => ({ ...p, [name]: value }))}
+            provinceError={errors.province}
+            districtError={errors.district}
+          />
           <Button type="submit" fullWidth loading={saving}>Save Changes</Button>
         </form>
       </Modal>

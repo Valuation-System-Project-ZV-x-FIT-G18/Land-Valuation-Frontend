@@ -13,12 +13,12 @@ const IdentityContactSection = ({ values, errors, onChange, onBlur }: SectionPro
     </div>
 
     <div className="grid gap-4 sm:grid-cols-2">
-      <FormField label="Mobile number *" name="phone" type="tel" inputMode="numeric" maxLength={10} value={values.phone} onChange={onChange} onBlur={onBlur} error={errors.phone} placeholder="e.g. 0771234567" />
+      <FormField label="Mobile number *" name="phone" type="tel" inputMode="numeric" prefix="+94" maxLength={9} value={values.phone} onChange={onChange} onBlur={onBlur} error={errors.phone} placeholder="e.g. 771234567" />
       <FormField label="Email *" name="email" type="email" value={values.email} onChange={onChange} onBlur={onBlur} error={errors.email} placeholder="e.g. name@gmail.com" />
     </div>
 
     <div className="grid gap-4 sm:grid-cols-2">
-      <FormField label="Password *" name="password" type="password" value={values.password} onChange={onChange} onBlur={onBlur} error={errors.password} placeholder="Min 8 characters" />
+      <FormField label="Password *" name="password" type="password" value={values.password} onChange={onChange} onBlur={onBlur} error={errors.password} placeholder="8+ chars, upper, lower, digit & symbol" />
       <FormField label="Confirm password *" name="confirmPassword" type="password" value={values.confirmPassword} onChange={onChange} onBlur={onBlur} error={errors.confirmPassword} placeholder="Re-enter password" />
     </div>
   </FormSection>

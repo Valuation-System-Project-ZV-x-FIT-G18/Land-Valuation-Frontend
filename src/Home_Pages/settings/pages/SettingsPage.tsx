@@ -4,12 +4,14 @@ import Button from '@/Common_Pages/components/ui/Button'
 import FormField from '@/Common_Pages/components/ui/FormField'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import Avatar from '@/Common_Pages/components/ui/Avatar'
+import ProvinceDistrictFields from '@/Common_Pages/components/ui/ProvinceDistrictFields'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import { getProfile, updateProfile, uploadAvatar } from '@/Home_Pages/settings/api/settings'
 import { validateSettings, type SettingsErrors } from '@/Home_Pages/settings/pages/validateSettings'
 import type { Profile } from '@/Home_Pages/settings/types/settings'
 
 // Editable personal fields (identity fields user_id / role / nic are read-only).
+// Province/District are rendered separately as a cascading select pair.
 const fields: { name: keyof Profile; label: string; type?: string }[] = [
   { name: 'firstName', label: 'First Name' },
   { name: 'lastName', label: 'Last Name' },
@@ -17,8 +19,6 @@ const fields: { name: keyof Profile; label: string; type?: string }[] = [
   { name: 'email', label: 'Email', type: 'email' },
   { name: 'phone', label: 'Phone' },
   { name: 'dateOfBirth', label: 'Date of Birth', type: 'date' },
-  { name: 'province', label: 'Province' },
-  { name: 'district', label: 'District' },
   { name: 'city', label: 'City' },
   { name: 'postalCode', label: 'Postal Code' },
   { name: 'address', label: 'Address' },
@@ -37,14 +37,36 @@ const SettingsPage = () => {
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Edits-in-progress survive a refresh (keyed per user, so accounts never mix).
+  const storageKey = user ? `settings:${user.userId}` : ''
+
   useEffect(() => {
     if (!user) return
+    let draft: Profile | null = null
+    try {
+      const saved = sessionStorage.getItem(storageKey)
+      if (saved) draft = JSON.parse(saved) as Profile
+    } catch {
+      /* ignore unreadable/corrupt draft */
+    }
+
     getProfile(user.userId).then((res) => {
-      if (res.profile) setProfile(res.profile)
+      if (res.profile) setProfile(draft ?? res.profile)
       else setServerError(res.error ?? 'Could not load your profile.')
       setLoading(false)
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
+
+  // Save every change so a refresh mid-edit doesn't lose it.
+  useEffect(() => {
+    if (!profile || !storageKey) return
+    try {
+      sessionStorage.setItem(storageKey, JSON.stringify(profile))
+    } catch {
+      /* ignore storage errors (e.g. private mode limits) */
+    }
+  }, [profile, storageKey])
 
   if (!user) return null
   if (loading) return <p className="text-center text-sm text-emerald-200/60">Loading your settings…</p>
@@ -156,7 +178,9 @@ const SettingsPage = () => {
       {/* Editable fields */}
       <Card className="p-6 sm:p-8">
         <form onSubmit={handleSave} noValidate className="grid gap-5 sm:grid-cols-2">
-          {fields.map((f) => (
+          {fields
+            .filter((f) => !(profile.role === 'Bank' && f.name === 'dateOfBirth'))
+            .map((f) => (
             <FormField
               key={f.name}
               label={f.label}
@@ -166,8 +190,19 @@ const SettingsPage = () => {
               onChange={(e) => set(f.name, e.target.value)}
               onBlur={handleBlur}
               error={errors[f.name]}
+              prefix={f.name === 'phone' ? '+94' : undefined}
+              maxLength={f.name === 'phone' ? 9 : undefined}
+              inputMode={f.name === 'phone' ? 'numeric' : undefined}
             />
           ))}
+
+          <ProvinceDistrictFields
+            province={profile.province ?? ''}
+            district={profile.district ?? ''}
+            onChange={(name, value) => set(name, value)}
+            provinceError={errors.province}
+            districtError={errors.district}
+          />
 
           {serverError && <p className="text-sm text-red-300 sm:col-span-2">{serverError}</p>}
           {notice && <p className="text-sm text-emerald-200 sm:col-span-2">{notice}</p>}

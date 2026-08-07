@@ -5,6 +5,7 @@ import Button from '@/Common_Pages/components/ui/Button'
 import FormField from '@/Common_Pages/components/ui/FormField'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
+import { validatePasswordStrength } from '@/Common_Pages/validation/validatePasswordStrength'
 import { submitChangePassword } from '@/Home_Pages/change-password/api/change-password'
 
 type PwErrors = { current?: string; next?: string; confirm?: string }
@@ -12,8 +13,8 @@ type PwErrors = { current?: string; next?: string; confirm?: string }
 function validatePw(current: string, next: string, confirm: string): PwErrors {
   const e: PwErrors = {}
   if (!current) e.current = 'Current password is required.'
-  if (!next) e.next = 'New password is required.'
-  else if (next.length < 8) e.next = 'New password must be at least 8 characters.'
+  const nextErr = validatePasswordStrength(next)
+  if (nextErr) e.next = nextErr
   else if (next === current) e.next = 'New password must differ from the current one.'
   if (!confirm) e.confirm = 'Please confirm your new password.'
   else if (confirm !== next) e.confirm = 'Passwords do not match.'
@@ -94,7 +95,7 @@ const ChangePasswordPage = () => {
             onChange={(e) => { setNext(e.target.value); setErrors((p) => ({ ...p, next: undefined, confirm: undefined })); setServerError('') }}
             onBlur={handleBlur}
             error={errors.next}
-            placeholder="At least 8 characters"
+            placeholder="8+ chars, upper, lower, digit & symbol"
           />
           <FormField
             label="Confirm New Password"

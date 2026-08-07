@@ -8,6 +8,9 @@ import { validateNIC } from '@/Common_Pages/validation/validateNIC'
 import { validateEmail } from '@/Common_Pages/validation/validateEmail'
 import { validateLocalPhone } from '@/Common_Pages/validation/validateLocalPhone'
 import { validateDateOfBirth } from '@/Common_Pages/validation/validateDateOfBirth'
+import { validatePasswordStrength } from '@/Common_Pages/validation/validatePasswordStrength'
+import { namePattern } from '@/Common_Pages/validation/validateName'
+import { useAutoField } from '@/Common_Pages/hooks/useAutoField'
 import { deriveName } from '@/Role_Pages/coordinator/register-applicant/lib/deriveName'
 import { registerApplicant } from '@/Role_Pages/coordinator/register-applicant/api/register-applicant'
 import NameSection from '@/Role_Pages/coordinator/register-applicant/components/sections/NameSection'
@@ -25,7 +28,7 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
 
   // Non-password fields persist on refresh; passwords are never stored.
   const [form, setForm] = useSessionState(storageKey, {
-    fullName: '', nic: initialNic, dateOfBirth: '', phone: '', email: '',
+    fullName: '', initials: '', nic: initialNic, dateOfBirth: '', phone: '', email: '',
   })
   const [pw, setPw] = useState({ password: '', confirmPassword: '' })
   const [errors, setErrors] = useState<RegisterErrors>({})
@@ -35,6 +38,14 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
 
   const values: RegisterApplicantValues = { ...form, ...pw }
 
+  // "Name with initials" defaults from the full name but stays editable —
+  // once the user types their own value, it stops auto-updating.
+  const { onManualChange: onInitialsChange } = useAutoField(
+    deriveName(values.fullName).nameWithInitials,
+    form.initials,
+    (v) => setForm((f) => ({ ...f, initials: v })),
+  )
+
   // Fill the form with sample data (testing helper). Keeps a NIC if one is
   // already set; otherwise generates a fresh 12-digit one to avoid clashes.
   const autoFill = () => {
@@ -43,7 +54,7 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
       fullName: 'Kamal Sunil Perera',
       nic: f.nic || '20' + String(Math.floor(1e9 + Math.random() * 9e9)),
       dateOfBirth: '1995-05-20',
-      phone: '0771234567',
+      phone: '771234567',
       email: 'test.applicant@example.com',
     }))
     setPw({ password: 'Password1', confirmPassword: 'Password1' })
@@ -57,7 +68,8 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
   ): string | undefined => {
     switch (name) {
       case 'fullName':
-        return deriveName(v.fullName).valid ? undefined : 'Enter the full name (first and last).'
+        if (!deriveName(v.fullName).valid) return 'Enter the full name (first and last).'
+        return namePattern.test(v.fullName.trim()) ? undefined : 'Name can only contain letters.'
       case 'nic':
         return validateNIC(v.nic)
       case 'dateOfBirth':
@@ -67,7 +79,7 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
       case 'phone':
         return validateLocalPhone(v.phone)
       case 'password':
-        return v.password.length < 8 ? 'Password must be at least 8 characters.' : undefined
+        return validatePasswordStrength(v.password)
       case 'confirmPassword':
         return v.confirmPassword !== v.password ? 'Passwords do not match.' : undefined
       default:
@@ -80,10 +92,12 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
   ) => {
     const name = e.target.name as keyof RegisterApplicantValues
     let value = e.target.value
-    if (name === 'phone') value = value.replace(/\D/g, '').slice(0, 10)
+    if (name === 'phone') value = value.replace(/\D/g, '').slice(0, 9)
 
     if (name === 'password' || name === 'confirmPassword') {
       setPw((p) => ({ ...p, [name]: value }))
+    } else if (name === 'initials') {
+      onInitialsChange(value) // mark as manually edited, so it stops auto-updating
     } else {
       setForm((f) => ({ ...f, [name]: value }))
     }
@@ -125,11 +139,11 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
     setErrors({})
     setServerError('')
     setSubmitting(true)
-    const { firstName, lastName, nameWithInitials } = deriveName(values.fullName)
+    const { firstName, lastName } = deriveName(values.fullName)
     const res = await registerApplicant({
       firstName,
       lastName,
-      initials: nameWithInitials,
+      initials: form.initials,
       nic: form.nic,
       dateOfBirth: form.dateOfBirth,
       email: form.email,

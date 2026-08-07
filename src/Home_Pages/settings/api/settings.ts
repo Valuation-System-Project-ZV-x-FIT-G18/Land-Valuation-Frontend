@@ -16,15 +16,25 @@ export async function getProfile(
   }
 }
 
-// Save profile changes to the users table.
+// Save profile changes to the users table. The backend's UpdateProfileDto
+// rejects any field it doesn't explicitly whitelist (role/nic/photoPath are
+// read-only there), so only send the fields it actually accepts.
 export async function updateProfile(
   profile: Profile,
 ): Promise<{ ok: boolean; profile?: Profile; error?: string }> {
+  const {
+    userId, firstName, lastName, initials, email, phone,
+    dateOfBirth, province, district, city, postalCode, address,
+  } = profile
+  const payload = {
+    userId, firstName, lastName, initials, email, phone,
+    dateOfBirth, province, district, city, postalCode, address,
+  }
   try {
     const res = await fetch('/api/auth/profile', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(profile),
+      body: JSON.stringify(payload),
     })
     const body = await res.json().catch(() => ({}) as Record<string, unknown>)
     if (res.ok && body.ok) return { ok: true, profile: body.profile as Profile }
