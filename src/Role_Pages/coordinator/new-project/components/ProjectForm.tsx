@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import { searchApplicantByNic } from '@/Role_Pages/coordinator/create-project/api/create-project'
-import { listDrafts, markDraftUsed, type ProjectDetailsDraft } from '@/Role_Pages/loan-applicant/fill-form/api/fill-form'
+import {
+  listDrafts,
+  markDraftUsed,
+  fetchDraftFile,
+  type ProjectDetailsDraft,
+} from '@/Role_Pages/loan-applicant/fill-form/api/fill-form'
 import { useSessionState } from '@/Common_Pages/hooks/useSessionState'
 import { useSessionFiles, clearSessionFiles } from '@/Common_Pages/hooks/useSessionFiles'
 import Button from '@/Common_Pages/components/ui/Button'
@@ -83,16 +88,42 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
   const loadApplicantDrafts = async (nic: string) => {
     const res = await listDrafts(nic)
     setApplicantDrafts(res.drafts)
-    setShowDraftPicker(res.drafts.length > 0)
+    // Open the picker when there's something to choose — but don't reopen it
+    // over a coordinator who has already picked one and is filling the form.
+    setShowDraftPicker(res.drafts.length > 0 && selectedDraftId == null)
   }
 
-  const useDraft = (draft: ProjectDetailsDraft) => {
+  // Loading a draft brings across BOTH the typed details and the documents
+  // the applicant already attached — they shouldn't have to send a PDF twice,
+  // and the coordinator shouldn't have to re-upload it. Everything stays
+  // editable/replaceable afterwards.
+  const [loadingDraftFiles, setLoadingDraftFiles] = useState(false)
+
+  const useDraft = async (draft: ProjectDetailsDraft) => {
     setValues({ ...buildEmptyValues(), ...draft.data })
     setSelectedDraftId(draft.id)
     setShowDraftPicker(false)
+
+    const attached = draft.files ?? []
+    if (!attached.length) {
+      setFiles(buildEmptyFiles())
+      return
+    }
+    setLoadingDraftFiles(true)
+    const fetched = await Promise.all(
+      attached.map((f) => fetchDraftFile(draft.id, f.docType, f.fileName)),
+    )
+    const next = buildEmptyFiles()
+    attached.forEach((f, i) => {
+      const file = fetched[i]
+      if (file && next[f.docType]) next[f.docType] = [file]
+    })
+    setFiles(next)
+    setLoadingDraftFiles(false)
   }
   const startBlank = () => {
     setValues(buildEmptyValues())
+    setFiles(buildEmptyFiles())
     setSelectedDraftId(null)
     setShowDraftPicker(false)
   }
@@ -103,8 +134,9 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
     if (!incoming) return
     setApplicantNic(incoming)
     setValues(buildEmptyValues())
+    setFiles(buildEmptyFiles()) // never carry a previous applicant's documents over
     setSelectedDraftId(null)
-    loadApplicantDrafts(incoming)
+    // The applicant's submitted forms load via the effect keyed on applicantNic.
     searchApplicantByNic(incoming).then((res) => setOwnerName(res.found ? res.applicant?.name ?? '' : ''))
     navigate(location.pathname, { replace: true }) // consume the state so a refresh keeps the session
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -127,6 +159,18 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
       .then((r) => r.json())
       .then((body) => setExistingProjects((body.projects ?? []).filter((p: { nic: string }) => p.nic === applicantNic)))
       .catch(() => setExistingProjects([]))
+  }, [applicantNic])
+
+  // Keep the applicant's submitted forms available whenever an applicant is
+  // set — including after a refresh, where the confirmed NIC is restored from
+  // the session but this list isn't.
+  useEffect(() => {
+    if (!applicantNic) {
+      setApplicantDrafts([])
+      return
+    }
+    loadApplicantDrafts(applicantNic)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applicantNic])
 
   const locked = !applicantNic
@@ -302,9 +346,16 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
                     </p>
                     <p className="truncate text-xs text-emerald-200/60">
                       {summarizeDraft(d.data) || 'No details filled in'}
+                      {d.files?.length ? ` · 📎 ${d.files.length} document(s)` : ''}
                     </p>
                   </div>
-                  <Button type="button" variant="outline" size="sm" onClick={() => useDraft(d)}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={loadingDraftFiles}
+                    onClick={() => void useDraft(d)}
+                  >
                     {selectedDraftId === d.id ? '✓ Selected' : 'Use this'}
                   </Button>
                 </div>
@@ -344,8 +395,9 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
             setApplicantNic(nic)
             setOwnerName(name)
             setValues(buildEmptyValues()) // start empty; the draft picker offers a starting point
+            setFiles(buildEmptyFiles()) // never carry a previous applicant's documents over
             setSelectedDraftId(null)
-            loadApplicantDrafts(nic) // offer whatever this applicant already sent in, if anything
+            // Their submitted forms load via the effect keyed on applicantNic.
           }}
         />
       )}

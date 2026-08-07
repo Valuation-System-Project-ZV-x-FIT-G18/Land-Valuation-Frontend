@@ -108,6 +108,24 @@ export function draftFileUrl(draftId: number, docType: string): string {
   return `/api/applicant/project-details/file?draftId=${draftId}&docType=${encodeURIComponent(docType)}`
 }
 
+// Pull a draft's document down as a real File, so the coordinator's Create
+// Project form can submit it as if they'd picked it themselves — the
+// applicant shouldn't have to send a document twice.
+export async function fetchDraftFile(
+  draftId: number,
+  docType: string,
+  fileName: string,
+): Promise<File | null> {
+  try {
+    const res = await fetch(draftFileUrl(draftId, docType))
+    if (!res.ok) return null
+    const blob = await res.blob()
+    return new File([blob], fileName || `${docType}.pdf`, { type: blob.type })
+  } catch {
+    return null
+  }
+}
+
 // Coordinator calls this once a project has actually been created from the
 // draft, so it isn't silently reused for a later, unrelated project.
 export async function markDraftUsed(id: number): Promise<{ ok: boolean }> {
