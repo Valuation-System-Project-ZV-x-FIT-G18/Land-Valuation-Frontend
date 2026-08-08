@@ -44,6 +44,7 @@ import RejectedOfficersPage from '@/Role_Pages/coordinator/fleet-management/page
 import TOAttendancePage from '@/Role_Pages/technical-officer/attendance/pages/TOAttendancePage'
 import FleetSummaryPage from '@/Role_Pages/coordinator/fleet-management/pages/FleetSummaryPage'
 import AssignOfficersPage from '@/Role_Pages/coordinator/fleet-management/pages/AssignOfficersPage'
+import TOAttendanceReviewPage from '@/Role_Pages/coordinator/fleet-management/pages/TOAttendanceReviewPage'
 
 // Defines every URL and which page component it shows.
 // Layout (header, footer, background, login popup) wraps all pages.
@@ -181,6 +182,10 @@ const App = () => {
             <Route
               path="/coordinator/fleet-management/assign"
               element={<AssignOfficersPage />}
+            />
+            <Route
+              path="/coordinator/fleet-management/attendance"
+              element={<TOAttendanceReviewPage />}
             />
             <Route path="/coordinator/rejected-officers" element={<RejectedOfficersPage />} />
           </Route>
