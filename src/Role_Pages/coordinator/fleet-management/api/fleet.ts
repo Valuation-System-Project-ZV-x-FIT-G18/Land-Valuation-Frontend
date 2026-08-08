@@ -133,7 +133,10 @@ export async function markLeave(
       body: JSON.stringify({ toId, reason, date }),
     })
     const body = await res.json().catch(() => ({}))
-    return res.ok && body.ok ? { ok: true } : { ok: false, error: body.error || 'Could not mark leave.' }
+    const message = Array.isArray(body.message) ? body.message.join(' ') : body.message
+    return res.ok && body.ok
+      ? { ok: true }
+      : { ok: false, error: body.error || message || 'Could not mark leave.' }
   } catch {
     return { ok: false, error: 'Could not reach the server. Please try again.' }
   }

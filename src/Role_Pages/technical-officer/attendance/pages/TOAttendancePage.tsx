@@ -16,8 +16,10 @@ const TOAttendancePage = () => {
   const { user } = useAuth()
   const toId = user?.userId ?? ''
 
+  const now = new Date()
+  const today = new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 10)
   const [leaves, setLeaves] = useState<LeaveEntry[]>([])
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
+  const [date, setDate] = useState(today)
   const [reason, setReason] = useState('')
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
@@ -29,6 +31,7 @@ const TOAttendancePage = () => {
 
   const submit = async () => {
     if (!date) return setError('Pick a date.')
+    if (date < today) return setError('Leave date cannot be before today.')
     if (leaves.some((leave) => leave.date === date)) {
       return setError('You have already marked leave for this date.')
     }
@@ -65,7 +68,7 @@ const TOAttendancePage = () => {
       <Card className="p-6 sm:p-8">
         <h3 className="mb-4 text-sm font-semibold text-gold-300">🗓️ Mark a leave day</h3>
         <div className="grid gap-4 sm:grid-cols-3">
-          <FormField label="Leave date" name="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <FormField label="Leave date" name="date" type="date" min={today} value={date} onChange={(e) => setDate(e.target.value)} />
           <div className="sm:col-span-2">
             <FormField label="Reason" name="reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Personal leave" />
           </div>
