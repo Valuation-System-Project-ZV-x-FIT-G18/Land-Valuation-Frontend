@@ -98,7 +98,8 @@ const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => 
       setLoc(l)
       // Only hydrate from the database the FIRST time (no session yet) so we
       // never clobber unsaved edits kept across a refresh.
-      if (sessionStorage.getItem(k('hydrated')) === null) {
+      const hasSessionPoint = lat !== null && lng !== null
+      if (sessionStorage.getItem(k('hydrated')) === null || (!hasSessionPoint && l.latitude !== null && l.longitude !== null)) {
         setPoint(l.latitude, l.longitude)
         setAccess(l.accessDescription || '')
         setLocality(l.localityDescription || '')

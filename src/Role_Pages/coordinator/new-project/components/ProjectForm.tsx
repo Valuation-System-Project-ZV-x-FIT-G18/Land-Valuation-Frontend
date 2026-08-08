@@ -457,6 +457,10 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
                     }))
                     setServerError('')
                   }}
+                  onTextChange={(latitude, longitude) => {
+                    setValues((v) => ({ ...v, latitude, longitude }))
+                    setServerError('')
+                  }}
                 />
               )}
             </div>
