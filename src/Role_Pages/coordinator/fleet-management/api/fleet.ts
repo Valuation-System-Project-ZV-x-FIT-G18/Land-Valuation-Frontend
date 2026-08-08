@@ -88,6 +88,23 @@ export async function acceptRejection(
   }
 }
 
+export async function acceptAssignment(
+  valuationRowId: number,
+  toId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch('/api/coordinator/fleet/accept-assignment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ valuationRowId, toId }),
+    })
+    const body = await res.json().catch(() => ({}))
+    return res.ok && body.ok ? { ok: true } : { ok: false, error: body.error || 'Could not accept.' }
+  } catch {
+    return { ok: false, error: 'Could not reach the server. Please try again.' }
+  }
+}
+
 // A technical officer rejects an assigned project (with a reason).
 export async function rejectAssignment(
   valuationRowId: number,

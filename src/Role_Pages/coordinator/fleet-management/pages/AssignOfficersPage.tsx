@@ -99,8 +99,8 @@ const AssignOfficersPage = () => {
       <FleetTable
         title="Assigned"
         icon="🛠️"
-        columns={[...baseCols, 'Project']}
-        rows={officers.assigned.map((o) => [...officerCells(o), o.projectId])}
+        columns={[...baseCols, 'Project', 'Status']}
+        rows={officers.assigned.map((o) => [...officerCells(o), o.projectId, o.status])}
         emptyText="No officers are currently assigned."
       />
       <FleetTable

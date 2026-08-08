@@ -14,6 +14,7 @@ export type AssignedOfficer = Officer & {
   projectId: string
   valuationRowId: number
   valuationId: number
+  status: string
 }
 
 export type LeaveOfficer = Officer & { reason: string }
