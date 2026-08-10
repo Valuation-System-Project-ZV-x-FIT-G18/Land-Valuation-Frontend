@@ -68,6 +68,7 @@ const OsmLocationPicker = ({
   const [error, setError] = useState('')
   const [flyTarget, setFlyTarget] = useState<FlyPoint | null>(null)
   const [satellite, setSatellite] = useState(initialView === 'satellite')
+  const mapZoom = satellite ? Math.min(zoom ?? (hasPoint ? 17 : 8), 17) : (zoom ?? (hasPoint ? 17 : 8))
 
   const focusPlace = (place: Place, keepResults = false) => {
     const nextLat = parseFloat(place.lat)
@@ -149,7 +150,7 @@ const OsmLocationPicker = ({
       {error && <p className="text-xs text-amber-300">{error}</p>}
       <MapContainer
         center={center}
-        zoom={zoom ?? (hasPoint ? 17 : 8)}
+        zoom={mapZoom}
         maxZoom={19}
         scrollWheelZoom={!readOnly}
         dragging={!readOnly}

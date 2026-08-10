@@ -12,13 +12,20 @@ import type { ContactFormData } from '@/Home_Pages/firstpage/types/home'
 
 const emptyForm: ContactFormData = { name: '', email: '', phone: '', message: '' }
 
+const toSriLankanLocalPhone = (value: string) => {
+  let digits = value.replace(/\D/g, '')
+  if (digits.startsWith('94')) digits = digits.slice(2)
+  if (digits.startsWith('0')) digits = digits.slice(1)
+  return digits.slice(0, 9)
+}
+
 const ContactForm = () => {
   const f = useForm<ContactFormData>({
     initialValues: emptyForm,
     validate: validateContact,
     onSubmit: submitContactMessage,
     storageKey: 'contactForm', // persist on refresh, clear on submit/close
-    transforms: { phone: (v) => v.replace(/\D/g, '').slice(0, 9) },
+    transforms: { phone: toSriLankanLocalPhone },
     successResetMs: 4000,
   })
 
@@ -73,13 +80,13 @@ const ContactForm = () => {
               name="phone"
               type="tel"
               prefix="+94"
-              maxLength={9}
+              maxLength={12}
               inputMode="numeric"
               value={f.values.phone}
               onChange={f.handleChange}
               onBlur={f.handleBlur}
               error={f.errors.phone}
-              placeholder="771234567"
+              placeholder="771234567 or 112345678"
             />
 
             <FormField

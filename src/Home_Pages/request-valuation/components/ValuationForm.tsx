@@ -17,13 +17,20 @@ const emptyForm: ValuationFormData = {
   message: '',
 }
 
+const toSriLankanLocalPhone = (value: string) => {
+  let digits = value.replace(/\D/g, '')
+  if (digits.startsWith('94')) digits = digits.slice(2)
+  if (digits.startsWith('0')) digits = digits.slice(1)
+  return digits.slice(0, 9)
+}
+
 const ValuationForm = () => {
   const f = useForm<ValuationFormData>({
     initialValues: emptyForm,
     validate: validateValuation,
     onSubmit: submitValuationRequest,
     storageKey: 'valuationForm', // persist on refresh, clear on submit/close
-    transforms: { phone: (v) => v.replace(/\D/g, '').slice(0, 9) },
+    transforms: { phone: toSriLankanLocalPhone },
     successResetMs: 4000,
   })
 
@@ -55,13 +62,13 @@ const ValuationForm = () => {
               name="phone"
               type="tel"
               prefix="+94"
-              maxLength={9}
+              maxLength={12}
               inputMode="numeric"
               value={f.values.phone}
               onChange={f.handleChange}
               onBlur={f.handleBlur}
               error={f.errors.phone}
-              placeholder="771234567"
+              placeholder="771234567 or 112345678"
             />
           </div>
 
