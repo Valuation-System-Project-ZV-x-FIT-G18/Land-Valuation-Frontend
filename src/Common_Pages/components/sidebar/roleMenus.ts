@@ -29,7 +29,7 @@ export const roleMenus: Record<string, SidebarItem[]> = {
     { label: 'Analyse Nearby Lands', to: '/technical-officer/nearby', icon: '🗺️' },
     { label: 'Generate Descriptions', to: '/technical-officer/descriptions', icon: '✨' },
     { label: 'Create Draft', to: '/technical-officer/draft', icon: '📄' },
-    { label: 'Corrections', to: '/technical-officer/corrections', icon: '📝' },
+    { label: 'Rejected Draft Report', to: '/technical-officer/corrections', icon: '📝' },
   ],
   'Manager L1': [
     { label: 'Check Drafts', to: '/manager/check-drafts', icon: '📑' },

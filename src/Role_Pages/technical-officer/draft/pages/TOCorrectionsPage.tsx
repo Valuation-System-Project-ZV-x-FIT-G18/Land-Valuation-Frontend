@@ -5,7 +5,7 @@ import DraftEditor from '@/Role_Pages/technical-officer/draft/components/DraftEd
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 
-// Technical Officer > Corrections.
+// Technical Officer > Rejected Draft Report.
 // Drafts a manager sent back (review_status = 'rejected_to_to'). The officer
 // opens one, sees the reason, fixes the report, and re-submits for the L3 check.
 const TOCorrectionsPage = () => {
@@ -21,10 +21,10 @@ const TOCorrectionsPage = () => {
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
-          <GradientText>Corrections</GradientText>
+          <GradientText>Rejected Draft Report</GradientText>
         </h1>
         <p className="mx-auto mt-2 max-w-md text-emerald-100/70">
-          Drafts sent back to you to fix. Open one, correct it, then save &amp; re-submit for the L3 check.
+          Rejected draft reports sent back to you to fix. Open one, correct it, then save &amp; re-submit for the L3 check.
         </p>
       </div>
       <ProjectValuationPicker
@@ -32,7 +32,7 @@ const TOCorrectionsPage = () => {
         actionLabel="Fix draft →"
         onSelect={setSelected}
         statusFilter={(a) => a.reviewStatus === 'rejected_to_to'}
-        emptyText="Nothing to fix — drafts sent back for corrections will appear here."
+        emptyText="Nothing to fix — rejected draft reports sent back to you will appear here."
       />
     </div>
   )
