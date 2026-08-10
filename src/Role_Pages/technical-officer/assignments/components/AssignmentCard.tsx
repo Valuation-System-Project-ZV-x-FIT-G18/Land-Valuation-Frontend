@@ -47,20 +47,27 @@ const AssignmentCard = ({ a }: { a: Assignment }) => {
         <Detail label="Time" value={a.time} />
       </Section>
 
-      <div className="mt-4 flex items-center justify-end">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            navigate('/technical-officer/inspections', {
-              state: { projectId: a.projectId, valuationId: a.valuationId },
-            })
-          }
-          className="!px-4 !py-2 text-sm"
-        >
-          Add Inspection →
-        </Button>
+      {/* Footer: short guide and CTA */}
+      <div className="mt-6 border-t border-white/8 pt-4 flex items-center justify-between gap-4">
+        <p className="text-sm text-emerald-200/60 max-w-md">
+          <strong className="text-emerald-100">Next:</strong> Add inspection, then add site photos and create the draft.
+          These help produce a complete report.
+        </p>
+        <div>
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            onClick={() =>
+              navigate('/technical-officer/inspections', {
+                state: { projectId: a.projectId, valuationId: a.valuationId },
+              })
+            }
+            className="!px-4 !py-2 text-sm"
+          >
+            Add Inspection →
+          </Button>
+        </div>
       </div>
 
       {/* Location */}
