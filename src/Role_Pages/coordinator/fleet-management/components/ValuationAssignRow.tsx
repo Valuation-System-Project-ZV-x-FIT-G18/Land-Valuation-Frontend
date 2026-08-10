@@ -13,6 +13,13 @@ type Props = {
   onAssign: (toId: string, date: string, time: string) => Promise<{ ok: boolean; error?: string }>
 }
 
+const localToday = () => {
+  const d = new Date()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${month}-${day}`
+}
+
 const ValuationAssignRow = ({ valuation: v, officers, onAssign }: Props) => {
   const [open, setOpen] = useState(false)
   const [toId, setToId] = useState('')
@@ -20,6 +27,7 @@ const ValuationAssignRow = ({ valuation: v, officers, onAssign }: Props) => {
   const [time, setTime] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const today = localToday()
 
   // Open the form. When changing an existing assignment, pre-fill the current
   // officer, date and time so only what needs changing is edited.
@@ -46,6 +54,14 @@ const ValuationAssignRow = ({ valuation: v, officers, onAssign }: Props) => {
   const submit = async () => {
     if (!toId || !date || !time) {
       setError('Choose an officer, a date and a time.')
+      return
+    }
+    if (date < today) {
+      setError('Visit date cannot be before today.')
+      return
+    }
+    if (time < '08:00' || time > '17:00') {
+      setError('Visit time must be between 8:00 AM and 5:00 PM.')
       return
     }
     setError('')
@@ -110,15 +126,21 @@ const ValuationAssignRow = ({ valuation: v, officers, onAssign }: Props) => {
             name={`date-${v.rowId}`}
             type="date"
             value={date}
+            min={today}
             onChange={(e) => { setDate(e.target.value); setError('') }}
           />
           <FormField
             label="Visit Time"
             name={`time-${v.rowId}`}
             type="time"
+            min="08:00"
+            max="17:00"
             value={time}
             onChange={(e) => { setTime(e.target.value); setError('') }}
           />
+          <p className="-mt-2 text-xs text-emerald-200/60 sm:col-start-2">
+            Available hours: 8:00 AM–5:00 PM
+          </p>
           {error && <p className="text-sm text-red-300 sm:col-span-2">{error}</p>}
           <div className="sm:col-span-2">
             <Button type="button" fullWidth disabled={submitting} onClick={submit}>

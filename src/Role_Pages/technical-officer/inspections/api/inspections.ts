@@ -5,9 +5,11 @@ export type InspectionData = Record<string, string>
 // Upload the handwritten form; returns OCR-extracted draft fields (not saved).
 export async function ocrInspection(
   file: File,
+  projectId: string,
 ): Promise<{ fields: InspectionData; rawText: string; ocrError?: string }> {
   try {
     const form = new FormData()
+    form.append('projectId', projectId)
     form.append('file', file)
     const res = await fetch('/api/technical-officer/inspections/ocr', {
       method: 'POST',

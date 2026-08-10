@@ -24,6 +24,7 @@ type FormFieldProps = {
   maxLength?: number
   inputMode?: 'text' | 'numeric' | 'tel' | 'email'
   readOnly?: boolean
+  min?: string
   max?: string
 }
 
@@ -46,6 +47,7 @@ const FormField = ({
   maxLength,
   inputMode,
   readOnly = false,
+  min,
   max,
 }: FormFieldProps) => {
   // Password fields get a show/hide (eye) toggle instead of staying masked.
@@ -104,6 +106,7 @@ const FormField = ({
             maxLength={maxLength}
             inputMode={inputMode}
             readOnly={readOnly}
+            min={min}
             max={max}
             className={`${field} ${readOnly ? 'cursor-default text-emerald-100/70' : ''}`}
           />

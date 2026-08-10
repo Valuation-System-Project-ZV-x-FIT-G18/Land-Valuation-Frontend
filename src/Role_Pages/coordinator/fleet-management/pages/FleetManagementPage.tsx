@@ -16,6 +16,12 @@ const cards = [
     title: 'Assign Technical Officers',
     text: 'Review officer availability and assign pending valuations with a visit date & time.',
   },
+  {
+    to: '/coordinator/fleet-management/attendance',
+    icon: '🗓️',
+    title: 'TO Attendance',
+    text: 'Review technical officer leave requests and approve or reject them before they affect availability.',
+  },
 ]
 
 const FleetManagementPage = () => {
@@ -32,7 +38,7 @@ const FleetManagementPage = () => {
         </p>
       </div>
 
-      <div className="mx-auto grid max-w-3xl gap-5 sm:grid-cols-2">
+      <div className="mx-auto grid max-w-5xl gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((c) => (
           <button
             key={c.to}

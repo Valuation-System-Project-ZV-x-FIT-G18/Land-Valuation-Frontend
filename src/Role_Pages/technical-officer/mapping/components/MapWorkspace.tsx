@@ -98,7 +98,8 @@ const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => 
       setLoc(l)
       // Only hydrate from the database the FIRST time (no session yet) so we
       // never clobber unsaved edits kept across a refresh.
-      if (sessionStorage.getItem(k('hydrated')) === null) {
+      const hasSessionPoint = lat !== null && lng !== null
+      if (sessionStorage.getItem(k('hydrated')) === null || (!hasSessionPoint && l.latitude !== null && l.longitude !== null)) {
         setPoint(l.latitude, l.longitude)
         setAccess(l.accessDescription || '')
         setLocality(l.localityDescription || '')
@@ -223,8 +224,8 @@ const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => 
           <Step n={3} title="Satellite view">
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <p className="mb-1 text-[11px] text-emerald-200/60">Close-up</p>
-                <MiniMap lat={lat as number} lng={lng as number} variant="satellite" zoom={19} />
+                <p className="mb-1 text-[11px] text-emerald-200/60">Property area</p>
+                <MiniMap lat={lat as number} lng={lng as number} variant="satellite" zoom={17} />
               </div>
               <div>
                 <p className="mb-1 text-[11px] text-emerald-200/60">Surrounding area</p>

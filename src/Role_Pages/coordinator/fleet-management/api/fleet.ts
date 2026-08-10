@@ -88,6 +88,23 @@ export async function acceptRejection(
   }
 }
 
+export async function acceptAssignment(
+  valuationRowId: number,
+  toId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch('/api/coordinator/fleet/accept-assignment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ valuationRowId, toId }),
+    })
+    const body = await res.json().catch(() => ({}))
+    return res.ok && body.ok ? { ok: true } : { ok: false, error: body.error || 'Could not accept.' }
+  } catch {
+    return { ok: false, error: 'Could not reach the server. Please try again.' }
+  }
+}
+
 // A technical officer rejects an assigned project (with a reason).
 export async function rejectAssignment(
   valuationRowId: number,
@@ -108,7 +125,8 @@ export async function rejectAssignment(
 }
 
 // Attendance: a marked leave day for an officer.
-export type LeaveEntry = { id: number; toId: string; name: string; reason: string; date: string }
+export type LeaveStatus = 'Pending' | 'Approved' | 'Rejected'
+export type LeaveEntry = { id: number; toId: string; name: string; reason: string; date: string; status: LeaveStatus }
 
 export async function getLeaves(toId = ''): Promise<LeaveEntry[]> {
   try {
@@ -133,7 +151,10 @@ export async function markLeave(
       body: JSON.stringify({ toId, reason, date }),
     })
     const body = await res.json().catch(() => ({}))
-    return res.ok && body.ok ? { ok: true } : { ok: false, error: body.error || 'Could not mark leave.' }
+    const message = Array.isArray(body.message) ? body.message.join(' ') : body.message
+    return res.ok && body.ok
+      ? { ok: true }
+      : { ok: false, error: body.error || message || 'Could not mark leave.' }
   } catch {
     return { ok: false, error: 'Could not reach the server. Please try again.' }
   }
@@ -152,3 +173,25 @@ export async function removeLeave(id: number): Promise<{ ok: boolean; error?: st
     return { ok: false, error: 'Could not reach the server. Please try again.' }
   }
 }
+
+async function reviewLeave(
+  endpoint: 'approve-leave' | 'reject-leave',
+  id: number,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch(`/api/coordinator/fleet/${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+    const body = await res.json().catch(() => ({}))
+    return res.ok && body.ok
+      ? { ok: true }
+      : { ok: false, error: body.error || 'Could not update leave request.' }
+  } catch {
+    return { ok: false, error: 'Could not reach the server. Please try again.' }
+  }
+}
+
+export const approveLeave = (id: number) => reviewLeave('approve-leave', id)
+export const rejectLeave = (id: number) => reviewLeave('reject-leave', id)

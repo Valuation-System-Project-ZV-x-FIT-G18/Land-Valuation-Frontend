@@ -11,7 +11,6 @@ export const valuationSections: SectionConfig[] = [
       { name: 'basisOfValuation', label: 'Basis of Valuation', type: 'select', options: ['Market Value', 'Forced Sale Value'], required: true },
       { name: 'valuationType', label: 'Valuation Type', type: 'select', options: ['New Valuation', 'Revaluation'], required: true },
       { name: 'linkPreviousProject', label: 'Link to Previous Project', placeholder: 'Previous project id', dependsOn: { field: 'valuationType', value: 'Revaluation' } },
-      { name: 'loanPurpose', label: 'Loan Purpose' },
       { name: 'priorityLevel', label: 'Priority Level', type: 'select', options: ['Normal', 'Urgent'] },
     ],
   },

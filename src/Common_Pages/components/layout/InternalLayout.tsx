@@ -3,6 +3,8 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import Sidebar from '@/Common_Pages/components/sidebar/Sidebar'
 import InternalTopbar from '@/Common_Pages/components/layout/InternalTopbar'
+import FormDraftPersistence from '@/Common_Pages/components/forms/FormDraftPersistence'
+import FloatingChatbot from '@/Common_Pages/chatbot/components/FloatingChatbot'
 
 // Which role each URL section belongs to. A user whose role doesn't match is
 // redirected away, so e.g. a Loan Applicant can't open /admin/... by URL.
@@ -44,6 +46,8 @@ const InternalLayout = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-green-900">
+      <FormDraftPersistence />
+      <FloatingChatbot />
       <Sidebar open={mobileOpen} onClose={() => setMobileOpen(false)} />
 
       {/* Content area, offset by the sidebar width on desktop */}

@@ -19,7 +19,6 @@ import UserDetailsPage from '@/Role_Pages/admin/user-details/pages/UserDetailsPa
 import MessagesPage from '@/Home_Pages/messages/pages/MessagesPage'
 import NewRequestsPage from '@/Role_Pages/coordinator/website-inbox/pages/NewRequestsPage'
 import ContactMessagesPage from '@/Role_Pages/coordinator/website-inbox/pages/ContactMessagesPage'
-import DocumentsPage from '@/Role_Pages/loan-applicant/documents/pages/DocumentsPage'
 import FillFormPage from '@/Role_Pages/loan-applicant/fill-form/pages/FillFormPage'
 import AssignedProjectsPage from '@/Role_Pages/technical-officer/assignments/pages/AssignedProjectsPage'
 import InspectionDataPage from '@/Role_Pages/technical-officer/inspections/pages/InspectionDataPage'
@@ -33,7 +32,6 @@ import ManagerDraftsPage from '@/Role_Pages/manager/drafts/pages/ManagerDraftsPa
 import ApprovedDraftsPage from '@/Role_Pages/manager/drafts/pages/ApprovedDraftsPage'
 import MakePaymentPage from '@/Role_Pages/client/pages/MakePaymentPage'
 import BankViewReportPage from '@/Role_Pages/client/pages/BankViewReportPage'
-import ApplicantDocumentsPage from '@/Role_Pages/coordinator/applicant-documents/pages/ApplicantDocumentsPage'
 import CreateProjectPage from '@/Role_Pages/coordinator/create-project/pages/CreateProjectPage'
 import RegisterApplicantPage from '@/Role_Pages/coordinator/register-applicant/pages/RegisterApplicantPage'
 import NewProjectPage from '@/Role_Pages/coordinator/new-project/pages/NewProjectPage'
@@ -46,6 +44,7 @@ import RejectedOfficersPage from '@/Role_Pages/coordinator/fleet-management/page
 import TOAttendancePage from '@/Role_Pages/technical-officer/attendance/pages/TOAttendancePage'
 import FleetSummaryPage from '@/Role_Pages/coordinator/fleet-management/pages/FleetSummaryPage'
 import AssignOfficersPage from '@/Role_Pages/coordinator/fleet-management/pages/AssignOfficersPage'
+import TOAttendanceReviewPage from '@/Role_Pages/coordinator/fleet-management/pages/TOAttendanceReviewPage'
 
 // Defines every URL and which page component it shows.
 // Layout (header, footer, background, login popup) wraps all pages.
@@ -73,7 +72,6 @@ const App = () => {
             <Route path="/admin/user-details" element={<UserDetailsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/messages" element={<MessagesPage />} />
-            <Route path="/applicant/documents" element={<DocumentsPage />} />
             <Route path="/applicant/fill-form" element={<FillFormPage />} />
             <Route
               path="/technical-officer/assignments"
@@ -142,10 +140,6 @@ const App = () => {
               element={<ContactMessagesPage />}
             />
             <Route
-              path="/coordinator/applicant-documents"
-              element={<ApplicantDocumentsPage />}
-            />
-            <Route
               path="/coordinator/create-project"
               element={<CreateProjectPage />}
             />
@@ -188,6 +182,10 @@ const App = () => {
             <Route
               path="/coordinator/fleet-management/assign"
               element={<AssignOfficersPage />}
+            />
+            <Route
+              path="/coordinator/fleet-management/attendance"
+              element={<TOAttendanceReviewPage />}
             />
             <Route path="/coordinator/rejected-officers" element={<RejectedOfficersPage />} />
           </Route>

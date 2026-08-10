@@ -3,9 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import { searchApplicantByNic } from '@/Role_Pages/coordinator/create-project/api/create-project'
 import {
+  draftFileUrl,
   listDrafts,
   markDraftUsed,
-  fetchDraftFile,
   type ProjectDetailsDraft,
 } from '@/Role_Pages/loan-applicant/fill-form/api/fill-form'
 import { useSessionState } from '@/Common_Pages/hooks/useSessionState'
@@ -14,6 +14,7 @@ import Button from '@/Common_Pages/components/ui/Button'
 import Card from '@/Common_Pages/components/ui/Card'
 import FileField from '@/Role_Pages/coordinator/new-project/components/FileField'
 import FieldRenderer from '@/Role_Pages/coordinator/new-project/components/FieldRenderer'
+import MapPicker from '@/Role_Pages/coordinator/new-project/components/MapPicker'
 import NicGate from '@/Role_Pages/coordinator/new-project/components/NicGate'
 import ProjectDetailsView from '@/Role_Pages/coordinator/project-status/components/ProjectDetailsView'
 import { validateField } from '@/Role_Pages/coordinator/new-project/validation/validateField'
@@ -65,6 +66,9 @@ const isVisible = (
 const summarizeDraft = (data: Record<string, string>) =>
   [data.propertyNumber, data.streetName, data.villageTown].filter(Boolean).join(', ')
 
+const fileNamesByType = (draft: ProjectDetailsDraft) =>
+  Object.fromEntries((draft.files ?? []).map((f) => [f.docType, f.fileName]))
+
 type ProjectFormProps = { onDone: (projectId: string, nic: string) => void }
 
 const ProjectForm = ({ onDone }: ProjectFormProps) => {
@@ -83,11 +87,19 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
   // one actually used only gets marked "Used" once the project is created.
   const [applicantDrafts, setApplicantDrafts] = useState<ProjectDetailsDraft[]>([])
   const [selectedDraftId, setSelectedDraftId] = useSessionState<number | null>('createProject:draftId', null)
+  const [draftFileNames, setDraftFileNames] = useSessionState<Record<string, string>>(
+    'createProject:draftFiles',
+    {},
+  )
   const [showDraftPicker, setShowDraftPicker] = useState(false)
 
   const loadApplicantDrafts = async (nic: string) => {
     const res = await listDrafts(nic)
     setApplicantDrafts(res.drafts)
+    if (selectedDraftId != null) {
+      const selected = res.drafts.find((d) => d.id === selectedDraftId)
+      setDraftFileNames(selected ? fileNamesByType(selected) : {})
+    }
     // Open the picker when there's something to choose — but don't reopen it
     // over a coordinator who has already picked one and is filling the form.
     setShowDraftPicker(res.drafts.length > 0 && selectedDraftId == null)
@@ -97,34 +109,18 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
   // the applicant already attached — they shouldn't have to send a PDF twice,
   // and the coordinator shouldn't have to re-upload it. Everything stays
   // editable/replaceable afterwards.
-  const [loadingDraftFiles, setLoadingDraftFiles] = useState(false)
-
-  const useDraft = async (draft: ProjectDetailsDraft) => {
+  const useDraft = (draft: ProjectDetailsDraft) => {
     setValues({ ...buildEmptyValues(), ...draft.data })
     setSelectedDraftId(draft.id)
+    setDraftFileNames(fileNamesByType(draft))
     setShowDraftPicker(false)
-
-    const attached = draft.files ?? []
-    if (!attached.length) {
-      setFiles(buildEmptyFiles())
-      return
-    }
-    setLoadingDraftFiles(true)
-    const fetched = await Promise.all(
-      attached.map((f) => fetchDraftFile(draft.id, f.docType, f.fileName)),
-    )
-    const next = buildEmptyFiles()
-    attached.forEach((f, i) => {
-      const file = fetched[i]
-      if (file && next[f.docType]) next[f.docType] = [file]
-    })
-    setFiles(next)
-    setLoadingDraftFiles(false)
+    setFiles(buildEmptyFiles())
   }
   const startBlank = () => {
     setValues(buildEmptyValues())
     setFiles(buildEmptyFiles())
     setSelectedDraftId(null)
+    setDraftFileNames({})
     setShowDraftPicker(false)
   }
 
@@ -136,6 +132,7 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
     setValues(buildEmptyValues())
     setFiles(buildEmptyFiles()) // never carry a previous applicant's documents over
     setSelectedDraftId(null)
+    setDraftFileNames({})
     // The applicant's submitted forms load via the effect keyed on applicantNic.
     searchApplicantByNic(incoming).then((res) => setOwnerName(res.found ? res.applicant?.name ?? '' : ''))
     navigate(location.pathname, { replace: true }) // consume the state so a refresh keeps the session
@@ -167,6 +164,7 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
   useEffect(() => {
     if (!applicantNic) {
       setApplicantDrafts([])
+      setDraftFileNames({})
       return
     }
     loadApplicantDrafts(applicantNic)
@@ -197,6 +195,11 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
   }
   const onFile = (name: string, picked: File[]) => {
     setFiles((f) => ({ ...f, [name]: picked }))
+    if (picked.length) setDraftFileNames((f) => ({ ...f, [name]: '' }))
+    setErrors((p) => ({ ...p, [name]: '' }))
+  }
+  const removeDraftFile = (name: string) => {
+    setDraftFileNames((f) => ({ ...f, [name]: '' }))
     setErrors((p) => ({ ...p, [name]: '' }))
   }
 
@@ -210,7 +213,9 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
       }),
     )
     projectUploads.forEach((u) => {
-      if (u.required && files[u.name].length === 0) e[u.name] = 'Please upload this file.'
+      if (u.required && files[u.name].length === 0 && !draftFileNames[u.name]) {
+        e[u.name] = 'Please upload this file.'
+      }
     })
     return e
   }
@@ -232,6 +237,10 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
     fd.append('applicantNic', applicantNic)
     fd.append('coordinatorId', user?.userId ?? '') // to notify the coordinator
     fd.append('data', JSON.stringify(values))
+    if (selectedDraftId != null) {
+      fd.append('sourceDraftId', String(selectedDraftId))
+      fd.append('sourceDraftFileTypes', JSON.stringify(Object.keys(draftFileNames).filter((k) => draftFileNames[k])))
+    }
     projectUploads.forEach((u) => files[u.name].forEach((file) => fd.append(u.name, file)))
 
     const res = await createProject(fd)
@@ -244,9 +253,13 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
     if (selectedDraftId != null) void markDraftUsed(selectedDraftId)
 
     // Clear persisted data, then hand the id + NIC to the success popup.
-    ;['createProject:nic', 'createProject:owner', 'createProject:values', 'createProject:draftId'].forEach((k) =>
-      sessionStorage.removeItem(k),
-    )
+    ;[
+      'createProject:nic',
+      'createProject:owner',
+      'createProject:values',
+      'createProject:draftId',
+      'createProject:draftFiles',
+    ].forEach((k) => sessionStorage.removeItem(k))
     clearSessionFiles('createProject:files')
     onDone(res.projectId ?? '', applicantNic)
   }
@@ -313,6 +326,9 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
                 onClick={() => {
                   setApplicantNic('')
                   setOwnerName('')
+                  setSelectedDraftId(null)
+                  setDraftFileNames({})
+                  setFiles(buildEmptyFiles())
                 }}
               >
                 Change
@@ -353,8 +369,7 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
                     type="button"
                     variant="outline"
                     size="sm"
-                    disabled={loadingDraftFiles}
-                    onClick={() => void useDraft(d)}
+                    onClick={() => useDraft(d)}
                   >
                     {selectedDraftId === d.id ? '✓ Selected' : 'Use this'}
                   </Button>
@@ -397,6 +412,7 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
             setValues(buildEmptyValues()) // start empty; the draft picker offers a starting point
             setFiles(buildEmptyFiles()) // never carry a previous applicant's documents over
             setSelectedDraftId(null)
+            setDraftFileNames({})
             // Their submitted forms load via the effect keyed on applicantNic.
           }}
         />
@@ -429,6 +445,24 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
                     onBlur={onBlur}
                   />
                 ))}
+              {section.hasMap && (
+                <MapPicker
+                  lat={values.latitude ?? ''}
+                  lng={values.longitude ?? ''}
+                  onPick={(lat, lng) => {
+                    setValues((v) => ({
+                      ...v,
+                      latitude: lat.toFixed(7),
+                      longitude: lng.toFixed(7),
+                    }))
+                    setServerError('')
+                  }}
+                  onTextChange={(latitude, longitude) => {
+                    setValues((v) => ({ ...v, latitude, longitude }))
+                    setServerError('')
+                  }}
+                />
+              )}
             </div>
           </Card>
         ))}
@@ -449,6 +483,13 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
                 onChange={onFile}
                 multiple={u.multiple}
                 error={errors[u.name]}
+                existingFileName={draftFileNames[u.name]}
+                existingFileUrl={
+                  selectedDraftId != null && draftFileNames[u.name]
+                    ? draftFileUrl(selectedDraftId, u.name)
+                    : undefined
+                }
+                onRemoveExisting={removeDraftFile}
               />
             ))}
           </div>

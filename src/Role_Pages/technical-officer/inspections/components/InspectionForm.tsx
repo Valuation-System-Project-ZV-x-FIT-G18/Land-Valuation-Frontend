@@ -48,7 +48,7 @@ const InspectionForm = ({ projectId, toId, onBack }: InspectionFormProps) => {
     setOcrBusy(true)
     setError('')
     setNotice('')
-    const res = await ocrInspection(file)
+    const res = await ocrInspection(file, projectId)
     setOcrBusy(false)
     if (fileRef.current) fileRef.current.value = ''
     setRawText(res.rawText || '')

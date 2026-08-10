@@ -13,6 +13,7 @@ type Props = {
   completed?: string[] // project ids to badge as "✓ Saved"
   statusFilter?: (a: Assignment) => boolean // keep only matching valuations
   emptyText?: string // message when nothing matches the filter
+  persistenceKey?: string // restores the opened project after a page refresh
 }
 
 const cardBtn =
@@ -20,10 +21,19 @@ const cardBtn =
 const chip =
   'shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-xs font-medium text-emerald-100/80 transition group-hover:border-gold-400/50 group-hover:text-gold-200'
 
-const ProjectValuationPicker = ({ toId, actionLabel = 'Open →', onSelect, completed = [], statusFilter, emptyText }: Props) => {
+const ProjectValuationPicker = ({ toId, actionLabel = 'Open →', onSelect, completed = [], statusFilter, emptyText, persistenceKey }: Props) => {
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [loading, setLoading] = useState(true)
-  const [project, setProject] = useState<string | null>(null)
+  const [project, setProjectState] = useState<string | null>(() =>
+    persistenceKey ? localStorage.getItem(persistenceKey) : null,
+  )
+
+  const setProject = (projectId: string | null) => {
+    setProjectState(projectId)
+    if (!persistenceKey) return
+    if (projectId) localStorage.setItem(persistenceKey, projectId)
+    else localStorage.removeItem(persistenceKey)
+  }
 
   useEffect(() => {
     if (!toId) return
@@ -64,6 +74,12 @@ const ProjectValuationPicker = ({ toId, actionLabel = 'Open →', onSelect, comp
     })
     return Array.from(m.values()).map((arr) => arr.slice().sort((a, b) => a.valuationId - b.valuationId))
   }, [assignments])
+
+  useEffect(() => {
+    if (!loading && project && !assignments.some((assignment) => assignment.projectId === project)) {
+      setProject(null)
+    }
+  }, [assignments, loading, project])
 
   if (loading) return <p className="text-center text-sm text-emerald-200/60">Loading your projects…</p>
   if (assignments.length === 0)
