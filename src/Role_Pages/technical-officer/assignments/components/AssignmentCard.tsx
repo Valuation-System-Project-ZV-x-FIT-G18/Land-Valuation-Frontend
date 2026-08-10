@@ -1,5 +1,7 @@
 import Card from '@/Common_Pages/components/ui/Card'
 import StatusBadge from '@/Role_Pages/coordinator/project-status/components/StatusBadge'
+import Button from '@/Common_Pages/components/ui/Button'
+import { useNavigate } from 'react-router-dom'
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 
 // A small labeled definition list used within a card section.
@@ -20,6 +22,7 @@ const Section = ({ icon, title, children }: { icon: string; title: string; child
 )
 
 const AssignmentCard = ({ a }: { a: Assignment }) => {
+  const navigate = useNavigate()
   const hasCoords = a.location.latitude && a.location.longitude
   const mapUrl = hasCoords
     ? `https://www.google.com/maps?q=${a.location.latitude},${a.location.longitude}`
@@ -43,6 +46,22 @@ const AssignmentCard = ({ a }: { a: Assignment }) => {
         <Detail label="Date" value={a.date} />
         <Detail label="Time" value={a.time} />
       </Section>
+
+      <div className="mt-4 flex items-center justify-end">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            navigate('/technical-officer/inspections', {
+              state: { projectId: a.projectId, valuationId: a.valuationId },
+            })
+          }
+          className="!px-4 !py-2 text-sm"
+        >
+          Add Inspection →
+        </Button>
+      </div>
 
       {/* Location */}
       <Section icon="📍" title="Location">
