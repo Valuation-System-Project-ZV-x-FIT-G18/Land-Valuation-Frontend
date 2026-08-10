@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import Button from '@/Common_Pages/components/ui/Button'
+import FormField from '@/Common_Pages/components/ui/FormField'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
+import Modal from '@/Common_Pages/components/ui/Modal'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import AssignmentCard from '@/Role_Pages/technical-officer/assignments/components/AssignmentCard'
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
 import { acceptAssignment, rejectAssignment } from '@/Role_Pages/coordinator/fleet-management/api/fleet'
-import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
+import { getAssignments, type Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 
 // Technical Officer > Assigned Projects.
 // Projects -> valuations -> the chosen valuation's full details.
@@ -15,18 +17,51 @@ const AssignedProjectsPage = () => {
   const [selected, setSelected] = useState<Assignment | null>(null)
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
+  const [rejectOpen, setRejectOpen] = useState(false)
+  const [rejectReason, setRejectReason] = useState('')
+  const [rejectError, setRejectError] = useState('')
   const selectionKey = toId ? `to-assigned-project-selection:${toId}` : ''
   const projectKey = toId ? `to-assigned-project-open:${toId}` : ''
 
   useEffect(() => {
-    if (!selectionKey) return
+    if (!selectionKey || !toId) return
+    let cancelled = false
+    let savedAssignment: Assignment | null = null
     try {
       const saved = localStorage.getItem(selectionKey)
-      if (saved) setSelected(JSON.parse(saved) as Assignment)
+      if (saved) {
+        savedAssignment = JSON.parse(saved) as Assignment
+        setSelected(savedAssignment)
+      }
     } catch {
       localStorage.removeItem(selectionKey)
     }
-  }, [selectionKey])
+
+    const refreshSelection = async () => {
+      if (!savedAssignment) return
+      const result = await getAssignments(toId)
+      if (cancelled || result.error) return
+      const current = result.assignments.find(
+        (assignment) => assignment.valuationRowId === savedAssignment?.valuationRowId,
+      )
+      if (current) {
+        savedAssignment = current
+        setSelected(current)
+        localStorage.setItem(selectionKey, JSON.stringify(current))
+      } else {
+        savedAssignment = null
+        setSelected(null)
+        localStorage.removeItem(selectionKey)
+      }
+    }
+
+    void refreshSelection()
+    window.addEventListener('focus', refreshSelection)
+    return () => {
+      cancelled = true
+      window.removeEventListener('focus', refreshSelection)
+    }
+  }, [selectionKey, toId])
 
   const selectAssignment = (assignment: Assignment) => {
     setMsg('')
@@ -54,19 +89,35 @@ const AssignedProjectsPage = () => {
     }
   }
 
+  const openReject = () => {
+    setRejectReason('')
+    setRejectError('')
+    setRejectOpen(true)
+  }
+
+  const closeReject = () => {
+    if (busy) return
+    setRejectOpen(false)
+    setRejectReason('')
+    setRejectError('')
+  }
+
   const reject = async () => {
     if (!selected) return
-    const reason = window.prompt('Why are you rejecting this assignment?', '')
-    if (reason === null) return
-    if (!reason.trim()) return setMsg('Please enter a reason before rejecting.')
+    const reason = rejectReason.trim()
+    if (!reason) return setRejectError('Please provide a reason for the coordinator.')
+    if (reason.length < 10) return setRejectError('Please provide a little more detail (at least 10 characters).')
     setBusy(true)
+    setRejectError('')
     const res = await rejectAssignment(selected.valuationRowId, toId, reason)
     setBusy(false)
     if (res.ok) {
+      setRejectOpen(false)
+      setRejectReason('')
       setMsg('Assignment rejected. It now awaits the coordinator acceptance.')
       clearSelection()
     } else {
-      setMsg(res.error ?? 'Could not reject.')
+      setRejectError(res.error ?? 'Could not reject the assignment. Please try again.')
     }
   }
 
@@ -92,16 +143,57 @@ const AssignedProjectsPage = () => {
                 type="button"
                 variant="outline"
                 disabled={busy}
-                onClick={reject}
+                onClick={openReject}
                 className="!px-5 !py-2.5 text-sm !border-amber-400/50 !text-amber-200"
               >
-                {busy ? 'Rejecting...' : 'Reject assignment'}
+                Reject assignment
               </Button>
             </div>
           )}
         </div>
         {msg && <p className="text-sm text-emerald-200">{msg}</p>}
         <AssignmentCard a={selected} />
+        <Modal open={rejectOpen} onClose={closeReject} title="Reject assignment">
+          <p className="text-sm leading-6 text-emerald-100/70">
+            Explain why you cannot take this assignment. Your reason will be shared with the
+            coordinator so they can reassign the project.
+          </p>
+          <div className="mt-5">
+            <FormField
+              label="Reason for rejection"
+              name="assignment-rejection-reason"
+              value={rejectReason}
+              onChange={(event) => {
+                setRejectReason(event.target.value)
+                if (rejectError) setRejectError('')
+              }}
+              placeholder="For example: I am unavailable on the scheduled inspection date."
+              textarea
+              rows={4}
+              error={rejectError}
+            />
+          </div>
+          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busy}
+              onClick={closeReject}
+              className="sm:min-w-28"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              loading={busy}
+              onClick={reject}
+              className="sm:min-w-44"
+            >
+              Confirm rejection
+            </Button>
+          </div>
+        </Modal>
       </div>
     )
   }

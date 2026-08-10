@@ -23,7 +23,7 @@ const AssignOfficersPage = () => {
   const location = useLocation()
   // A valuation handed over from the New Valuation "assign now" flow, if any —
   // we seed the search with its NIC (or Project ID) so it opens straight away.
-  const incoming = location.state as { nic?: string; projectId?: string } | null
+  const incoming = location.state as { nic?: string; projectId?: string; reassigning?: boolean } | null
   const initialQuery = incoming?.nic || incoming?.projectId || undefined
   const [officers, setOfficers] = useState<FleetOfficers>(emptyOfficers)
   const [available, setAvailable] = useState<Officer[]>([])
@@ -41,11 +41,13 @@ const AssignOfficersPage = () => {
     load()
   }, [load])
 
-  const onAccept = async (rowId: number) => {
+  const onAccept = async (rowId: number, projectId: string) => {
     const res = await acceptRejection(rowId)
     if (res.ok) {
-      setNotice('Rejection accepted — the officer is available again.')
-      load()
+      navigate('/coordinator/fleet-management/assign', {
+        replace: true,
+        state: { projectId, reassigning: true },
+      })
     } else setError(res.error ?? 'Could not accept the rejection.')
   }
 
@@ -77,6 +79,15 @@ const AssignOfficersPage = () => {
         <p className="rounded-xl border border-red-400/30 bg-red-500/10 p-3 text-center text-sm text-red-200">
           {error}
         </p>
+      )}
+      {incoming?.reassigning && incoming.projectId && (
+        <div className="border-l-4 border-gold-300 bg-emerald-950/45 px-5 py-4">
+          <p className="font-semibold text-white">Rejection accepted</p>
+          <p className="mt-1 text-sm text-emerald-100/75">
+            Select a new technical officer and inspection schedule for project{' '}
+            <span className="font-semibold text-gold-300">{incoming.projectId}</span>.
+          </p>
+        </div>
       )}
       {/* Assign action */}
       <AssignOfficerForm
@@ -120,10 +131,10 @@ const AssignOfficersPage = () => {
           <button
             key="accept"
             type="button"
-            onClick={() => onAccept(o.valuationRowId)}
+            onClick={() => onAccept(o.valuationRowId, o.projectId)}
             className="rounded-lg border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-200 transition hover:bg-emerald-500/20"
           >
-            Accept → free officer
+            Accept and reassign
           </button>,
         ])}
         emptyText="No rejected assignments."

@@ -38,7 +38,7 @@ const AssignOfficerForm = ({ officers, onAssigned, initialQuery }: Props) => {
     setLoading(false)
     setProjects(res.projects)
     setSearched(true)
-    setOpenProject(null)
+    setOpenProject(res.projects.length === 1 ? res.projects[0].projectId : null)
     setLastQuery(query)
     if (res.error) setError(res.error)
   }

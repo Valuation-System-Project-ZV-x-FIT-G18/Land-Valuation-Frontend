@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Card from '@/Common_Pages/components/ui/Card'
 import Button from '@/Common_Pages/components/ui/Button'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
-import SuccessModal from '@/Common_Pages/components/ui/SuccessModal'
 import { getFleetOfficers, acceptRejection } from '@/Role_Pages/coordinator/fleet-management/api/fleet'
 import type { RejectedItem } from '@/Role_Pages/coordinator/fleet-management/types/fleet'
 
@@ -10,9 +10,10 @@ import type { RejectedItem } from '@/Role_Pages/coordinator/fleet-management/typ
 // Technical officers who rejected an assigned project. Accepting the rejection
 // frees the valuation and returns the officer to the Available pool.
 const RejectedOfficersPage = () => {
+  const navigate = useNavigate()
   const [rejected, setRejected] = useState<RejectedItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [notice, setNotice] = useState('')
+  const [acceptingId, setAcceptingId] = useState<number | null>(null)
   const [error, setError] = useState('')
 
   const load = useCallback(() => {
@@ -22,22 +23,20 @@ const RejectedOfficersPage = () => {
 
   useEffect(() => { load() }, [load])
 
-  const accept = async (rowId: number) => {
+  const accept = async (item: RejectedItem) => {
     setError('')
-    const res = await acceptRejection(rowId)
-    if (res.ok) { setNotice('Rejection accepted — the officer is available again.'); load() }
-    else setError(res.error ?? 'Could not accept.')
+    setAcceptingId(item.valuationRowId)
+    const res = await acceptRejection(item.valuationRowId)
+    setAcceptingId(null)
+    if (res.ok) {
+      navigate('/coordinator/fleet-management/assign', {
+        state: { projectId: item.projectId, reassigning: true },
+      })
+    } else setError(res.error ?? 'Could not accept the rejection.')
   }
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <SuccessModal
-        open={!!notice}
-        title="Assignment Updated"
-        message={notice}
-        closeLabel="Done"
-        onClose={() => setNotice('')}
-      />
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           Rejected <GradientText>Assignments</GradientText>
@@ -71,10 +70,12 @@ const RejectedOfficersPage = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => accept(o.valuationRowId)}
+                loading={acceptingId === o.valuationRowId}
+                disabled={acceptingId !== null}
+                onClick={() => accept(o)}
                 className="!px-5 !py-2.5 text-sm !border-emerald-400/50 !text-emerald-200"
               >
-                Accept → free officer
+                Accept and reassign
               </Button>
             </Card>
           ))}

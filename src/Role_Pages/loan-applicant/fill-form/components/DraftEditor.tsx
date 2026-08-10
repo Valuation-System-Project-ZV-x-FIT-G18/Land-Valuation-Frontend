@@ -5,6 +5,7 @@ import FormField from '@/Common_Pages/components/ui/FormField'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useSessionState } from '@/Common_Pages/hooks/useSessionState'
 import FieldRenderer from '@/Role_Pages/coordinator/new-project/components/FieldRenderer'
+import MapPicker from '@/Role_Pages/coordinator/new-project/components/MapPicker'
 import { validateField } from '@/Role_Pages/coordinator/new-project/validation/validateField'
 import {
   projectSections,
@@ -21,7 +22,7 @@ const isVisible = (dependsOn: { field: string; value: string } | undefined, valu
   !dependsOn || values[dependsOn.field] === dependsOn.value
 
 const buildEmptyValues = (): ProjectValues => {
-  const v: ProjectValues = {}
+  const v: ProjectValues = { latitude: '', longitude: '' }
   projectSections.forEach((s) => s.fields.forEach((f) => (v[f.name] = '')))
   return v
 }
@@ -184,6 +185,24 @@ const DraftEditor = ({ draft, nic, onSubmit, onSaved, onCancel }: DraftEditorPro
                     onBlur={onBlur}
                   />
                 ))}
+              {section.hasMap && (
+                <MapPicker
+                  lat={values.latitude ?? ''}
+                  lng={values.longitude ?? ''}
+                  onPick={(lat, lng) => {
+                    setValues((current) => ({
+                      ...current,
+                      latitude: lat.toFixed(7),
+                      longitude: lng.toFixed(7),
+                    }))
+                    setServerError('')
+                  }}
+                  onTextChange={(latitude, longitude) => {
+                    setValues((current) => ({ ...current, latitude, longitude }))
+                    setServerError('')
+                  }}
+                />
+              )}
             </div>
           </Card>
         ))}
