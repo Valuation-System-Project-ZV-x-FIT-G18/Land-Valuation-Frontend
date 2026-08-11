@@ -27,6 +27,7 @@ const NearbyAnalyser = ({ projectId, onBack }: { projectId: string; onBack: () =
   const [goNext, setGoNext] = useState(false)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
+  const [searchMessage, setSearchMessage] = useState<{ kind: 'error' | 'notice'; text: string } | null>(null)
 
   const applyRate = (cs: Comparable[]) => {
     const prices = cs.map((c) => c.pricePerPerch).filter((n) => n > 0)
@@ -34,9 +35,15 @@ const NearbyAnalyser = ({ projectId, onBack }: { projectId: string; onBack: () =
     setInp((p) => ({ ...p, rate: p.rate || (avg ? String(avg) : '') }))
   }
 
-  const fetchComps = () => {
+  const fetchComps = async () => {
     setFetching(true)
-    return getComparables(projectId).then((r) => {
+    setSearchMessage(null)
+    try {
+      const r = await getComparables(projectId)
+      if (r.error) {
+        setSearchMessage({ kind: 'error', text: r.error })
+        return
+      }
       setComps(r.comparables)
       setAiComps(r.aiUsed)
       applyRate(r.comparables)
@@ -44,8 +51,12 @@ const NearbyAnalyser = ({ projectId, onBack }: { projectId: string; onBack: () =
       if (r.marketTrend && TRENDS.includes(r.marketTrend)) {
         setInp((p) => ({ ...p, trend: r.marketTrend }))
       }
+      if (r.comparables.length === 0) {
+        setSearchMessage({ kind: 'notice', text: 'No suitable nearby lands were found. Add a verified nearby comparable land manually and continue.' })
+      }
+    } finally {
       setFetching(false)
-    })
+    }
   }
 
   useEffect(() => {
@@ -70,9 +81,9 @@ const NearbyAnalyser = ({ projectId, onBack }: { projectId: string; onBack: () =
   // Manually add a comparable the officer already knows (not from the portals).
   const addComp = () =>
     setComps((cs) => [
-      ...cs,
+      ...cs.slice(0, 2),
       { area: '', refNo: '', saleDate: '', extentPerches: 0, distanceKm: 0, pricePerPerch: 0,
-        evidenceType: 'Recent Land Sale', source: 'Known / Provided', note: '' },
+        evidenceType: 'Nearby Comparable Land', propertyType: 'Bare / Residential Land', roadAccess: '', source: 'Field / Market Enquiry', note: '' },
     ])
   const deleteComp = (i: number) => setComps((cs) => cs.filter((_, idx) => idx !== i))
 
@@ -112,58 +123,25 @@ const NearbyAnalyser = ({ projectId, onBack }: { projectId: string; onBack: () =
   return (
     <div className="mx-auto max-w-3xl space-y-5">
       <Button type="button" variant="outline" onClick={onBack} className="!px-5 !py-2.5 text-sm">← Back to projects</Button>
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-white sm:text-3xl">Analyse Nearby Lands — <GradientText>{projectId}</GradientText></h1>
-        <p className="mx-auto mt-2 max-w-xl text-emerald-100/70">
-          Gather nearby land prices — from the portals or ones you already know — read the price
-          evidence summary to settle on a fair per-perch rate, then generate the evidence &amp;
-          valuation sections.
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+        <h1 className="text-xl font-semibold text-white sm:text-2xl">Nearby Land Comparables</h1>
+        <span className="rounded-full border border-gold-400/25 bg-gold-400/10 px-3 py-1 text-sm font-semibold">
+          <GradientText>{projectId}</GradientText>
+        </span>
       </div>
 
       {loc && <LocationCard loc={loc} />}
 
       <ComparablesTable comparables={comps} aiUsed={aiComps} loading={fetching} onChange={editComp} onRefresh={fetchComps} onAdd={addComp} onDelete={deleteComp} />
 
-      <ComparablesSummary
-        comparables={comps}
-        adoptedRate={Number(inp.rate) || 0}
-        onApplyRate={(rate) => setInp((p) => ({ ...p, rate: String(rate) }))}
-      />
-
-      <Card className="p-5 sm:p-6">
-        <h3 className="mb-3 text-sm font-semibold text-gold-300">⚖️ Valuation inputs</h3>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <Field label="Adopted rate (Rs. / perch)"><input value={inp.rate} onChange={(e) => setInp({ ...inp, rate: e.target.value })} className={ic} /></Field>
-          <Field label="Forced sale value (%)"><input value={inp.pct} onChange={(e) => setInp({ ...inp, pct: e.target.value })} className={ic} /></Field>
-          <Field label="Valuation date"><input type="date" value={inp.date} onChange={(e) => setInp({ ...inp, date: e.target.value })} className={ic} /></Field>
-          <Field label="Previously valued?"><select value={inp.prev} onChange={(e) => setInp({ ...inp, prev: e.target.value })} className={sc}>{PREV.map((o) => <option key={o}>{o}</option>)}</select></Field>
-          <Field label="Market trend (auto-detected)"><select value={inp.trend} onChange={(e) => setInp({ ...inp, trend: e.target.value })} className={sc}>{TRENDS.map((o) => <option key={o}>{o}</option>)}</select></Field>
-        </div>
-        <div className="mt-4 text-center">
-          <Button type="button" disabled={busy} onClick={generate}>{busy ? 'Generating…' : '✨ Generate Sections 9–13'}</Button>
-          {notice && <p className="mt-3 text-sm text-emerald-200">{notice}</p>}
-          {error && <p className="mt-3 text-sm text-amber-300">{error}</p>}
-        </div>
-      </Card>
-
-      {report && (
-        <>
-          <ReportSections report={report}
-            onEditStatement={(v) => setReport({ ...report, evidence: { ...report.evidence, marketSurveyStatement: v } })}
-            onEditConclusion={(v) => setReport({ ...report, conclusion: { ...report.conclusion, text: v } })} />
-          <Button type="button" fullWidth disabled={saving} onClick={save}>{saving ? 'Saving…' : 'OK — Save Analysis'}</Button>
-        </>
+      {searchMessage && (
+        <p className={`rounded-xl border px-4 py-3 text-sm ${searchMessage.kind === 'error'
+          ? 'border-amber-400/30 bg-amber-500/10 text-amber-200'
+          : 'border-emerald-400/30 bg-emerald-500/10 text-emerald-200'}`}>
+          {searchMessage.text}
+        </p>
       )}
 
-      <NextStepModal
-        open={goNext}
-        onClose={() => setGoNext(false)}
-        nextLabel="Generate Descriptions"
-        nextTo="/technical-officer/descriptions"
-        projectId={projectId}
-        message="Nearby-lands analysis saved."
-      />
     </div>
   )
 }

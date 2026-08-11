@@ -88,8 +88,8 @@ const EvidenceSection = ({ projectId, value, onChange }: Props) => {
             <option>Not available</option><option>Available</option>
           </select>
         </Bullet>
-        <Bullet>Asking prices — a property advertised for sale was found during the market survey (see table below).</Bullet>
-        <Bullet>Historical evidence — a previously valued property near the subject property (see table below).</Bullet>
+        <Bullet>Nearby comparable lands are selected primarily by distance, recency and similarity to the subject land.</Bullet>
+        <Bullet>Each comparable should have a verifiable price source and broadly similar land use, extent and road access.</Bullet>
         <Bullet>Market Indices — statistical measures of value based on market conditions and comparative analysis; these indices have not been adopted in this valuation.</Bullet>
       </ul>
 

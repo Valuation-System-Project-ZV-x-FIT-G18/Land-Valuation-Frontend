@@ -21,14 +21,12 @@ export const roleMenus: Record<string, SidebarItem[]> = {
   ],
   'Technical Officer': [
     { label: 'Assigned Projects', to: '/technical-officer/assignments', icon: '🗺️' },
-    { label: 'My Attendance', to: '/technical-officer/attendance', icon: '🗓️' },
     { label: 'Inspection Data', to: '/technical-officer/inspections', icon: '📝' },
     { label: 'Site Photo', to: '/technical-officer/site-photos', icon: '📷' },
     { label: 'GPS & Map Integration', to: '/technical-officer/gps-map', icon: '📍' },
     { label: 'Analyse Nearby Lands', to: '/technical-officer/nearby', icon: '🗺️' },
     { label: 'Generate Descriptions', to: '/technical-officer/descriptions', icon: '✨' },
     { label: 'Create Draft', to: '/technical-officer/draft', icon: '📄' },
-    { label: 'Corrections', to: '/technical-officer/corrections', icon: '📝' },
   ],
   'Manager L1': [
     { label: 'Check Drafts', to: '/manager/check-drafts', icon: '📑' },

@@ -29,7 +29,7 @@ import type {
   ProjectErrors,
 } from '@/Role_Pages/coordinator/new-project/types/new-project'
 
-// Build empty / sample state from the field config.
+// Build empty state from the field config.
 const buildEmptyValues = (): ProjectValues => {
   const v: ProjectValues = { latitude: '', longitude: '' }
   projectSections.forEach((s) => s.fields.forEach((f) => (v[f.name] = '')))
@@ -40,23 +40,6 @@ const buildEmptyFiles = (): ProjectFiles => {
   projectUploads.forEach((u) => (f[u.name] = []))
   return f
 }
-// TEMP (testing): fill every field with a plausible value.
-const buildSampleValues = (): ProjectValues => {
-  const v: ProjectValues = { latitude: '6.9271', longitude: '79.8612' }
-  projectSections.forEach((s) =>
-    s.fields.forEach((f) => {
-      if (f.type === 'select') {
-        // Dependent selects (e.g. District) draw from their parent's sample
-        // value, which was already set since it's declared earlier in the section.
-        v[f.name] = f.optionsBy ? (f.optionsBy.map[v[f.optionsBy.field]]?.[0] ?? '') : (f.options?.[0] ?? '')
-      } else if (f.type === 'date') v[f.name] = '2020-01-01'
-      else if (f.type === 'number') v[f.name] = '10'
-      else v[f.name] = `Sample ${f.label}`
-    }),
-  )
-  return v
-}
-
 const isVisible = (
   dependsOn: { field: string; value: string } | undefined,
   values: ProjectValues,
@@ -264,12 +247,6 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
     onDone(res.projectId ?? '', applicantNic)
   }
 
-  // Fills ONLY the project detail fields — for the NIC you entered (or the one
-  // coming from Register Applicant). It never changes the applicant NIC/owner.
-  const autoFill = () => {
-    setValues(buildSampleValues())
-  }
-
   // Viewing an existing project's full details (all fields + documents).
   if (viewingProject) {
     return <ProjectDetailsView projectId={viewingProject} onBack={() => setViewingProject(null)} />
@@ -277,19 +254,6 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-8">
-      {/* Auto-fill the detail fields for the confirmed applicant (NIC unchanged). */}
-      {applicantNic && (
-        <div className="text-center">
-          <button
-            type="button"
-            onClick={autoFill}
-            className="rounded-lg border border-gold-400/40 bg-gold-400/10 px-4 py-2 text-xs font-medium text-gold-200 transition hover:bg-gold-400/20"
-          >
-            ⚡ Auto-fill form
-          </button>
-        </div>
-      )}
-
       {/* NIC gate / confirmed owner banner */}
       {applicantNic ? (
         <Card className="p-5">

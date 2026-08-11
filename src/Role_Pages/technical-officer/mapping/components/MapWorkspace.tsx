@@ -61,12 +61,12 @@ const SourcesEditor = ({
 }
 
 const Step = ({ n, title, children }: { n: number; title: string; children: React.ReactNode }) => (
-  <Card className="p-5 sm:p-6">
-    <h3 className="mb-3 text-sm font-semibold text-gold-300">
-      <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-gold-400/20 text-xs">{n}</span>
-      {title}
-    </h3>
-    {children}
+  <Card className="overflow-hidden">
+    <div className="flex items-center gap-3 border-b border-white/10 bg-white/[0.025] px-5 py-4 sm:px-6">
+      <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-gold-400/25 bg-gold-400/10 text-xs font-bold text-gold-200">{String(n).padStart(2, '0')}</span>
+      <h3 className="text-sm font-bold tracking-wide text-white">{title}</h3>
+    </div>
+    <div className="p-5 sm:p-6">{children}</div>
   </Card>
 )
 
@@ -175,25 +175,57 @@ const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => 
   const gmaps = has ? `https://www.google.com/maps/@${lat},${lng},19z/data=!3m1!1e3` : '#'
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5">
-      <Button type="button" variant="ghost" size="sm" onClick={onBack}>← Back to projects</Button>
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-white sm:text-3xl">GPS &amp; Map — <GradientText>{projectId}</GradientText></h1>
-        {loc?.address && <p className="mx-auto mt-2 max-w-lg text-emerald-100/70">{loc.address}</p>}
+    <div className="mx-auto max-w-6xl space-y-6 pb-10">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Button type="button" variant="ghost" size="sm" onClick={onBack}>← Assigned projects</Button>
+        <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold ${has ? 'border-emerald-400/25 bg-emerald-400/10 text-emerald-200' : 'border-amber-300/25 bg-amber-300/10 text-amber-200'}`}>
+          <span className={`h-2 w-2 rounded-full ${has ? 'bg-emerald-300' : 'bg-amber-300'}`} />
+          {has ? 'Location selected' : 'Location required'}
+        </span>
       </div>
 
-      {/* 1. Choose the location on the map */}
-      <Step n={1} title="Choose the property location on the map">
-        <p className="mb-3 text-xs text-emerald-100/60">Search a place, click on the map, or type the coordinates below to place the marker.</p>
-        <LocationPicker lat={lat} lng={lng} flyTo={flyTo} onPick={(la, ln) => setPoint(la, ln)} />
-      </Step>
+      <div className="text-center">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-gold-300/70">Project {projectId}</p>
+        <h1 className="mt-2 text-3xl font-bold text-white sm:text-4xl">GPS &amp; <GradientText>Map</GradientText></h1>
+        <p className="mx-auto mt-2 max-w-xl text-sm text-emerald-100/60">Select the exact property location and verify it using the satellite and road maps.</p>
+      </div>
 
-      {/* 2. GPS coordinates (editable) */}
-      <Step n={2} title="GPS coordinates">
-        <p className="mb-3 text-xs text-emerald-100/60">
-          You can type or paste exact coordinates here — the marker moves as you edit.
-        </p>
-        <div className="grid gap-3 sm:grid-cols-2">
+      <Card className="hidden">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-gold-300/75">Geospatial workspace</p>
+            <h1 className="mt-2 text-3xl font-bold text-white sm:text-4xl">GPS &amp; Map <GradientText>{projectId}</GradientText></h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-emerald-100/65">
+              Pin the exact property location, verify the surrounding area, and prepare access and locality descriptions.
+            </p>
+          </div>
+          <div className="grid min-w-0 gap-2 text-sm sm:grid-cols-2 lg:min-w-[420px]">
+            <div className="rounded-xl border border-white/10 bg-black/15 px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-100/45">Property address</p>
+              <p className="mt-1 truncate font-medium text-emerald-50">{loc?.address || 'Loading project details…'}</p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-black/15 px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-100/45">Nearest city</p>
+              <p className="mt-1 font-medium text-emerald-50">{loc?.nearestCity || '—'}{loc?.district ? ` · ${loc.district}` : ''}</p>
+            </div>
+          </div>
+        </div>
+        <div className="hidden">
+          <div className={`rounded-lg px-3 py-2 ${has ? 'bg-emerald-400/10 text-emerald-200' : 'bg-gold-400/10 text-gold-200'}`}>1. Pin location</div>
+          <div className={`rounded-lg px-3 py-2 ${has ? 'bg-gold-400/10 text-gold-200' : 'bg-white/5 text-emerald-100/35'}`}>2. Review maps</div>
+          <div className={`rounded-lg px-3 py-2 ${access || locality ? 'bg-gold-400/10 text-gold-200' : 'bg-white/5 text-emerald-100/35'}`}>3. Prepare notes</div>
+        </div>
+      </Card>
+
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_330px]">
+        <Step n={1} title="Pin the property location">
+          <p className="mb-4 text-sm leading-6 text-emerald-100/60">Search by address or landmark, then click the exact property position on the map.</p>
+          <LocationPicker lat={lat} lng={lng} flyTo={flyTo} onPick={(la, ln) => setPoint(la, ln)} />
+        </Step>
+
+        <Step n={2} title="Confirm coordinates">
+          <p className="mb-4 text-sm leading-6 text-emerald-100/60">Paste survey coordinates or fine-tune the selected point manually.</p>
+          <div className="space-y-4">
           <Input
             label="Latitude"
             value={latText}
@@ -203,7 +235,7 @@ const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => 
             placeholder="e.g. 6.845210"
             className="font-mono text-gold-200"
           />
-          <Input
+            <Input
             label="Longitude"
             value={lngText}
             onChange={(e) => editLng(e.target.value)}
@@ -212,67 +244,41 @@ const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => 
             placeholder="e.g. 79.921380"
             className="font-mono text-gold-200"
           />
-        </div>
-        {!has && (
-          <p className="mt-2 text-xs text-emerald-100/50">Pick a point on the map or enter coordinates to continue.</p>
-        )}
-      </Step>
+          </div>
+          <div className="hidden">
+            <p className="text-xs font-bold uppercase tracking-wider text-emerald-100/45">Coordinate status</p>
+            <p className={`mt-1 text-sm font-semibold ${has ? 'text-emerald-200' : 'text-emerald-100/55'}`}>
+              {has ? '✓ Ready for map review' : 'Waiting for a valid point'}
+            </p>
+            {has && <p className="mt-2 break-all font-mono text-xs text-emerald-100/55">{lat?.toFixed(7)}, {lng?.toFixed(7)}</p>}
+          </div>
+        </Step>
+      </div>
 
       {has && (
         <>
           {/* 3. Satellite view (zoomed) */}
-          <Step n={3} title="Satellite view">
-            <div className="grid gap-3 sm:grid-cols-2">
+          <Step n={3} title="Review satellite imagery">
+            <div className="grid gap-5 [&>div:nth-child(2)]:hidden">
               <div>
-                <p className="mb-1 text-[11px] text-emerald-200/60">Property area</p>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-emerald-200/55">Property detail · Zoom 17</p>
                 <MiniMap lat={lat as number} lng={lng as number} variant="satellite" zoom={17} />
               </div>
               <div>
-                <p className="mb-1 text-[11px] text-emerald-200/60">Surrounding area</p>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-emerald-200/55">Surrounding context · Zoom 16</p>
                 <MiniMap lat={lat as number} lng={lng as number} variant="satellite" zoom={16} />
               </div>
             </div>
-            <a href={gmaps} target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs font-medium text-gold-300 hover:text-gold-200">
-              Open in Google Maps satellite ↗
+            <a href={gmaps} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-gold-300 transition hover:border-gold-400/30 hover:bg-gold-400/10 hover:text-gold-200">
+              Open satellite view in Google Maps ↗
             </a>
           </Step>
 
           {/* 4. Map view */}
-          <Step n={4} title="Map view">
+          <Step n={4} title="Verify road and map context">
             <MiniMap lat={lat as number} lng={lng as number} variant="map" zoom={17} />
           </Step>
 
-          {/* 5. AI access description */}
-          <Step n={5} title="ACCESS AND NATURE OF THE ACCESSIBILITY  (from the nearest city)">
-            <div className="mb-3 text-center">
-              <Button type="button" loading={busy} onClick={generate}>{busy ? 'Generating…' : '✨ Generate access description'}</Button>
-            </div>
-            <textarea
-              value={access}
-              onChange={(e) => setAccess(e.target.value)}
-              rows={6}
-              placeholder="Click Generate to draft how to reach the property from the nearest city…"
-              className="w-full resize-none rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white outline-none focus:border-gold-400/60 focus:ring-2 focus:ring-gold-400/30"
-            />
-            <SourcesEditor items={accessSources} onChange={setAccessSources} />
-          </Step>
-
-          {/* 6. AI locality description */}
-          <Step n={6} title="LOCALITY DESCRIPTION (character of the surrounding area)">
-            <div className="mb-3 text-center">
-              <Button type="button" loading={busyLoc} onClick={generateLocalityDesc}>
-                {busyLoc ? 'Generating…' : '✨ Generate locality description'}
-              </Button>
-            </div>
-            <textarea
-              value={locality}
-              onChange={(e) => setLocality(e.target.value)}
-              rows={6}
-              placeholder="Click Generate to draft the locality / neighbourhood description from the project and map data…"
-              className="w-full resize-none rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white outline-none focus:border-gold-400/60 focus:ring-2 focus:ring-gold-400/30"
-            />
-            <SourcesEditor items={localitySources} onChange={setLocalitySources} />
-          </Step>
         </>
       )}
 
@@ -285,9 +291,17 @@ const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => 
       {notice && !saved && <p className="text-center text-sm text-emerald-200">{notice}</p>}
       {error && <p className="text-center text-sm text-amber-300">{error}</p>}
 
-      <Button type="button" fullWidth variant="success" loading={saving} disabled={!has} onClick={save}>
-        {saving ? 'Saving…' : saved ? 'Update Saved Location & Descriptions' : 'OK — Save Location & Descriptions'}
-      </Button>
+      <Card className="p-4 sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-semibold text-white">Save this mapping workspace</p>
+            <p className="mt-1 text-sm text-emerald-100/55">{has ? 'Coordinates are ready. Generated descriptions can be added or updated later.' : 'Select a valid property location before saving.'}</p>
+          </div>
+          <Button type="button" variant="success" loading={saving} disabled={!has} onClick={save} className="shrink-0 sm:min-w-64">
+            {saving ? 'Saving…' : saved ? 'Update map details' : 'Save map details'}
+          </Button>
+        </div>
+      </Card>
 
       <NextStepModal
         open={goNext}

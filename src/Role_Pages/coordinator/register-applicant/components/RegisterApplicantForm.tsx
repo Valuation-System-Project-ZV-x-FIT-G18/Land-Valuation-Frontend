@@ -46,21 +46,6 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
     (v) => setForm((f) => ({ ...f, initials: v })),
   )
 
-  // Fill the form with sample data (testing helper). Keeps a NIC if one is
-  // already set; otherwise generates a fresh 12-digit one to avoid clashes.
-  const autoFill = () => {
-    setForm((f) => ({
-      ...f,
-      fullName: 'Kamal Sunil Perera',
-      nic: f.nic || '20' + String(Math.floor(1e9 + Math.random() * 9e9)),
-      dateOfBirth: '1995-05-20',
-      phone: '771234567',
-      email: 'test.applicant@example.com',
-    }))
-    setPw({ password: 'Password1', confirmPassword: 'Password1' })
-    setErrors({})
-  }
-
   // The error for a single field, given the latest values.
   const validateOne = (
     name: keyof RegisterApplicantValues,
@@ -192,15 +177,6 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
 
   return (
     <Card className="mx-auto mt-8 max-w-3xl p-6 sm:p-8">
-      <div className="mb-4 text-center">
-        <button
-          type="button"
-          onClick={autoFill}
-          className="rounded-lg border border-gold-400/40 bg-gold-400/10 px-4 py-2 text-xs font-medium text-gold-200 transition hover:bg-gold-400/20"
-        >
-          ⚡ Auto-fill form
-        </button>
-      </div>
       <form onSubmit={handleSubmit} noValidate className="space-y-8">
         <NameSection values={values} errors={errors} onChange={handleChange} onBlur={handleBlur} />
         <IdentityContactSection values={values} errors={errors} onChange={handleChange} onBlur={handleBlur} />

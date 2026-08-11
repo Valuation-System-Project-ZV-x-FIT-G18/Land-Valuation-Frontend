@@ -79,6 +79,7 @@ const AssignmentCard = ({ a }: { a: Assignment }) => {
         <Detail label="Phone" value={a.owner.phone} />
         <Detail label="Email" value={a.owner.email} />
       </Section>
+
     </Card>
   )
 }

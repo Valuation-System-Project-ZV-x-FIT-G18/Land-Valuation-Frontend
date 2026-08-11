@@ -15,7 +15,7 @@ const LocationPicker = ({ lat, lng, onPick }: Props) => (
     lng={lng}
     onPick={onPick}
     placeholder="Search property address or nearby place in Sri Lanka"
-    className="h-[28rem]"
+    className="h-[32rem]"
   />
 )
 

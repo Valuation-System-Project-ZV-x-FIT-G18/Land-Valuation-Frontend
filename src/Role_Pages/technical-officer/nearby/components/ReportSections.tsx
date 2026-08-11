@@ -2,6 +2,13 @@ import Card from '@/Common_Pages/components/ui/Card'
 import type { Report } from '@/Role_Pages/technical-officer/nearby/api/nearby'
 
 const rs = (n: number) => 'Rs. ' + Math.round(n).toLocaleString('en-US')
+const extentArp = (total: number) => {
+  const acres = Math.floor(total / 160)
+  const balance = total - acres * 160
+  const roods = Math.floor(balance / 40)
+  return `${acres}A-${roods}R-${Number((balance - roods * 40).toFixed(2))}P`
+}
+const evidenceLabel = (_type: string, index: number) => `Nearby Land ${String(index + 1).padStart(2, '0')}`
 
 const median = (xs: number[]) => {
   const s = [...xs].sort((a, b) => a - b)
@@ -38,7 +45,7 @@ const ReportSections = ({ report, onEditStatement, onEditConclusion }: Props) =>
     <div className="space-y-4">
       {/* 9. EVIDENCE OF LAND VALUES */}
       <Card className="p-5 sm:p-6">
-        <H>9. Evidence of Land Values — Direct Comparable</H>
+        <H>9. Nearby Comparable Land Evidence</H>
         <p className="mb-3 text-xs text-emerald-100/60">
           {priced.length} comparable land {priced.length === 1 ? 'evidence' : 'evidences'} analysed
           within the vicinity of the subject property.
@@ -47,46 +54,41 @@ const ReportSections = ({ report, onEditStatement, onEditConclusion }: Props) =>
           <table className="w-full text-left text-xs text-emerald-100/90">
             <thead className="text-[11px] uppercase text-emerald-200/60">
               <tr>
-                <th className="py-1 pr-2">#</th>
-                <th className="py-1 pr-3">Evidence &amp; Location</th>
-                <th className="py-1 pr-3">Details</th>
-                <th className="py-1 text-right">Price / Perch</th>
+                <th className="w-[22%] py-2 pr-3">Ref No.</th>
+                <th className="w-[54%] py-2 pr-3">Remarks</th>
+                <th className="w-[24%] py-2 text-right">Per perch price (Rs)</th>
               </tr>
             </thead>
             <tbody>
               {evidence.comparables.map((c, i) => (
                 <tr key={i} className="border-t border-white/10">
-                  <td className="py-2 pr-2 align-top font-semibold text-white">{String(i + 1).padStart(2, '0')}</td>
+                  <td className="py-3 pr-3 align-top font-semibold text-white">{evidenceLabel(c.evidenceType, i)}</td>
                   <td className="py-2 pr-3 align-top">
-                    <div className="font-medium text-emerald-100">{c.evidenceType}</div>
-                    {c.area && <div className="text-emerald-200/80">{c.area}</div>}
-                    {c.note && <div className="text-[11px] italic text-emerald-200/50">{c.note}</div>}
+                    {[c.refNo && `Ref. No. ${c.refNo}`, c.saleDate && `Date ${c.saleDate}`,
+                      c.extentPerches > 0 && `Extent ${extentArp(c.extentPerches)}`,
+                      c.distanceKm > 0 && `located about ${c.distanceKm < 1 ? `${Math.round(c.distanceKm * 1000)} meters` : `${Number(c.distanceKm.toFixed(2))} km`} away from the subject property`,
+                      c.area && `Location: ${c.area}`, c.propertyType && `Property type: ${c.propertyType}`,
+                      c.roadAccess && `Road access: ${c.roadAccess}`, c.note, c.source && `Source: ${c.source}`]
+                      .filter(Boolean).join('; ')}.
                   </td>
-                  <td className="py-2 pr-3 align-top">
-                    {c.refNo && <div>Ref. No: {c.refNo}</div>}
-                    {c.saleDate && <div>Date: {c.saleDate}</div>}
-                    {c.extentPerches ? <div>Extent: {c.extentPerches} perches</div> : null}
-                    <div>Distance: {c.distanceKm ? `${c.distanceKm} km from subject` : 'n/a'}</div>
-                    <div className="text-emerald-200/50">Source: {c.source || '—'}</div>
-                  </td>
-                  <td className="py-2 text-right align-top font-semibold text-gold-200">{rs(c.pricePerPerch)}</td>
+                  <td className="py-3 text-right align-top font-semibold text-gold-200">{rs(c.pricePerPerch)}/- per perch</td>
                 </tr>
               ))}
             </tbody>
             {prices.length > 0 && (
               <tfoot className="border-t-2 border-white/20 text-[11px]">
                 <tr>
-                  <td colSpan={2} className="py-2 font-semibold text-emerald-100">Evidence range (per perch)</td>
-                  <td className="py-2 text-emerald-200/70">Lowest {rs(low)} — Highest {rs(high)}</td>
+                  <td className="py-2 font-semibold text-emerald-100">Evidence range</td>
+                  <td className="py-2 text-emerald-200/70">Lowest {rs(low)} - Highest {rs(high)}</td>
                   <td className="py-2 text-right font-semibold text-gold-200">{rs(low)} – {rs(high)}</td>
                 </tr>
                 <tr>
-                  <td colSpan={2} className="py-1 text-emerald-200/70">Average / Median</td>
-                  <td className="py-1 text-emerald-200/70">Avg {rs(avg)} · Med {rs(med)}</td>
+                  <td className="py-1 text-emerald-200/70">Average / Median</td>
+                  <td className="py-1 text-emerald-200/70">Avg {rs(avg)} / Med {rs(med)}</td>
                   <td className="py-1 text-right text-emerald-100">{rs(avg)}</td>
                 </tr>
                 <tr>
-                  <td colSpan={2} className="py-1 font-semibold text-white">Adopted rate</td>
+                  <td className="py-1 font-semibold text-white">Adopted rate</td>
                   <td className="py-1 text-emerald-200/70">
                     {stance ? `(${stance} the evidence range)` : ''}
                   </td>

@@ -8,7 +8,6 @@ export const valuationSections: SectionConfig[] = [
     fields: [
       { name: 'bankRequestDate', label: "Date of Bank's Request Letter", type: 'date' },
       { name: 'valuationPurpose', label: 'Purpose of Valuation', placeholder: 'e.g. Secured Lending / Mortgage', required: true },
-      { name: 'basisOfValuation', label: 'Basis of Valuation', type: 'select', options: ['Market Value', 'Forced Sale Value'], required: true },
       { name: 'valuationType', label: 'Valuation Type', type: 'select', options: ['New Valuation', 'Revaluation'], required: true },
       { name: 'linkPreviousProject', label: 'Link to Previous Project', placeholder: 'Previous project id', dependsOn: { field: 'valuationType', value: 'Revaluation' } },
       { name: 'priorityLevel', label: 'Priority Level', type: 'select', options: ['Normal', 'Urgent'] },

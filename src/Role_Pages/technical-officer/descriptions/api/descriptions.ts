@@ -2,6 +2,15 @@
 
 // Section keys used everywhere in this feature.
 export type SectionKey =
+  | 'requestDescription'
+  | 'limitations'
+  | 'generalAssumptions'
+  | 'situation'
+  | 'extentDescription'
+  | 'accessDescription'
+  | 'ownershipDescription'
+  | 'rentControlRegulation'
+  | 'certification'
   | 'landDescription'
   | 'localityDescription'
   | 'localityFacilities'
@@ -32,6 +41,10 @@ export type Valuation = {
 export type EvidenceComp = {
   refNo: string
   date: string
+  area?: string
+  note?: string
+  propertyType?: string
+  roadAccess?: string
   extentPerches: number
   distanceKm: number
   pricePerPerch: number
@@ -85,16 +98,40 @@ export async function generateSection(
   section: SectionKey,
   fields: Record<string, string>,
 ): Promise<{ text: string; aiUsed: boolean; error?: string }> {
+  const controller = new AbortController()
+  const timeout = window.setTimeout(() => controller.abort(), 20_000)
   try {
     const res = await fetch('/api/technical-officer/descriptions/generate-one', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ projectId, section, fields }),
+      signal: controller.signal,
     })
-    if (!res.ok) return { text: '', aiUsed: false, error: 'Could not generate.' }
-    return await res.json()
-  } catch {
-    return { text: '', aiUsed: false, error: 'Could not reach the server.' }
+    const body = await res.json().catch(() => ({}) as Record<string, unknown>)
+    if (!res.ok) {
+      return { text: '', aiUsed: false, error: (body.error as string) || 'Could not generate.' }
+    }
+
+    const text = typeof body.text === 'string' ? body.text.trim() : ''
+    if (!text) {
+      return {
+        text: '',
+        aiUsed: false,
+        error: `No description was generated for ${section}. Restart the backend and try again.`,
+      }
+    }
+
+    return { text, aiUsed: body.aiUsed === true }
+  } catch (error) {
+    return {
+      text: '',
+      aiUsed: false,
+      error: error instanceof DOMException && error.name === 'AbortError'
+        ? `Generation timed out for ${section}. Please try again.`
+        : 'Could not reach the server.',
+    }
+  } finally {
+    window.clearTimeout(timeout)
   }
 }
 

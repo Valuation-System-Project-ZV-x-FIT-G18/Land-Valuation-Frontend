@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import SitePhotoUpload from '@/Role_Pages/technical-officer/site-photos/components/SitePhotoUpload'
@@ -8,12 +9,14 @@ import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/
 // Technical Officer > Site Photo.
 // Projects → valuations → upload that project's site photographs.
 const SitePhotoPage = () => {
+  const location = useLocation()
   const { user } = useAuth()
   const toId = user?.userId ?? ''
-  const [selected, setSelected] = useState<Assignment | null>(null)
+  const [selected, setSelected] = useState<Assignment | null>(() => (location.state as { assignment?: Assignment } | null)?.assignment ?? null)
+  const [directProjectId, setDirectProjectId] = useState(() => (location.state as { projectId?: string } | null)?.projectId ?? '')
 
-  if (selected) {
-    return <SitePhotoUpload projectId={selected.projectId} toId={toId} onBack={() => setSelected(null)} />
+  if (selected || directProjectId) {
+    return <SitePhotoUpload projectId={selected?.projectId ?? directProjectId} toId={toId} onBack={() => { setSelected(null); setDirectProjectId('') }} />
   }
 
   return (

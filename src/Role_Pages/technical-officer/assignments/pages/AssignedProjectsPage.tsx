@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import Button from '@/Common_Pages/components/ui/Button'
 import FormField from '@/Common_Pages/components/ui/FormField'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
@@ -153,6 +154,14 @@ const AssignedProjectsPage = () => {
         </div>
         {msg && <p className="text-sm text-emerald-200">{msg}</p>}
         <AssignmentCard a={selected} />
+        {selected.status === 'Assignment Accepted' && <Link
+          to="/technical-officer/inspections"
+          state={{ assignment: selected, projectId: selected.projectId }}
+          className="flex items-center justify-between rounded-2xl border border-gold-400/30 bg-gold-400/10 px-5 py-4 font-semibold text-gold-200 transition hover:border-gold-400/60 hover:bg-gold-400/15"
+        >
+          <span><span className="mr-3 text-xs uppercase tracking-wider text-gold-300/65">Next step</span>Inspection Data</span>
+          <span aria-hidden="true">→</span>
+        </Link>}
         <Modal open={rejectOpen} onClose={closeReject} title="Reject assignment">
           <p className="text-sm leading-6 text-emerald-100/70">
             Explain why you cannot take this assignment. Your reason will be shared with the

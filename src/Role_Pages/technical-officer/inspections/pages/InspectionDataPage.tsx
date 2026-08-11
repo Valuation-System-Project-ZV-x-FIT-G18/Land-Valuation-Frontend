@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import InspectionForm from '@/Role_Pages/technical-officer/inspections/components/InspectionForm'
@@ -8,9 +9,10 @@ import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/
 // Technical Officer > Inspection Data.
 // Projects → valuations → OCR upload + inspection form for that project.
 const InspectionDataPage = () => {
+  const location = useLocation()
   const { user } = useAuth()
   const toId = user?.userId ?? ''
-  const [selected, setSelected] = useState<Assignment | null>(null)
+  const [selected, setSelected] = useState<Assignment | null>(() => (location.state as { assignment?: Assignment } | null)?.assignment ?? null)
 
   if (selected) {
     return (

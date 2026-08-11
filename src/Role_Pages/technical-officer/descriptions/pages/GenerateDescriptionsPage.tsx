@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import DescriptionsEditor from '@/Role_Pages/technical-officer/descriptions/components/DescriptionsEditor'
@@ -9,22 +10,25 @@ import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/
 // Technical Officer > Generate Descriptions.
 // Projects → valuations → generate/edit that project's report descriptions.
 const GenerateDescriptionsPage = () => {
+  const location = useLocation()
   const { user } = useAuth()
   const toId = user?.userId ?? ''
   const [completed, setCompleted] = useState<string[]>([])
-  const [selected, setSelected] = useState<Assignment | null>(null)
+  const [selected, setSelected] = useState<Assignment | null>(() => (location.state as { assignment?: Assignment } | null)?.assignment ?? null)
+  const [directProjectId, setDirectProjectId] = useState(() => (location.state as { projectId?: string } | null)?.projectId ?? '')
 
   const loadCompleted = () => getCompletedProjects().then(setCompleted)
   useEffect(() => {
     loadCompleted()
   }, [])
 
-  if (selected) {
+  if (selected || directProjectId) {
     return (
       <DescriptionsEditor
-        projectId={selected.projectId}
+        projectId={selected?.projectId ?? directProjectId}
         onBack={() => {
           setSelected(null)
+          setDirectProjectId('')
           loadCompleted() // refresh the "✓ Saved" badge
         }}
       />

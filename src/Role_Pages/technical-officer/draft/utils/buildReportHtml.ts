@@ -76,6 +76,7 @@ export function buildReportHtml(
 
    ${H('5.2', 'DESCRIPTION OF THE PROPERTY')}
    ${H('5.2.1', 'EXTENT')}
+   ${v.extentDescription ? P(v.extentDescription, true) : ''}
    ${extentTbl(v, F)}
 
    ${H('5.2.2', 'VALIDITY OF THE SURVEY PLAN')}
@@ -114,6 +115,7 @@ export function buildReportHtml(
    ${H('6.1.3', 'STREET LINE & BUILDING LIMITS')}${P(v.streetLineBuildingLimits, true)}
    ${H('6.2', 'PLANNING REGULATIONS')}
    ${H('6.2.1', 'MANDATORY REQUIREMENTS')}${P(v.mandatoryRequirements, true)}
+   ${H('6.2.2', 'RENT CONTROL REGULATION')}${P(v.rentControlRegulation, true)}
 
    ${H('7.', 'LOCALITY')}${P(v.localityFacilities, true)}
 
@@ -145,7 +147,7 @@ export function buildReportHtml(
    </table>
 
    ${H('14.', 'CERTIFICATION')}
-   ${P(`I certify that the property inspected and valued by me corresponds precisely to Lot No. ${F('lotNo')} in Survey Plan No. ${F('surveyPlanNo')} dated ${F('surveyDate')} made by ${F('surveyorName')} Licensed Surveyor. The property’s boundaries were verified on-site and confirmed to align with the boundaries indicated in the aforementioned plan. I recommend that the above estimated values are fair and reasonable.`)}
+   ${P(v.certification || `I certify that the property inspected and valued by me corresponds precisely to Lot No. ${F('lotNo')} in Survey Plan No. ${F('surveyPlanNo')} dated ${F('surveyDate')} made by ${F('surveyorName')} Licensed Surveyor. The property’s boundaries were verified on-site and confirmed to align with the boundaries indicated in the aforementioned plan. I recommend that the above estimated values are fair and reasonable.`)}
    ${P('The valuer has experience in the location and category of the property being valued and has made a personal inspection of the property. This valuation complies with the valuation standards used in Sri Lanka (IVSL), the International Valuation Standards, and the standards compiled by the Royal Institution of Chartered Surveyors (RICS).')}
    <p style="margin-top:24px">Vlr. H.M.R.R. Narampanawa (FRICS)<br>RICS Registered Chartered Valuation Surveyor<br>Panel Valuer of ${F('bankName')}</p>
    ${pageFooter()}
@@ -269,7 +271,7 @@ const letterPage = (v: Record<string, string>, F: (k: string) => string, money: 
      <p style="margin:20px 0 0">The Manager,<br>${F('bankName')},<br>${F('branchName')}.</p>
      <p style="margin:16px 0">Dear Sir,</p>
      <p style="text-align:center;font-weight:700;text-decoration:underline;margin:0 16px">VALUATION REPORT OF PROPERTY DEPICTED AS LOT NO. ${F('lotNo')} IN SURVEY PLAN NO. ${F('surveyPlanNo')} DATED ${F('surveyDate')} MADE BY ${F('surveyorName')} LICENSED SURVEYOR</p>
-     <p style="margin:16px 0;text-align:justify">The Manager of ${F('bankName')} - ${F('branchName')} has requested by his letter dated ${F('valuationRequestDate')} to inspect the property depicted as Lot No. ${F('lotNo')} in Survey Plan No. ${F('surveyPlanNo')} dated ${F('surveyDate')} made by ${F('surveyorName')} Licensed Surveyor, situated at ${F('propertyLocationCity')} within the administrative limits of ${F('urbanCouncil')} Urban Council and furnish a valuation report for the estimation of both market value and forced sale value for the purpose of secured lending.</p>
+     <p style="margin:16px 0;text-align:justify">${v.requestDescription ? esc(v.requestDescription) : `The Manager of ${F('bankName')} - ${F('branchName')} has requested by letter dated ${F('valuationRequestDate')} a valuation of the subject property.`}</p>
      <p style="margin:14px 0 6px;font-weight:700">The valuation details are as follows;</p>
      <p style="margin:6px 0 2px;font-weight:700;text-decoration:underline">Land Only</p>
      <table style="width:100%;font-size:12px">
@@ -289,7 +291,8 @@ const boilerplatePage = (v: Record<string, string>, F: (k: string) => string) =>
    ${pageHeader()}
    <div style="margin-top:18px;font-size:12px">
     <h3 style="font-size:13px;font-weight:700;color:#0f766e;margin:14px 0 6px">LIMITATIONS</h3>
-    <ul style="margin:0 0 0 18px;padding:0">
+    ${v.limitations ? P(v.limitations, true) : ''}
+    <ul style="${v.limitations ? 'display:none;' : ''}margin:0 0 0 18px;padding:0">
      ${li('This valuation is valid only for the estimate of market value and forced sale value for the purpose of mortgage and should not be used for any other purpose or in any manner other than as stated herein.')}
      ${li('I am not liable for any damages incurred by the client of the report if it is used for a purpose other than the “Intended Purpose” of the report.')}
      ${li(`This valuation has been prepared for the Directors of ${F('bankName')} and is not intended for any other person. No responsibility is accepted to third parties for the whole or any part of the contents.`)}
@@ -298,7 +301,8 @@ const boilerplatePage = (v: Record<string, string>, F: (k: string) => string) =>
      ${li('The analysis and conclusions are limited by the assumptions and conditions reported.')}
     </ul>
     <h3 style="font-size:13px;font-weight:700;color:#0f766e;margin:14px 0 6px">GENERAL ASSUMPTIONS</h3>
-    <ul style="margin:0 0 0 18px;padding:0">
+    ${v.generalAssumptions ? P(v.generalAssumptions, true) : ''}
+    <ul style="${v.generalAssumptions ? 'display:none;' : ''}margin:0 0 0 18px;padding:0">
      ${li('I have valued the property based on the assumption that the owner holds an unencumbered freehold interest in the property.')}
      ${li('The property has been valued as if wholly owned, with no account taken of any outstanding debts, including mortgage bonds, loans, or other charges.')}
     </ul>
@@ -402,15 +406,38 @@ const valuationTbl = (valuation: Valuation | null, v: Record<string, string>) =>
 type SavedEvidence = { rows?: { refNo: string; remarks: string; pricePerPerch: number }[]; rangeStatement?: string }
 
 const evidenceTbl = (evidence: Evidence | null, savedEvidence?: SavedEvidence | null) => {
+  const extentArp = (total: number) => {
+    const acres = Math.floor(total / 160)
+    const balance = total - acres * 160
+    const roods = Math.floor(balance / 40)
+    return `${acres}A-${roods}R-${Number((balance - roods * 40).toFixed(2))}P`
+  }
+  const evidenceLabel = (_type: string, index: number) => `Nearby Land ${String(index + 1).padStart(2, '0')}`
   const rows = savedEvidence?.rows?.length
     ? savedEvidence.rows
         .map((r) => `<tr><td style="border:1px solid #bbb;padding:5px">${esc(r.refNo)}</td><td style="border:1px solid #bbb;padding:5px;white-space:pre-line">${esc(r.remarks)}</td><td style="border:1px solid #bbb;padding:5px;text-align:right">${rs(r.pricePerPerch)}</td></tr>`)
         .join('')
     : (evidence?.comparables ?? [])
-        .map((c) => `<tr><td style="border:1px solid #bbb;padding:5px">${esc(c.refNo || c.evidenceType)}</td><td style="border:1px solid #bbb;padding:5px">${esc(c.date)} · ${esc(c.extentPerches)}P · ${esc(c.distanceKm)} km · ${esc(c.source)}</td><td style="border:1px solid #bbb;padding:5px;text-align:right">${rs(c.pricePerPerch)}</td></tr>`)
+        .map((c, i) => {
+          const distance = c.distanceKm > 0 && c.distanceKm < 1
+            ? `${Math.round(c.distanceKm * 1000)} meters`
+            : c.distanceKm > 0 ? `${Number(c.distanceKm.toFixed(2))} km` : ''
+          const remarks = [
+            c.refNo && `Ref. No. ${c.refNo}`,
+            c.date && `Date ${c.date}`,
+            c.extentPerches > 0 && `Extent ${extentArp(c.extentPerches)}`,
+            distance && `located about ${distance} away from the subject property`,
+            c.area && `Location: ${c.area}`,
+            c.propertyType && `Property type: ${c.propertyType}`,
+            c.roadAccess && `Road access: ${c.roadAccess}`,
+            c.note,
+            c.source && `Source: ${c.source}`,
+          ].filter(Boolean).join('; ')
+          return `<tr><td style="border:1px solid #777;padding:7px;vertical-align:top">${esc(evidenceLabel(c.evidenceType, i))}</td><td style="border:1px solid #777;padding:7px;vertical-align:top">${esc(remarks)}.</td><td style="border:1px solid #777;padding:7px;vertical-align:top">${rs(c.pricePerPerch)}/- per perch</td></tr>`
+        })
         .join('')
   if (!rows) return ''
-  return `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:6px">
-     <tr style="background:#f0f0f0"><th style="border:1px solid #bbb;padding:5px;text-align:left">Ref. No</th><th style="border:1px solid #bbb;padding:5px;text-align:left">Details</th><th style="border:1px solid #bbb;padding:5px;text-align:right">Per perch</th></tr>${rows}
+  return `<p style="margin:9px 0 4px;font-weight:700">Nearby Comparable Land Evidence</p><table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:4px;table-layout:fixed">
+     <tr style="background:#e7ecef"><th style="width:22%;border:1px solid #777;padding:7px;text-align:left">Ref No.</th><th style="width:54%;border:1px solid #777;padding:7px;text-align:left">Remarks</th><th style="width:24%;border:1px solid #777;padding:7px;text-align:left">Per perch price (Rs)</th></tr>${rows}
     </table>${savedEvidence?.rangeStatement ? P(savedEvidence.rangeStatement) : ''}`
 }
