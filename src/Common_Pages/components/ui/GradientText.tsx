@@ -12,7 +12,7 @@ type GradientTextProps = {
 const GradientText = ({ children, className = '' }: GradientTextProps) => {
   return (
     <span
-      className={`bg-gradient-to-r from-amber-200 via-gold-200 to-amber-400 bg-clip-text font-bold text-transparent ${className}`}
+      className={`bg-gradient-to-r from-brand-blue via-cyan-600 to-brand-cyan bg-clip-text font-bold text-transparent ${className}`}
     >
       {children}
     </span>

@@ -1,4 +1,77 @@
-/* Homepage-specific styles.
-   This project styles mostly with Tailwind utility classes, so this file is
-   for any extra homepage CSS that Tailwind can't easily express.
-   It is imported by pages/HomePage.tsx. */
+/* Dark CTA is intentional contrast inside the otherwise light public theme. */
+.home-page-shell {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 88% 7%, rgba(30, 64, 175, 0.16), transparent 25rem),
+    linear-gradient(180deg, #d5e2f1 0%, #eef4fa 31%, #e3ebf5 68%, #f5f8fc 100%);
+}
+
+.home-hero {
+  position: relative;
+}
+
+.home-hero::before {
+  position: absolute;
+  z-index: -1;
+  top: 7%;
+  left: -14%;
+  width: 24rem;
+  height: 24rem;
+  border-radius: 9999px;
+  background: rgba(30, 64, 175, 0.1);
+  filter: blur(80px);
+  content: '';
+}
+
+.home-toned-section {
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  border-radius: 2rem;
+  background: linear-gradient(135deg, rgba(15, 39, 71, 0.08), rgba(37, 99, 235, 0.07));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.professional-light .home-dark-panel .text-white { color: #ffffff !important; }
+.professional-light .home-dark-panel [class*="text-emerald-100"] { color: #dbeafe !important; }
+.professional-light .home-dark-panel button[class*="border-white"] {
+  border-color: rgba(255, 255, 255, 0.65) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+/* Home CTA hierarchy: cyan drives the main action, while navy/white outlines
+   keep secondary actions visible without competing with it. */
+.professional-light .home-primary-cta {
+  border-color: #0799d3 !important;
+  background: linear-gradient(135deg, #0799d3, #087fb2) !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 24px -10px rgba(7, 153, 211, 0.75) !important;
+}
+
+.professional-light .home-primary-cta:hover {
+  border-color: #087fb2 !important;
+  background: linear-gradient(135deg, #087fb2, #1e5799) !important;
+}
+
+.professional-light .home-secondary-cta {
+  border-color: #1e5799 !important;
+  background: #ffffff !important;
+  color: #0f2d4f !important;
+}
+
+.professional-light .home-secondary-cta:hover {
+  border-color: #0799d3 !important;
+  background: #eaf8fd !important;
+  color: #1e5799 !important;
+}
+
+.professional-light .home-dark-panel .home-dark-secondary-cta {
+  border-color: rgba(255, 255, 255, 0.78) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+.professional-light .home-dark-panel .home-dark-secondary-cta:hover {
+  border-color: #67caea !important;
+  background: rgba(7, 153, 211, 0.2) !important;
+}

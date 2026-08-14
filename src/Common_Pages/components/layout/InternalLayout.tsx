@@ -45,7 +45,7 @@ const InternalLayout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-green-900">
+    <div className="professional-light app-internal-shell min-h-screen bg-gradient-to-br from-[#f2f6fc] via-white to-[#e4edf7] text-slate-800">
       <FormDraftPersistence />
       <FloatingChatbot />
       <Sidebar open={mobileOpen} onClose={() => setMobileOpen(false)} />
@@ -55,7 +55,7 @@ const InternalLayout = () => {
         {/* Top bar: messages, notifications, and the user profile on the right */}
         <InternalTopbar onMenu={() => setMobileOpen(true)} />
 
-        <main className="px-4 py-8 sm:px-6 lg:px-10">
+        <main className="px-4 py-7 sm:px-6 lg:px-10">
           {/* `key`ed on the path so each page fades up on navigation. */}
           <div key={location.pathname} className="mx-auto max-w-6xl animate-fade-up">
             <Outlet />

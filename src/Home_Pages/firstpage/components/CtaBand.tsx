@@ -13,7 +13,7 @@ const CtaBand = () => {
   return (
     <section className="mx-auto max-w-7xl px-4 pb-24 pt-8 sm:px-8">
       <Reveal>
-        <div className="relative overflow-hidden rounded-3xl border border-gold-400/25 shadow-card-hover">
+        <div className="home-dark-panel relative overflow-hidden rounded-3xl border border-blue-300/40 shadow-xl">
           {/* Background photo */}
           <img
             src="/images/land-green.jpg"
@@ -22,7 +22,7 @@ const CtaBand = () => {
             className="absolute inset-0 h-full w-full object-cover"
           />
           {/* Green brand overlay for readable text on top of the photo */}
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/95 via-emerald-900/80 to-emerald-950/70" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0f2747]/95 via-blue-900/88 to-[#102f55]/80" />
 
           <div className="relative px-6 py-16 text-center sm:px-12 sm:py-20">
             <h2 className="mx-auto max-w-2xl text-3xl font-bold text-white sm:text-4xl">
@@ -33,11 +33,11 @@ const CtaBand = () => {
               already using CODEHUB.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Button type="button" size="lg" onClick={() => navigate('/request-valuation')}>
+              <Button className="home-primary-cta" type="button" size="lg" onClick={() => navigate('/request-valuation')}>
                 Request Valuation Now
                 <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
               </Button>
-              <Button type="button" variant="outline" size="lg" onClick={openLogin}>
+              <Button className="home-dark-secondary-cta" type="button" variant="outline" size="lg" onClick={openLogin}>
                 Login to Your Account
               </Button>
             </div>
