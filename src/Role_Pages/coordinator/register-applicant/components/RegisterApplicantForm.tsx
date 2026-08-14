@@ -10,6 +10,7 @@ import { validateLocalPhone } from '@/Common_Pages/validation/validateLocalPhone
 import { validateDateOfBirth } from '@/Common_Pages/validation/validateDateOfBirth'
 import { validatePasswordStrength } from '@/Common_Pages/validation/validatePasswordStrength'
 import { namePattern } from '@/Common_Pages/validation/validateName'
+import { toLocalPhone } from '@/Common_Pages/validation/rules'
 import { useAutoField } from '@/Common_Pages/hooks/useAutoField'
 import { deriveName } from '@/Role_Pages/coordinator/register-applicant/lib/deriveName'
 import { registerApplicant } from '@/Role_Pages/coordinator/register-applicant/api/register-applicant'
@@ -77,7 +78,7 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
   ) => {
     const name = e.target.name as keyof RegisterApplicantValues
     let value = e.target.value
-    if (name === 'phone') value = value.replace(/\D/g, '').slice(0, 9)
+    if (name === 'phone') value = toLocalPhone(value)
 
     if (name === 'password' || name === 'confirmPassword') {
       setPw((p) => ({ ...p, [name]: value }))

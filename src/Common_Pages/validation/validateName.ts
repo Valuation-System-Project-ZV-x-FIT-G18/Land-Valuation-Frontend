@@ -3,7 +3,9 @@
 // Names can only contain letters and single spaces between words — no digits
 // or symbols. Returns an error message string, or undefined when valid.
 
-export const namePattern = /^[A-Za-z]+(?:\s[A-Za-z]+)*$/
+import { NAME_PATTERN } from './rules'
+
+export const namePattern = NAME_PATTERN
 
 // Generic helper: `label` customises the message (e.g. "First name", "Last name").
 export function validateNamePart(

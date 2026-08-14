@@ -6,6 +6,7 @@ import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { validateValuation } from '@/Home_Pages/request-valuation/components/validateValuation'
 import { submitValuationRequest } from '@/Home_Pages/request-valuation/api/request-valuation'
 import type { ValuationFormData } from '@/Home_Pages/request-valuation/types/request-valuation'
+import { toLocalPhone } from '@/Common_Pages/validation/rules'
 
 // Land valuation request form. State/validation/persistence/submit via useForm.
 
@@ -17,20 +18,13 @@ const emptyForm: ValuationFormData = {
   message: '',
 }
 
-const toSriLankanLocalPhone = (value: string) => {
-  let digits = value.replace(/\D/g, '')
-  if (digits.startsWith('94')) digits = digits.slice(2)
-  if (digits.startsWith('0')) digits = digits.slice(1)
-  return digits.slice(0, 9)
-}
-
 const ValuationForm = () => {
   const f = useForm<ValuationFormData>({
     initialValues: emptyForm,
     validate: validateValuation,
     onSubmit: submitValuationRequest,
     storageKey: 'valuationForm', // persist on refresh, clear on submit/close
-    transforms: { phone: toSriLankanLocalPhone },
+    transforms: { phone: toLocalPhone },
     successResetMs: 4000,
   })
 

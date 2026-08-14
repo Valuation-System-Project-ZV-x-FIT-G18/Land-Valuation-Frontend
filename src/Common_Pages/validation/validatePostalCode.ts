@@ -4,6 +4,7 @@
 export function validatePostalCode(value: string): string | undefined {
   const v = value.trim()
   if (!v) return undefined
-  if (!/^\d{4,5}$/.test(v)) return 'Enter a valid postal code (4–5 digits).'
+  if (!POSTAL_CODE_PATTERN.test(v)) return 'Enter a valid postal code (4–5 digits).'
   return undefined
 }
+import { POSTAL_CODE_PATTERN } from './rules'

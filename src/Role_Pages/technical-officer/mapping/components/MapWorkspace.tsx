@@ -7,58 +7,7 @@ import { useSessionState } from '@/Common_Pages/hooks/useSessionState'
 import LocationPicker from './LocationPicker'
 import MiniMap from './MiniMap'
 import NextStepModal from '@/Role_Pages/technical-officer/shared/NextStepModal'
-import { getLocation, generateAccess, generateLocality, saveMap, type MapLocation } from '@/Role_Pages/technical-officer/mapping/api/mapping'
-
-// Editable "sources used" list shown under a generated description. The officer
-// can correct, remove or add source lines; they are saved with the description.
-const SourcesEditor = ({
-  items,
-  onChange,
-}: {
-  items: string[]
-  onChange: (next: string[]) => void
-}) => {
-  const edit = (i: number, v: string) => onChange(items.map((s, idx) => (idx === i ? v : s)))
-  const remove = (i: number) => onChange(items.filter((_, idx) => idx !== i))
-  const add = () => onChange([...items, ''])
-
-  return (
-    <details open={items.length > 0} className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3">
-      <summary className="cursor-pointer text-xs font-semibold text-emerald-200/70">
-        Sources used ({items.length}) — editable
-      </summary>
-      <div className="mt-2 space-y-2">
-        {items.map((s, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <div className="flex-1">
-              <Input
-                sizeVariant="sm"
-                aria-label={`Source ${i + 1}`}
-                value={s}
-                onChange={(e) => edit(i, e.target.value)}
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => remove(i)}
-              aria-label="Remove source"
-              className="rounded-lg border border-white/15 px-2 py-1 text-xs text-emerald-200/70 transition hover:border-red-400/50 hover:text-red-300"
-            >
-              ✕
-            </button>
-          </div>
-        ))}
-        <button
-          type="button"
-          onClick={add}
-          className="text-xs font-medium text-gold-300 transition hover:text-gold-200"
-        >
-          + Add source
-        </button>
-      </div>
-    </details>
-  )
-}
+import { getLocation, saveMap, type MapLocation } from '@/Role_Pages/technical-officer/mapping/api/mapping'
 
 const Step = ({ n, title, children }: { n: number; title: string; children: React.ReactNode }) => (
   <Card className="overflow-hidden">
@@ -84,8 +33,6 @@ const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => 
   const [locality, setLocality] = useSessionState(k('locality'), '')
   const [localitySources, setLocalitySources] = useSessionState<string[]>(k('localitySrc'), [])
   const [flyTo, setFlyTo] = useState<{ lat: number; lng: number; zoom: number; nonce: number } | null>(null)
-  const [busy, setBusy] = useState(false)
-  const [busyLoc, setBusyLoc] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [goNext, setGoNext] = useState(false)
@@ -136,26 +83,6 @@ const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => 
     if (lat !== null && lng !== null) {
       setFlyTo({ lat, lng, zoom: 17, nonce: Date.now() })
     }
-  }
-
-  const generate = async () => {
-    if (!has) return setError('Please choose the property location on the map first.')
-    setBusy(true); setError(''); setNotice('')
-    const res = await generateAccess(projectId, lat as number, lng as number)
-    setBusy(false)
-    setAccess(res.text)
-    setAccessSources(res.sources)
-    setNotice(res.aiUsed ? '✨ Access description generated with AI. Review, edit, then save.' : 'Access description drafted from form data.')
-  }
-
-  const generateLocalityDesc = async () => {
-    if (!has) return setError('Please choose the property location on the map first.')
-    setBusyLoc(true); setError(''); setNotice('')
-    const res = await generateLocality(projectId, lat as number, lng as number)
-    setBusyLoc(false)
-    setLocality(res.text)
-    setLocalitySources(res.sources)
-    setNotice(res.aiUsed ? '✨ Locality description generated with AI. Review, edit, then save.' : 'Locality description drafted from form data.')
   }
 
   const save = async () => {

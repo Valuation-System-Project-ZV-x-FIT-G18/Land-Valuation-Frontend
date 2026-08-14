@@ -44,7 +44,7 @@ const validateLogin = (v: LoginValues) => {
 const InternalLoginForm = () => {
   const { login } = useAuth()
   const navigate = useNavigate()
-  const [notice, setNotice] = useState('')
+  const [notice] = useState('')
   const [forgotOpen, setForgotOpen] = useState(false)
 
   const f = useForm<LoginValues>({

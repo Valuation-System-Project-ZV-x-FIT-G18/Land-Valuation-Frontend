@@ -13,6 +13,7 @@ import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import { validateNamePart } from '@/Common_Pages/validation/validateName'
 import { validateLocalPhone } from '@/Common_Pages/validation/validateLocalPhone'
 import { validateCity } from '@/Common_Pages/validation/validateCity'
+import { validateEmail } from '@/Common_Pages/validation/validateEmail'
 import {
   getUsers,
   updateUser,
@@ -20,7 +21,7 @@ import {
   type RegisteredUser,
   type EditableUser,
 } from '@/Role_Pages/admin/user-details/api/user-details'
-import { emailOk, emptyForm, ROLE_TONE, editFields, inputClass } from '@/Role_Pages/admin/user-details/pages/userDetailsHelpers'
+import { emptyForm, ROLE_TONE, editFields, inputClass } from '@/Role_Pages/admin/user-details/pages/userDetailsHelpers'
 
 // Admin > User Details. Every registered account, with edit/delete.
 const UserDetailsPage = () => {
@@ -75,7 +76,7 @@ const UserDetailsPage = () => {
     const found: Partial<Record<keyof EditableUser, string>> = {}
     found.firstName = validateNamePart(f.firstName, 'First name')
     if (f.lastName.trim()) found.lastName = validateNamePart(f.lastName, 'Last name')
-    if (!emailOk(f.email)) found.email = 'Enter a valid email address.'
+    if (f.email.trim()) found.email = validateEmail(f.email)
     if (f.phone.trim()) found.phone = validateLocalPhone(f.phone)
     if (f.city.trim()) found.city = validateCity(f.city)
     ;(Object.keys(found) as (keyof EditableUser)[]).forEach((k) => {

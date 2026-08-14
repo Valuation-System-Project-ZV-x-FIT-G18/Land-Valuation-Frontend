@@ -1,5 +1,5 @@
 // Sri Lanka map with valuation location markers.
-// Uses an accurate gradient map outline (public/images/lk-vector.svg) and
+// Uses the Sri Lanka map image in public/images/map.png and
 // overlays animated gold pins at real city positions.
 
 // Positions are % of the square map area (derived from the map's coordinates).

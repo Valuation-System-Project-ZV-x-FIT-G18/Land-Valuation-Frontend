@@ -6,18 +6,12 @@ import Card from '@/Common_Pages/components/ui/Card'
 import { validateContact } from '@/Home_Pages/firstpage/components/validateContact'
 import { submitContactMessage } from '@/Home_Pages/firstpage/api/home'
 import type { ContactFormData } from '@/Home_Pages/firstpage/types/home'
+import { toLocalPhone } from '@/Common_Pages/validation/rules'
 
 // Contact form for the bottom of the homepage.
 // All the state/validation/persistence/submit logic comes from useForm.
 
 const emptyForm: ContactFormData = { name: '', email: '', phone: '', message: '' }
-
-const toSriLankanLocalPhone = (value: string) => {
-  let digits = value.replace(/\D/g, '')
-  if (digits.startsWith('94')) digits = digits.slice(2)
-  if (digits.startsWith('0')) digits = digits.slice(1)
-  return digits.slice(0, 9)
-}
 
 const ContactForm = () => {
   const f = useForm<ContactFormData>({
@@ -25,7 +19,7 @@ const ContactForm = () => {
     validate: validateContact,
     onSubmit: submitContactMessage,
     storageKey: 'contactForm', // persist on refresh, clear on submit/close
-    transforms: { phone: toSriLankanLocalPhone },
+    transforms: { phone: toLocalPhone },
     successResetMs: 4000,
   })
 

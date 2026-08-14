@@ -43,7 +43,7 @@ export function buildReportHtml(
   const dd = 0.0025 // ~250 m half-window for the zoomed satellite view
 
   return `<div style="font-family:Calibri,Arial,sans-serif;font-size:12px;color:#111;line-height:1.55">
-   ${coverPage(v, F, Fo)}
+   ${coverPage(F, Fo)}
    ${letterPage(v, F, money)}
    ${boilerplatePage(v, F)}
    ${pageHeader()}
@@ -86,7 +86,7 @@ export function buildReportHtml(
    </table>
 
    ${H('5.2.3', 'BOUNDARIES')}
-   ${boundaryTbl(v, F)}
+   ${boundaryTbl(F)}
    <p style="margin:6px 0">The main access to the property is from its ${F('accessFromBoundary')} boundary.</p>
 
    ${H('5.2.4', 'SURVEY PLAN')}
@@ -206,7 +206,7 @@ const infoRow = (label: string, value: string) =>
   `<tr><td style="padding:3px 14px 3px 0;vertical-align:top;font-weight:600">${esc(label)}</td><td style="padding:3px 0;vertical-align:top">: ${value}</td></tr>`
 
 // ── Page 1: cover ─────────────────────────────────────────────────────────
-const coverPage = (v: Record<string, string>, F: (k: string) => string, Fo: (k: string) => string) => {
+const coverPage = (F: (k: string) => string, Fo: (k: string) => string) => {
   const details = [
     F('landName'),
     `( ${F('ownerName')} )`,
@@ -329,7 +329,7 @@ const extentTbl = (v: Record<string, string>, F: (k: string) => string) => `
   </table>
   <p style="margin:6px 0;font-style:italic">${F('extentVerificationStatement')}</p>`
 
-const boundaryTbl = (v: Record<string, string>, F: (k: string) => string) => `
+const boundaryTbl = (F: (k: string) => string) => `
   <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:4px">
    <tr style="background:#f0f0f0"><th style="border:1px solid #bbb;padding:5px"></th><th style="border:1px solid #bbb;padding:5px">On Plan</th><th style="border:1px solid #bbb;padding:5px">On Site</th></tr>
    <tr><td style="border:1px solid #bbb;padding:5px">North by</td>${cell(F('boundaryNorth'))}${cell(F('siteBoundaryNorth'))}</tr>

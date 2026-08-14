@@ -2,8 +2,6 @@ import type { EditableUser } from '@/Role_Pages/admin/user-details/api/user-deta
 
 // Shared constants/helpers for the User Details table + edit form.
 
-export const emailOk = (v: string) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
-
 export const emptyForm: EditableUser = {
   firstName: '', lastName: '', email: '', phone: '', province: '', district: '', city: '',
 }

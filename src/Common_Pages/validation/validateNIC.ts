@@ -3,13 +3,11 @@
 // New format: 12 digits (e.g. 200012345678).
 // Returns an error message string, or undefined when valid.
 
-const nicPattern = /^(\d{9}[VvXx]|\d{12})$/
+import { NIC_MESSAGE, NIC_PATTERN } from './rules'
 
 export function validateNIC(value: string): string | undefined {
   const v = value.trim()
   if (!v) return 'NIC number is required.'
-  if (!nicPattern.test(v)) {
-    return 'Enter a valid NIC: 12 digits, or 9 digits followed by V.'
-  }
+  if (!NIC_PATTERN.test(v)) return NIC_MESSAGE
   return undefined
 }
