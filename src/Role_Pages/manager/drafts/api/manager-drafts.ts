@@ -69,12 +69,13 @@ export async function draftAction(
   reportHtml?: string,
   reason = '',
   valuationDate = '',
+  reportPrice?: number,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
     const res = await fetch('/api/manager/drafts/action', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ projectId, status, reportHtml, reason, valuationDate: valuationDate || undefined }),
+      body: JSON.stringify({ projectId, status, reportHtml, reason, valuationDate: valuationDate || undefined, reportPrice }),
     })
     const body = await res.json().catch(() => ({}))
     return res.ok && body.ok ? { ok: true } : { ok: false, error: body.error || 'Action failed.' }

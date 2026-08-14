@@ -32,6 +32,8 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
   // Styled rejection dialog: who it goes back to + the typed reason.
   const [rejectTo, setRejectTo] = useState<{ target: string; backTo: string } | null>(null)
   const [reasonText, setReasonText] = useState('')
+  const [lockOpen, setLockOpen] = useState(false)
+  const [reportPrice, setReportPrice] = useState('')
   // Blocking "✓ done" card shown after an action that leaves this page
   // (submit / lock / reject) — closing it navigates back via onDone.
   const [success, setSuccess] = useState<{ title: string; message: string } | null>(null)
@@ -55,9 +57,9 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
 
   const current = () => paperRef.current?.innerHTML ?? html
 
-  const run = async (status: string, busyLabel: string, successTitle: string, successMessage: string, reason = '') => {
+  const run = async (status: string, busyLabel: string, successTitle: string, successMessage: string, reason = '', price?: number) => {
     setBusy(busyLabel); setError('')
-    const res = await draftAction(projectId, status, current(), reason, valuationDate)
+    const res = await draftAction(projectId, status, current(), reason, valuationDate, price)
     setBusy('')
     if (!res.ok) return setError(res.error ?? 'Action failed.')
     setSuccess({ title: successTitle, message: successMessage })
@@ -98,6 +100,16 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
   }
 
   const downloadWord = () => downloadReportWord(current(), `Valuation-Report-${projectId}-V${valuationId}`)
+
+  const confirmLock = async () => {
+    const price = Number(reportPrice.replace(/,/g, ''))
+    if (!Number.isFinite(price) || price <= 0) {
+      setError('Enter a valid report price greater than zero.')
+      return
+    }
+    setLockOpen(false)
+    await run('locked', 'Lock', 'Report Locked', `The report was locked with a payable price of Rs. ${price.toLocaleString('en-LK')}.`, '', price)
+  }
 
   return (
     <div className="mx-auto max-w-4xl space-y-4">
@@ -175,7 +187,7 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
             </Button>
             <Button
               type="button"
-              onClick={() => run('locked', 'Lock', 'Report Locked', 'The valuation report has been finalised. The applicant has been notified to complete payment.')}
+              onClick={() => { setReportPrice(''); setError(''); setLockOpen(true) }}
               disabled={!!busy}
               className="!px-5 !py-2 text-sm"
             >
@@ -219,6 +231,35 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
             <Button type="button" variant="outline" fullWidth onClick={() => setRejectTo(null)}>
               Cancel
             </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal open={lockOpen} onClose={() => setLockOpen(false)}>
+        <div>
+          <h3 className="text-xl font-bold text-white">Set Report Price</h3>
+          <p className="mt-1 text-sm text-emerald-100/70">
+            Enter the final amount the applicant must pay before locking report <span className="font-semibold text-gold-300">{projectId}</span>.
+          </p>
+          <label className="mt-4 block">
+            <span className="mb-1.5 block text-sm font-medium text-emerald-100">Report price (LKR)</span>
+            <div className="flex overflow-hidden rounded-xl border border-white/15 bg-white/5 focus-within:border-gold-400/60 focus-within:ring-2 focus-within:ring-gold-400/30">
+              <span className="flex items-center border-r border-white/15 px-4 text-sm font-semibold text-gold-200">Rs.</span>
+              <input
+                autoFocus
+                type="number"
+                min="1"
+                step="0.01"
+                value={reportPrice}
+                onChange={(e) => setReportPrice(e.target.value)}
+                placeholder="e.g. 7500"
+                className="w-full bg-transparent px-4 py-3 text-white outline-none placeholder:text-emerald-200/40"
+              />
+            </div>
+          </label>
+          <div className="mt-5 flex gap-3">
+            <Button type="button" fullWidth disabled={!!busy || !reportPrice} onClick={confirmLock}>Lock report</Button>
+            <Button type="button" variant="outline" fullWidth disabled={!!busy} onClick={() => setLockOpen(false)}>Cancel</Button>
           </div>
         </div>
       </Modal>

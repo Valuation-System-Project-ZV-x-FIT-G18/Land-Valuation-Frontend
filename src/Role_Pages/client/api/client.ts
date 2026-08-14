@@ -10,6 +10,7 @@ export type ClientReport = {
   paid: boolean
   slipPending: boolean
   fee: number
+  reportPrice: number
   marketValue: number
   feeBreakdown: FeeBand[]
   scaleFee: number
@@ -24,20 +25,6 @@ export async function getApplicantReports(nic: string): Promise<ClientReport[]> 
     return (await res.json()).projects ?? []
   } catch {
     return []
-  }
-}
-
-export async function payForReport(projectId: string): Promise<{ ok: boolean; error?: string }> {
-  try {
-    const res = await fetch('/api/client/applicant/pay', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ projectId }),
-    })
-    const body = await res.json().catch(() => ({}))
-    return res.ok && body.ok ? { ok: true } : { ok: false, error: body.error || 'Payment failed.' }
-  } catch {
-    return { ok: false, error: 'Could not reach the server.' }
   }
 }
 
