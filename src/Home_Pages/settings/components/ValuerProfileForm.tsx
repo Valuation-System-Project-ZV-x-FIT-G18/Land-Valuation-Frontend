@@ -10,7 +10,7 @@ type Errors = Partial<Record<keyof ValuerProfile, string>>
 
 const blank = (userId: string, name: string): ValuerProfile => ({
   userId, valuerName: name, conflictOfInterest: 'No Conflict', conflictDetails: '',
-  professionalQualifications: '', ivslRegistrationNumber: '', ricsRegistrationNumber: '',
+  professionalQualifications: '', ivslRegistrationNumber: '', ricsRegistrationNumber: '', ricsMembership: '',
   relevantExperience: 'Confirmed', indemnityStatus: 'Not Available',
   indemnityPolicyNumber: '', indemnityExpiryDate: '',
 })
@@ -72,6 +72,7 @@ const ValuerProfileForm = ({ userId, defaultName, onSaved }: Props) => {
             <FormField label="Valuer Name *" name="valuerName" value={profile.valuerName} onChange={(e) => set('valuerName', e.target.value)} error={errors.valuerName} placeholder="Full name used to sign reports" />
             <FormField label="IVSL Registration Number *" name="ivslRegistrationNumber" value={profile.ivslRegistrationNumber} onChange={(e) => set('ivslRegistrationNumber', e.target.value)} error={errors.ivslRegistrationNumber} placeholder="e.g. F/315" />
             <FormField label="RICS Registration Number" name="ricsRegistrationNumber" value={profile.ricsRegistrationNumber} onChange={(e) => set('ricsRegistrationNumber', e.target.value)} placeholder="e.g. 6698015" />
+            <FormField label="RICS Membership (optional)" name="ricsMembership" value={profile.ricsMembership} onChange={(e) => set('ricsMembership', e.target.value)} placeholder="e.g. FRICS or MRICS" />
           </div>
         </section>
 

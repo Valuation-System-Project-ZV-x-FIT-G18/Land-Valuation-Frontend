@@ -82,7 +82,7 @@ export function buildReportHtml(
    ${H('5.2.2', 'VALIDITY OF THE SURVEY PLAN')}
    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:4px">
      <tr style="background:#f0f0f0"><th style="border:1px solid #bbb;padding:5px;text-align:left">Date of Survey Plan</th><th style="border:1px solid #bbb;padding:5px;text-align:left">Exceeding over 10 years</th><th style="border:1px solid #bbb;padding:5px;text-align:left">Endorsement / new survey plan</th></tr>
-     <tr><td style="border:1px solid #bbb;padding:5px">${F('surveyDate')}</td><td style="border:1px solid #bbb;padding:5px">${F('planOver10Years')}</td><td style="border:1px solid #bbb;padding:5px">${F('planEndorsementOrNew')}</td></tr>
+     <tr><td style="border:1px solid #bbb;padding:5px">${F('surveyDate')}</td><td style="border:1px solid #bbb;padding:5px">${F('planOver10Years')}</td><td style="border:1px solid #bbb;padding:5px">${F('surveyPlanRequiredAction')}</td></tr>
    </table>
 
    ${H('5.2.3', 'BOUNDARIES')}
@@ -90,21 +90,20 @@ export function buildReportHtml(
    <p style="margin:6px 0">The main access to the property is from its ${F('accessFromBoundary')} boundary.</p>
 
    ${H('5.2.4', 'SURVEY PLAN')}
-   <div style="margin:8px 0">${surveyPlanImg(projectId)}</div>
+   <div style="margin:8px 0">${surveyPlanImg(v, projectId)}</div>
 
    ${H('5.3', 'ACCESS AND NATURE OF THE ACCESSIBILITY')}
    ${P(v.accessLocationDescription, true)}
    <p style="margin:6px 0">Coordinate of the Location : ${F('gpsCoordinates')} &nbsp;&nbsp; Location : ${F('propertyLocationCity')}</p>
    ${hasGps ? `<div style="display:flex;flex-wrap:wrap;gap:10px;margin:8px 0">
-     <figure style="margin:0;text-align:center;font-size:10px;color:#555">Satellite view<br>${satImg(lat, lng, dd)}</figure>
-     <figure style="margin:0;text-align:center;font-size:10px;color:#555">Location map<br>${mapImg(lat, lng)}</figure>
+     <figure style="margin:0;text-align:center;font-size:10px;color:#555">Satellite view<br>${satImg(lat, lng, dd, v.satelliteLocationImage)}</figure>
+     <figure style="margin:0;text-align:center;font-size:10px;color:#555">Location map<br>${mapImg(lat, lng, v.locationMapImage)}</figure>
    </div>` : ''}
 
    ${H('5.4', 'DESCRIPTION OF THE LAND')}${P(v.landDescription, true)}
 
    ${H('5.5', 'DETAIL DESCRIPTION OF THE LAND')}
    ${photosTbl(v, projectId)}
-   ${v.imageAnalysis ? P(v.imageAnalysis) : ''}
    <p style="margin:10px 0 4px;font-weight:600">Additional photographs of the property</p>
    ${additionalPhotos(projectId)}
 
@@ -120,7 +119,7 @@ export function buildReportHtml(
    ${H('7.', 'LOCALITY')}${P(v.localityFacilities, true)}
 
    ${H('8.', 'APPROACH AND METHOD TO THE VALUATION')}
-   ${P('The valuation approaches include the cost approach, the market approach (comparison method), and the income approach. In assessing the subject property, I have applied the Contractor’s Test Method (DRC) of valuation under the Cost Approach.')}
+   ${P(v.valuationApproachStatement || 'In assessing the subject land, I have applied the Direct Comparison Method under the Market Approach. The available sales and asking-price evidence of comparable lands has been analysed with appropriate consideration of location, extent, access, shape, physical characteristics, planning restrictions and prevailing market conditions.')}
 
    ${H('9.', 'EVIDENCE OF LAND VALUES & RENTALS')}
    ${H('9.1', 'RICS EVIDENCE HIERARCHY')}
@@ -325,10 +324,10 @@ const extentTbl = (v: Record<string, string>, F: (k: string) => string) => `
   <table style="width:100%;border-collapse:collapse;font-size:12px">
    <tr>
     ${cell(`<b>Survey Plan</b> — Lot No. ${F('lotNo')} in Survey Plan No. ${F('surveyPlanNo')} dated ${F('surveyDate')} made by ${F('surveyorName')} Licensed Surveyor.<br>Extent: ${F('extentAcres')} A - ${F('extentRoods')} R - ${F('extentPerches')} P &nbsp;(Hectares: ${F('extentHectares')})`, 'width:50%')}
-    ${cell(`<b>Deed</b> — Deed of Transfer No. ${F('deedNo')} dated ${F('deedDate')} attested by ${F('attorney')} Attorney-at-Law${v.notary ? ` &amp; ${esc(v.notary)}` : ''}.<br>Extent: ${F('deedAcres')} A - ${F('deedRoods')} R - ${F('deedPerches')} P &nbsp;(Hectares: ${F('deedHectares')})`)}
+    ${cell(`<b>Deed</b> — ${F('deedType')} No. ${F('deedNo')} dated ${F('deedDate')} attested by ${F('attorney')} Attorney-at-Law${v.notary ? ` &amp; ${esc(v.notary)}` : ''}.<br>Extent: ${F('deedAcres')} A - ${F('deedRoods')} R - ${F('deedPerches')} P &nbsp;(Hectares: ${F('deedHectares')})`)}
    </tr>
   </table>
-  <p style="margin:6px 0;font-style:italic">The extent mentioned in the above survey plan tallies with the above deed.</p>`
+  <p style="margin:6px 0;font-style:italic">${F('extentVerificationStatement')}</p>`
 
 const boundaryTbl = (v: Record<string, string>, F: (k: string) => string) => `
   <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:4px">
@@ -339,37 +338,39 @@ const boundaryTbl = (v: Record<string, string>, F: (k: string) => string) => `
    <tr><td style="border:1px solid #bbb;padding:5px">West by</td>${cell(F('boundaryWest'))}${cell(F('siteBoundaryWest'))}</tr>
   </table>`
 
-const surveyPlanImg = (projectId: string) =>
-  `<img src="/api/coordinator/projects/file?projectId=${encodeURIComponent(projectId)}&type=surveyPlan" style="max-width:100%;border:1px solid #bbb" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=color:#999>[ Survey plan not available as an image ]</span>')"/>`
+const surveyPlanImg = (v: Record<string, string>, projectId: string) => {
+  const src = v.surveyPlanImage || `/api/coordinator/projects/file?projectId=${encodeURIComponent(projectId)}&type=surveyPlan`
+  return `<img src="${esc(src)}" alt="Survey plan" style="display:block;max-width:100%;max-height:720px;margin:0 auto;border:1px solid #bbb;object-fit:contain" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=color:#999>[ Survey plan not available as an image ]</span>')"/>`
+}
 
-const mapImg = (lat: number, lng: number) =>
-  `<img src="https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=16&size=360x260&markers=${lat},${lng},red" style="max-width:100%;border:1px solid #bbb"/>`
+const mapImg = (lat: number, lng: number, mappedSrc?: string) =>
+  `<img src="${esc(mappedSrc || `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=16&size=360x260&markers=${lat},${lng},red`)}" alt="Location map" style="max-width:100%;border:1px solid #bbb"/>`
 
-const satImg = (lat: number, lng: number, d: number) =>
-  `<img src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${lng - d},${lat - d},${lng + d},${lat + d}&bboxSR=4326&size=360,260&format=png&f=image" style="max-width:100%;border:1px solid #bbb" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=color:#999>[ Satellite view unavailable ]</span>')"/>`
+const satImg = (lat: number, lng: number, d: number, mappedSrc?: string) =>
+  `<img src="${esc(mappedSrc || `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${lng - d},${lat - d},${lng + d},${lat + d}&bboxSR=4326&size=360,260&format=png&f=image`)}" alt="Satellite location" style="max-width:100%;border:1px solid #bbb" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=color:#999>[ Satellite view unavailable ]</span>')"/>`
 
-// The 10 required site photographs (label · image · caption), matching 5.5.
-const photosTbl = (v: Record<string, string>, projectId: string) => {
-  const rows: [string, string, string][] = [
-    ['accessRoad', 'Access road', v.photoAccessRoad || ''],
-    ['routeFromMainRoad', 'Route from main road', v.photoRouteFromMainRoad || ''],
-    ['frontView', 'Front view of the land', v.photoFrontView || ''],
-    ['rearView', 'Rear view of the land', v.photoRearView || ''],
-    ['leftSideView', 'Left side view of land', v.photoLeftSide || ''],
-    ['rightSideView', 'Right side view of the land', v.photoRightSide || ''],
-    ['eastBoundary', 'East boundary of the land', v.photoEastBoundary || ''],
-    ['southBoundary', 'South boundary of the land', v.photoSouthBoundary || ''],
-    ['westBoundary', 'West boundary of the land', v.photoWestBoundary || ''],
-    ['northBoundary', 'North boundary of the land', v.photoNorthBoundary || ''],
+// Land photographs only. AI captions are excluded because they describe what
+// is visible, rather than providing a professional valuation description.
+const photosTbl = (_v: Record<string, string>, projectId: string) => {
+  const rows: [string, string][] = [
+    ['accessRoad', 'Access road'],
+    ['routeFromMainRoad', 'Route from main road'],
+    ['frontView', 'Front view of the land'],
+    ['rearView', 'Rear view of the land'],
+    ['leftSideView', 'Left side view of land'],
+    ['rightSideView', 'Right side view of the land'],
+    ['eastBoundary', 'East boundary of the land'],
+    ['southBoundary', 'South boundary of the land'],
+    ['westBoundary', 'West boundary of the land'],
+    ['northBoundary', 'North boundary of the land'],
   ]
   return `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:6px">
-   <tr style="background:#f0f0f0"><th style="border:1px solid #bbb;padding:5px;text-align:left;width:26%">Component</th><th style="border:1px solid #bbb;padding:5px;width:30%">Image</th><th style="border:1px solid #bbb;padding:5px;text-align:left">Description</th></tr>
+   <tr style="background:#f0f0f0"><th style="border:1px solid #bbb;padding:5px;text-align:left;width:35%">Land photograph</th><th style="border:1px solid #bbb;padding:5px">Image</th></tr>
    ${rows
      .map(
-       ([t, label, caption]) => `<tr>
+       ([t, label]) => `<tr>
      <td style="border:1px solid #bbb;padding:6px;font-weight:600">${esc(label)}</td>
-     <td style="border:1px solid #bbb;padding:6px;text-align:center"><img src="${photoUrl(projectId, t)}" style="max-width:170px;max-height:120px" onerror="this.style.display='none';this.parentNode.innerHTML='<span style=color:#999>no photo</span>'"/></td>
-     <td style="border:1px solid #bbb;padding:6px">${caption ? esc(caption) : `Photograph of the ${esc(label.toLowerCase())} on file.`}</td>
+     <td style="border:1px solid #bbb;padding:6px;text-align:center"><img src="${photoUrl(projectId, t)}" alt="${esc(label)}" style="max-width:260px;max-height:170px" onerror="this.style.display='none';this.parentNode.innerHTML='<span style=color:#999>no photo</span>'"/></td>
     </tr>`,
      )
      .join('')}

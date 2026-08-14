@@ -14,12 +14,12 @@ const Layout = () => {
   const location = useLocation()
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-hidden bg-gradient-to-br from-emerald-800 via-emerald-700 to-green-800">
+    <div className="professional-light relative flex min-h-screen w-full flex-col overflow-hidden bg-gradient-to-br from-white via-sky-50 to-blue-100 text-slate-800">
       {/* Decorative background: soft brand glow + two floating blobs.
           Green = land/nature, gold = value. Sizes grow with the screen. */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden bg-brand-radial">
-        <div className="absolute -top-10 -right-10 h-48 w-48 animate-float rounded-full bg-emerald-500 opacity-20 mix-blend-multiply blur-3xl sm:h-72 sm:w-72 lg:h-96 lg:w-96" />
-        <div className="absolute -bottom-10 -left-10 h-48 w-48 animate-float rounded-full bg-gold-500 opacity-20 mix-blend-multiply blur-3xl sm:h-72 sm:w-72 lg:h-96 lg:w-96" style={{ animationDelay: '3s' }} />
+        <div className="absolute -top-10 -right-10 h-48 w-48 animate-float rounded-full bg-sky-300 opacity-25 mix-blend-multiply blur-3xl sm:h-72 sm:w-72 lg:h-96 lg:w-96" />
+        <div className="absolute -bottom-10 -left-10 h-48 w-48 animate-float rounded-full bg-blue-200 opacity-30 mix-blend-multiply blur-3xl sm:h-72 sm:w-72 lg:h-96 lg:w-96" style={{ animationDelay: '3s' }} />
       </div>
 
       {/* Header shows on every page */}

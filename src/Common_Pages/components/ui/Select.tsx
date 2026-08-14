@@ -27,14 +27,14 @@ const Select = ({
   ...rest
 }: SelectProps) => (
   <select
-    className={`rounded-xl border border-white/15 bg-emerald-900 text-white outline-none transition focus:border-gold-400/60 focus:ring-2 focus:ring-gold-400/30 ${pad[sizeVariant]} ${className}`}
+    className={`rounded-xl border border-slate-300 bg-white text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${pad[sizeVariant]} ${className}`}
     {...rest}
   >
     {options.map((o) => {
       const value = typeof o === 'string' ? o : o.value
       const label = typeof o === 'string' ? o : o.label
       return (
-        <option key={value} value={value} className="bg-emerald-900">
+        <option key={value} value={value} className="bg-white">
           {label}
         </option>
       )

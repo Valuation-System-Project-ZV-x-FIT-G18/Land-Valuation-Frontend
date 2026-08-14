@@ -3,9 +3,10 @@
 
 const Footer = () => {
   return (
-    <footer className="border-t border-gold-500/20 bg-emerald-950/40 backdrop-blur-md">
-      <div className="mx-auto max-w-7xl px-4 py-6 text-center text-sm text-emerald-100/70 sm:px-8">
-        &copy; All rights reserved.
+    <footer className="border-t border-slate-200 bg-white/90">
+      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-sm text-slate-500 sm:flex-row sm:px-8">
+        <span className="font-semibold text-slate-700">CODEHUB Land Valuation</span>
+        <span>&copy; {new Date().getFullYear()} All rights reserved.</span>
       </div>
     </footer>
   )

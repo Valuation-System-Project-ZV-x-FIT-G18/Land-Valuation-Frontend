@@ -15,6 +15,7 @@ export const projectSections: SectionConfig[] = [
       { name: 'propertyNumber', label: 'Property Number', required: true },
       { name: 'streetName', label: 'Street / Road Name', required: true },
       { name: 'villageTown', label: 'Village / Town', required: true },
+      { name: 'propertyCity', label: 'Property City (optional)', placeholder: 'e.g. Pannipitiya' },
       { name: 'gnDivision', label: 'GN Division (Grama Niladhari)' },
       { name: 'dsDivision', label: 'DS Division (Divisional Secretariat)' },
       { name: 'province', label: 'Province', type: 'select', options: provinces, required: true, placeholder: 'Select province' },

@@ -13,20 +13,20 @@ type StatCardProps = {
 
 const StatCard = ({ label, value, icon, hint, className = '' }: StatCardProps) => (
   <div
-    className={`card-hover rounded-2xl border border-white/10 bg-white/[0.04] p-5 shadow-card backdrop-blur-sm hover:border-gold-400/30 ${className}`}
+    className={`card-hover rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:border-blue-300 hover:shadow-md ${className}`}
   >
     <div className="flex items-center justify-between">
-      <p className="text-xs font-medium uppercase tracking-wide text-emerald-200/60">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
         {label}
       </p>
       {icon && (
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gold-400/10 text-lg ring-1 ring-gold-400/20">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-lg text-blue-700 ring-1 ring-blue-100">
           {icon}
         </span>
       )}
     </div>
-    <p className="mt-3 text-3xl font-bold text-white">{value}</p>
-    {hint && <p className="mt-1 text-xs text-emerald-100/50">{hint}</p>}
+    <p className="mt-3 text-3xl font-bold text-slate-900">{value}</p>
+    {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
   </div>
 )
 

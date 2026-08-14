@@ -10,13 +10,13 @@ import '@/Home_Pages/firstpage/styles/home-page.css'
 // page's sections top to bottom. Sections below the hero reveal on scroll.
 const Home = () => {
   return (
-    <>
+    <div className="home-page-shell">
       <Hero />
       <HowItWorks />
       <Audiences />
       <Features />
       <CtaBand />
-    </>
+    </div>
   )
 }
 

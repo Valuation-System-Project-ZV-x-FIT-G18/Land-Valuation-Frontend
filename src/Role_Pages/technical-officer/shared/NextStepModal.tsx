@@ -4,8 +4,8 @@ import Button from '@/Common_Pages/components/ui/Button'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 
 // Shown after a Technical Officer saves a step. Offers to continue to the next
-// step in the workflow (Inspection → Site Photo → GPS → Nearby → Descriptions →
-// Draft). Keeps the whole flow moving without hunting through the sidebar.
+// step in the workflow (Inspection → Site Photo → GPS → Nearby → Descriptions).
+// Keeps the whole flow moving without hunting through the sidebar.
 type Props = {
   open: boolean
   onClose: () => void

@@ -26,15 +26,15 @@ const Header = () => {
   // Underline that grows from the left on hover; solid when on the active page.
   const linkClass = (to: string) => {
     const active = location.pathname === to
-    return `relative text-sm font-medium transition-colors duration-200 sm:text-base after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:rounded-full after:bg-gold-400 after:transition-all after:duration-300 ${
+    return `relative text-sm font-medium transition-colors duration-200 sm:text-base after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:rounded-full after:bg-blue-600 after:transition-all after:duration-300 ${
       active
-        ? 'text-gold-400 after:w-full'
-        : 'text-emerald-50/90 hover:text-gold-400 after:w-0 hover:after:w-full'
+        ? 'text-blue-700 after:w-full'
+        : 'text-slate-600 hover:text-blue-700 after:w-0 hover:after:w-full'
     }`
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gold-500/20 bg-emerald-800/50 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/90 shadow-sm backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center px-4 py-3 sm:px-8 sm:py-4">
         {/* ---- Left side: logo + company name ---- */}
         <Link
@@ -49,10 +49,10 @@ const Header = () => {
           />
 
           <span className="flex flex-col leading-none">
-            <span className="bg-gradient-to-r from-white to-gold-400 bg-clip-text text-xl font-bold tracking-wide text-transparent sm:text-2xl">
+            <span className="bg-gradient-to-r from-slate-950 to-blue-700 bg-clip-text text-xl font-bold tracking-wide text-transparent sm:text-2xl">
               CODEHUB
             </span>
-            <span className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.2em] text-emerald-200/90 sm:text-xs">
+            <span className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.2em] text-slate-500 sm:text-xs">
               Land Valuation
             </span>
           </span>
@@ -76,7 +76,7 @@ const Header = () => {
               onClick={() => setMenuOpen((v) => !v)}
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={menuOpen}
-              className="ml-auto rounded-lg p-2 text-white transition hover:bg-white/10 sm:hidden"
+              className="ml-auto rounded-lg p-2 text-slate-700 transition hover:bg-blue-50 sm:hidden"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="h-6 w-6">
                 {menuOpen ? <path d="M18 6 6 18M6 6l12 12" /> : <path d="M3 12h18M3 6h18M3 18h18" />}
@@ -88,7 +88,7 @@ const Header = () => {
 
       {/* Mobile dropdown panel */}
       {showMenu && menuOpen && (
-        <nav className="animate-fade-in border-t border-white/10 bg-emerald-900/80 px-4 py-3 backdrop-blur-md sm:hidden">
+        <nav className="animate-fade-in border-t border-slate-200 bg-white px-4 py-3 shadow-lg sm:hidden">
           {NAV.map((item) => (
             <Link
               key={item.label}
@@ -96,8 +96,8 @@ const Header = () => {
               onClick={() => setMenuOpen(false)}
               className={`block rounded-lg px-3 py-2.5 text-base font-medium transition ${
                 location.pathname === item.to
-                  ? 'bg-gold-400/15 text-gold-200'
-                  : 'text-emerald-50/90 hover:bg-white/5 hover:text-gold-300'
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700'
               }`}
             >
               {item.label}

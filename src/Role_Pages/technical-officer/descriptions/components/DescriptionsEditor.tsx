@@ -5,7 +5,6 @@ import GradientText from '@/Common_Pages/components/ui/GradientText'
 import SectionCard from './SectionCard'
 import ValuationSection from './ValuationSection'
 import EvidenceSection from './EvidenceSection'
-import NextStepModal from '@/Role_Pages/technical-officer/shared/NextStepModal'
 import {
   getSources,
   getDescriptions,
@@ -65,7 +64,6 @@ const DescriptionsEditor = ({ projectId, onBack }: Props) => {
   const [photos, setPhotos] = useState<string[]>([])
   const [busy, setBusy] = useState<SectionKey | 'all' | null>(null)
   const [saving, setSaving] = useState(false)
-  const [goNext, setGoNext] = useState(false)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
 
@@ -138,7 +136,6 @@ const DescriptionsEditor = ({ projectId, onBack }: Props) => {
     setSaving(false)
     if (res.ok) {
       setNotice('✓ Descriptions saved to the database.')
-      setGoNext(true)
     } else {
       setError(res.error ?? 'Could not save.')
     }
@@ -205,15 +202,6 @@ const DescriptionsEditor = ({ projectId, onBack }: Props) => {
         {saving ? 'Saving…' : 'OK — Save Descriptions'}
       </Button>
 
-
-      <NextStepModal
-        open={goNext}
-        onClose={() => setGoNext(false)}
-        nextLabel="Create Draft"
-        nextTo="/technical-officer/draft"
-        projectId={projectId}
-        message="Descriptions saved."
-      />
     </div>
   )
 }

@@ -5,6 +5,7 @@ export type Applicant = {
   userId?: string
   name: string
   initials?: string
+  applicantBusinessName?: string
   nic: string
   email?: string
   phone?: string

@@ -17,7 +17,7 @@ type ButtonProps = {
 
 // Layout/shape shared by every variant (colors + padding added per size/variant).
 const base =
-  'group relative inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-200 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60'
+  'group relative inline-flex items-center justify-center gap-2 rounded-xl border border-transparent font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-55'
 
 // Padding + text size per size option.
 const sizes = {
@@ -29,15 +29,15 @@ const sizes = {
 // Colors specific to each variant.
 const variants = {
   primary:
-    'bg-gradient-to-r from-amber-300 to-gold-400 text-emerald-950 shadow-lg shadow-gold-500/30 hover:from-amber-200 hover:to-gold-300 hover:shadow-xl hover:shadow-gold-500/40 hover:-translate-y-0.5 focus:ring-gold-300/50',
+    'bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-md shadow-blue-900/15 hover:from-blue-800 hover:to-blue-700 hover:-translate-y-0.5 focus:ring-blue-300',
   outline:
-    'border border-white/25 bg-white/5 text-white hover:border-gold-300/60 hover:bg-white/10 focus:ring-gold-300/40',
+    'border border-slate-300 bg-white text-slate-700 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-800 focus:ring-blue-200',
   success:
-    'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25 hover:from-emerald-400 hover:to-emerald-500 hover:-translate-y-0.5 focus:ring-emerald-400/40',
+    'bg-emerald-700 text-white shadow-sm hover:bg-emerald-800 hover:-translate-y-0.5 focus:ring-emerald-300',
   danger:
-    'border border-red-400/40 bg-red-500/10 text-red-200 hover:border-red-400/70 hover:bg-red-500/20 hover:text-red-100 focus:ring-red-400/40',
+    'border-red-300 bg-white text-red-700 hover:border-red-500 hover:bg-red-50 focus:ring-red-200',
   ghost:
-    'text-emerald-100/80 hover:bg-white/10 hover:text-white focus:ring-white/20',
+    'text-slate-600 hover:bg-blue-50 hover:text-blue-800 focus:ring-blue-100',
 }
 
 // Small inline spinner shown while `loading`.

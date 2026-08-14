@@ -36,3 +36,23 @@ export async function saveReport(projectId: string, reportHtml: string): Promise
     return { ok: false, error: 'Could not reach the server.' }
   }
 }
+
+export async function downloadTemplateReport(projectId: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch(`/api/technical-officer/draft/word?projectId=${encodeURIComponent(projectId)}`)
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      return { ok: false, error: body.error || 'Could not generate the Word report.' }
+    }
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `Valuation-Report-${projectId}.docx`
+    link.click()
+    URL.revokeObjectURL(url)
+    return { ok: true }
+  } catch {
+    return { ok: false, error: 'Could not reach the server.' }
+  }
+}

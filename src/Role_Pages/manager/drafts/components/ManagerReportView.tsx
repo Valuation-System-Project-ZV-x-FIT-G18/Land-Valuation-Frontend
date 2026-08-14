@@ -6,8 +6,7 @@ import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { getBuildValues, getSavedReport } from '@/Role_Pages/technical-officer/draft/api/draft'
 import { buildReportHtml } from '@/Role_Pages/technical-officer/draft/utils/buildReportHtml'
 import { getValuation, getEvidence } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
-import { draftAction, STATUS_LABEL } from '@/Role_Pages/manager/drafts/api/manager-drafts'
-import { downloadReportPdf } from '@/Common_Pages/utils/downloadReportPdf'
+import { draftAction, getDraftFields, STATUS_LABEL } from '@/Role_Pages/manager/drafts/api/manager-drafts'
 import { downloadReportWord } from '@/Common_Pages/utils/downloadReportWord'
 
 type Props = {
@@ -28,6 +27,8 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
   const [busy, setBusy] = useState('')
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
+  const [inspectionDate, setInspectionDate] = useState('')
+  const [valuationDate, setValuationDate] = useState('')
   // Styled rejection dialog: who it goes back to + the typed reason.
   const [rejectTo, setRejectTo] = useState<{ target: string; backTo: string } | null>(null)
   const [reasonText, setReasonText] = useState('')
@@ -36,6 +37,10 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
   const [success, setSuccess] = useState<{ title: string; message: string } | null>(null)
 
   useEffect(() => {
+    getDraftFields(projectId).then((fields) => {
+      setInspectionDate(fields.inspectionDate)
+      setValuationDate(fields.valuationDate || new Date().toISOString().slice(0, 10))
+    })
     ;(async () => {
       const saved = await getSavedReport(projectId)
       if (saved) { setHtml(saved); setLoading(false); return }
@@ -52,7 +57,7 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
 
   const run = async (status: string, busyLabel: string, successTitle: string, successMessage: string, reason = '') => {
     setBusy(busyLabel); setError('')
-    const res = await draftAction(projectId, status, current(), reason)
+    const res = await draftAction(projectId, status, current(), reason, valuationDate)
     setBusy('')
     if (!res.ok) return setError(res.error ?? 'Action failed.')
     setSuccess({ title: successTitle, message: successMessage })
@@ -60,7 +65,7 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
 
   const save = async () => {
     setBusy('Save'); setError('')
-    const res = await draftAction(projectId, reviewStatus || 'draft', current())
+    const res = await draftAction(projectId, reviewStatus || 'draft', current(), '', valuationDate)
     setBusy('')
     res.ok ? setNotice('✓ Saved.') : setError(res.error ?? 'Could not save.')
   }
@@ -92,7 +97,6 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
     )
   }
 
-  const download = () => downloadReportPdf(current(), `Valuation-Report-${projectId}-V${valuationId}`)
   const downloadWord = () => downloadReportWord(current(), `Valuation-Report-${projectId}-V${valuationId}`)
 
   return (
@@ -114,11 +118,23 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
         </div>
       )}
 
+      <div className="grid gap-3 rounded-xl border border-white/10 bg-white/5 p-4 sm:grid-cols-2">
+        <label className="block">
+          <span className="mb-1.5 block text-xs font-medium text-emerald-100/70">Inspection date</span>
+          <input type="date" value={inspectionDate} readOnly className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-emerald-100/65 outline-none" />
+          <span className="mt-1 block text-[11px] text-emerald-100/45">Saved by the Technical Officer in Inspection Data.</span>
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-xs font-medium text-emerald-100/70">Valuation date</span>
+          <input type="date" value={valuationDate} disabled={readOnly} onChange={(e) => setValuationDate(e.target.value)} className="w-full rounded-lg border border-white/15 bg-slate-800 px-3 py-2 text-sm text-white outline-none focus:border-gold-400/60 disabled:opacity-60" />
+          <span className="mt-1 block text-[11px] text-emerald-100/45">Confirmed by the Manager and used for {'{valuationDate}'}.</span>
+        </label>
+      </div>
+
       <div className="flex flex-wrap items-center justify-center gap-3">
         {!readOnly && (
           <Button type="button" variant="outline" onClick={save} disabled={!!busy} className="!px-5 !py-2 text-sm">{busy === 'Save' ? 'Saving…' : '💾 Save edits'}</Button>
         )}
-        <Button type="button" variant="outline" onClick={download} className="!px-5 !py-2 text-sm">⬇ Download PDF</Button>
         <Button type="button" variant="outline" onClick={downloadWord} className="!px-5 !py-2 text-sm">⬇ Download Word</Button>
         {level === 'L3' && (reviewStatus === 'pending_l3' || reviewStatus === 'draft' || reviewStatus === 'rejected_l3') && (
           <>

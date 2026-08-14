@@ -26,8 +26,6 @@ import SitePhotoPage from '@/Role_Pages/technical-officer/site-photos/pages/Site
 import GenerateDescriptionsPage from '@/Role_Pages/technical-officer/descriptions/pages/GenerateDescriptionsPage'
 import NearbyAnalysisPage from '@/Role_Pages/technical-officer/nearby/pages/NearbyAnalysisPage'
 import GpsMapPage from '@/Role_Pages/technical-officer/mapping/pages/GpsMapPage'
-import CreateDraftPage from '@/Role_Pages/technical-officer/draft/pages/CreateDraftPage'
-import TOCorrectionsPage from '@/Role_Pages/technical-officer/draft/pages/TOCorrectionsPage'
 import ManagerDraftsPage from '@/Role_Pages/manager/drafts/pages/ManagerDraftsPage'
 import ApprovedDraftsPage from '@/Role_Pages/manager/drafts/pages/ApprovedDraftsPage'
 import MakePaymentPage from '@/Role_Pages/client/pages/MakePaymentPage'
@@ -45,6 +43,7 @@ import TOAttendancePage from '@/Role_Pages/technical-officer/attendance/pages/TO
 import FleetSummaryPage from '@/Role_Pages/coordinator/fleet-management/pages/FleetSummaryPage'
 import AssignOfficersPage from '@/Role_Pages/coordinator/fleet-management/pages/AssignOfficersPage'
 import TOAttendanceReviewPage from '@/Role_Pages/coordinator/fleet-management/pages/TOAttendanceReviewPage'
+import CreateDraftPage from '@/Role_Pages/technical-officer/draft/pages/CreateDraftPage'
 
 // Defines every URL and which page component it shows.
 // Layout (header, footer, background, login popup) wraps all pages.
@@ -98,16 +97,12 @@ const App = () => {
               element={<GpsMapPage />}
             />
             <Route
-              path="/technical-officer/draft"
-              element={<CreateDraftPage />}
-            />
-            <Route
-              path="/technical-officer/corrections"
-              element={<TOCorrectionsPage />}
-            />
-            <Route
               path="/technical-officer/attendance"
               element={<TOAttendancePage />}
+            />
+            <Route
+              path="/technical-officer/draft"
+              element={<CreateDraftPage />}
             />
             <Route
               path="/manager/check-drafts"

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import { roleMenus } from '@/Common_Pages/components/sidebar/roleMenus'
+import SidebarIcon from '@/Common_Pages/components/sidebar/SidebarIcon'
 
 // Fixed, full-height app sidebar for internal pages.
 // 256px wide, pinned left on desktop; slides in as a drawer on mobile.
@@ -12,14 +13,14 @@ const itemBase =
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `${itemBase} ${
     isActive
-      ? 'bg-gradient-to-r from-gold-400/25 to-transparent text-gold-100 shadow-sm'
-      : 'text-emerald-100/70 hover:bg-white/5 hover:text-white'
+      ? 'bg-blue-200 text-blue-950 shadow-sm ring-1 ring-blue-300'
+      : 'text-slate-600 hover:bg-white hover:text-blue-800'
   }`
 
 const Chip = ({ children, active }: { children: ReactNode; active: boolean }) => (
   <span
     className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base transition ${
-      active ? 'bg-gold-400/20' : 'bg-white/5 group-hover:bg-white/10'
+      active ? 'bg-blue-600 text-white' : 'bg-slate-200/70 text-slate-600 group-hover:bg-blue-100'
     }`}
   >
     {children}
@@ -37,7 +38,7 @@ const Item = (props: {
     {({ isActive }) => (
       <>
         {isActive && (
-          <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 animate-fade-in rounded-r bg-gold-400 shadow-[0_0_10px_rgba(227,194,74,0.6)]" />
+          <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 animate-fade-in rounded-r bg-blue-600" />
         )}
         <Chip active={isActive}>{props.icon}</Chip>
         <span>{props.label}</span>
@@ -70,7 +71,7 @@ const Sidebar = ({ open, onClose }: SidebarProps) => {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-white/10 bg-gradient-to-b from-emerald-900 to-emerald-950 shadow-2xl transition-transform duration-300 md:translate-x-0 ${
+        className={`app-sidebar fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-blue-200 bg-gradient-to-b from-blue-50 via-blue-100 to-[#dce9f8] shadow-lg transition-transform duration-300 md:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -78,9 +79,9 @@ const Sidebar = ({ open, onClose }: SidebarProps) => {
         <Link
           to="/dashboard"
           onClick={onClose}
-          className="flex items-center gap-3 border-b border-white/10 px-5 py-4"
+          className="flex items-center gap-3 border-b border-slate-200 px-5 py-4"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-gold-500 shadow-lg">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-700 to-sky-500 shadow-sm">
             <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 text-white">
               <path
                 d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
@@ -92,8 +93,8 @@ const Sidebar = ({ open, onClose }: SidebarProps) => {
             </svg>
           </span>
           <span className="flex flex-col leading-none">
-            <span className="text-lg font-bold tracking-wide text-white">CODEHUB</span>
-            <span className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-emerald-200/70">
+            <span className="text-lg font-bold tracking-wide text-slate-900">CODEHUB</span>
+            <span className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-slate-500">
               Land Valuation
             </span>
           </span>
@@ -101,29 +102,29 @@ const Sidebar = ({ open, onClose }: SidebarProps) => {
 
         {/* Menu (scrolls if long) */}
         <div className="flex-1 overflow-y-auto px-3 py-4">
-          <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200/50">
+          <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
             Menu
           </p>
           <nav className="space-y-1">
-            <Item to="/dashboard" icon="📊" label="Dashboard" end onClick={onClose} />
+            <Item to="/dashboard" icon={<SidebarIcon name="dashboard" />} label="Dashboard" end onClick={onClose} />
             {items.map((item) => (
-              <Item key={item.to} to={item.to} icon={item.icon} label={item.label} onClick={onClose} />
+              <Item key={item.to} to={item.to} icon={<SidebarIcon name={item.icon} />} label={item.label} onClick={onClose} />
             ))}
             {/* Project Status is available to every role (internal + external) */}
-            <Item to="/coordinator/project-states" icon="📈" label="Project Status" onClick={onClose} />
+            <Item to="/coordinator/project-states" icon={<SidebarIcon name="map" />} label="Project Status" onClick={onClose} />
           </nav>
         </div>
 
         {/* Bottom: Settings + Logout */}
-        <div className="space-y-1 border-t border-white/10 p-3">
-          <Item to="/settings" icon="⚙️" label="Settings" onClick={onClose} />
+        <div className="space-y-1 border-t border-slate-200 p-3">
+          <Item to="/settings" icon={<SidebarIcon name="settings" />} label="Settings" onClick={onClose} />
           <button
             type="button"
             onClick={handleLogout}
             className={`${itemBase} w-full text-emerald-100/70 hover:bg-red-500/10 hover:text-red-300`}
           >
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/5 text-base transition group-hover:bg-red-500/15">
-              🚪
+              <SidebarIcon name="logout" />
             </span>
             <span>Logout</span>
           </button>

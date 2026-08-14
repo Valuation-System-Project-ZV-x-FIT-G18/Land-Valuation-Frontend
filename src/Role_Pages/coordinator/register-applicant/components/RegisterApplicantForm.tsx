@@ -28,7 +28,7 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
 
   // Non-password fields persist on refresh; passwords are never stored.
   const [form, setForm] = useSessionState(storageKey, {
-    fullName: '', initials: '', nic: initialNic, dateOfBirth: '', phone: '', email: '',
+    fullName: '', initials: '', applicantBusinessName: '', nic: initialNic, dateOfBirth: '', phone: '', email: '',
   })
   const [pw, setPw] = useState({ password: '', confirmPassword: '' })
   const [errors, setErrors] = useState<RegisterErrors>({})
@@ -129,6 +129,7 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
       firstName,
       lastName,
       initials: form.initials,
+      applicantBusinessName: form.applicantBusinessName,
       nic: form.nic,
       dateOfBirth: form.dateOfBirth,
       email: form.email,

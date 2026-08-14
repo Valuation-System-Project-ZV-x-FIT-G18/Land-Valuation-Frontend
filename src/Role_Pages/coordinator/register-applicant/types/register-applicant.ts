@@ -4,6 +4,7 @@
 export type RegisterApplicantValues = {
   fullName: string
   initials: string
+  applicantBusinessName: string
   nic: string
   dateOfBirth: string
   phone: string
@@ -17,6 +18,7 @@ export type RegisterApplicantPayload = {
   firstName: string
   lastName: string
   initials: string
+  applicantBusinessName?: string
   nic: string
   dateOfBirth: string
   email: string

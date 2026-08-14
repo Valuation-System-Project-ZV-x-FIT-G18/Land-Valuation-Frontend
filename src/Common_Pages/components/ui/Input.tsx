@@ -41,13 +41,13 @@ const Input = ({
   // Border/ring turns red on error, gold on focus otherwise.
   const borderClass = error
     ? 'border-red-400/70 focus:border-red-400 focus:ring-red-400/30'
-    : 'border-white/15 focus:border-gold-400/60 focus:ring-gold-400/30'
+    : 'border-slate-300 focus:border-blue-500 focus:ring-blue-200'
 
   const input = (
     <input
       id={inputId}
       name={name}
-      className={`rounded-xl border bg-white/5 text-white placeholder-emerald-200/40 outline-none transition focus:ring-2 ${fullWidth ? 'w-full' : ''} ${pad[sizeVariant]} ${icon ? 'pl-11' : ''} ${borderClass} ${className}`}
+      className={`rounded-xl border bg-slate-50 text-slate-900 placeholder-slate-400 shadow-inner shadow-slate-200/40 outline-none transition focus:bg-white focus:ring-2 ${fullWidth ? 'w-full' : ''} ${pad[sizeVariant]} ${icon ? 'pl-11' : ''} ${borderClass} ${className}`}
       {...rest}
     />
   )
@@ -70,7 +70,7 @@ const Input = ({
   return (
     <div>
       {label && (
-        <label htmlFor={inputId} className="mb-1.5 block text-sm font-medium text-emerald-100">
+        <label htmlFor={inputId} className="mb-1.5 block text-sm font-medium text-slate-700">
           {label}
         </label>
       )}

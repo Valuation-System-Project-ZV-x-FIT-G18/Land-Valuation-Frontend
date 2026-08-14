@@ -68,16 +68,27 @@ export async function draftAction(
   status: string,
   reportHtml?: string,
   reason = '',
+  valuationDate = '',
 ): Promise<{ ok: boolean; error?: string }> {
   try {
     const res = await fetch('/api/manager/drafts/action', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ projectId, status, reportHtml, reason }),
+      body: JSON.stringify({ projectId, status, reportHtml, reason, valuationDate: valuationDate || undefined }),
     })
     const body = await res.json().catch(() => ({}))
     return res.ok && body.ok ? { ok: true } : { ok: false, error: body.error || 'Action failed.' }
   } catch {
     return { ok: false, error: 'Could not reach the server.' }
+  }
+}
+
+export async function getDraftFields(projectId: string): Promise<{ inspectionDate: string; valuationDate: string }> {
+  try {
+    const res = await fetch(`/api/manager/drafts/fields?projectId=${encodeURIComponent(projectId)}`)
+    if (!res.ok) return { inspectionDate: '', valuationDate: '' }
+    return await res.json()
+  } catch {
+    return { inspectionDate: '', valuationDate: '' }
   }
 }
