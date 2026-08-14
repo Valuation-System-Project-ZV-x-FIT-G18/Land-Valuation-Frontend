@@ -127,7 +127,15 @@ const AddRolePage = () => {
     const res = await addRole(full)
     setSubmitting(false)
     if (res.ok) { setCreatedId(res.userId ?? ''); setForm(empty); setPassword('') }
-    else setServerError(res.error ?? 'Could not create the account.')
+    else {
+      const message = res.error ?? 'Could not create the account. Please check the entered details.'
+      const lower = message.toLowerCase()
+      if (lower.includes('email')) setErrors((current) => ({ ...current, email: message }))
+      else if (lower.includes('nic')) setErrors((current) => ({ ...current, nic: message }))
+      else if (lower.includes('branch code')) {
+        setErrors((current) => ({ ...current, branchCode: message }))
+      } else setServerError(message)
+    }
   }
 
   return (

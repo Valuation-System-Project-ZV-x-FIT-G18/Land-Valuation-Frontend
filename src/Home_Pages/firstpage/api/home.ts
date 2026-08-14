@@ -18,11 +18,9 @@ export async function submitContactMessage(
 
     // NestJS returns validation errors as { message: string[] }.
     const body = await res.json().catch(() => ({}) as Record<string, unknown>)
-    const message = Array.isArray(body.message)
-      ? body.message.join(' ')
-      : (body.error as string)
-    return { ok: false, error: message || 'Something went wrong. Please try again.' }
+    return { ok: false, error: getApiError(body, 'Could not send the message. Please check the entered details.') }
   } catch {
     return { ok: false, error: 'Could not reach the server. Please try again.' }
   }
 }
+import { getApiError } from '@/Common_Pages/api/getApiError'

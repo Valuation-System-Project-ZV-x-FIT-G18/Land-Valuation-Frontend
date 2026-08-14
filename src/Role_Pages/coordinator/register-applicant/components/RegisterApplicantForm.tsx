@@ -56,6 +56,14 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
       case 'fullName':
         if (!deriveName(v.fullName).valid) return 'Enter the full name (first and last).'
         return namePattern.test(v.fullName.trim()) ? undefined : 'Name can only contain letters.'
+      case 'applicantBusinessName':
+        return v.applicantBusinessName.trim().length > 150
+          ? 'Business name cannot exceed 150 characters.'
+          : undefined
+      case 'initials':
+        return v.initials.trim().length > 60
+          ? 'Name with initials cannot exceed 60 characters.'
+          : undefined
       case 'nic':
         return validateNIC(v.nic)
       case 'dateOfBirth':
@@ -108,7 +116,7 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
 
   const validate = (): RegisterErrors => {
     const fields: (keyof RegisterApplicantValues)[] = [
-      'fullName', 'nic', 'dateOfBirth', 'email', 'phone', 'password', 'confirmPassword',
+      'fullName', 'initials', 'applicantBusinessName', 'nic', 'dateOfBirth', 'email', 'phone', 'password', 'confirmPassword',
     ]
     const e: RegisterErrors = {}
     fields.forEach((n) => {
@@ -138,7 +146,16 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
       password: pw.password,
     })
     setSubmitting(false)
-    if (!res.ok) return setServerError(res.error ?? 'Could not register the applicant.')
+    if (!res.ok) {
+      const message = res.error ?? 'Could not register the applicant. Please check the entered details.'
+      const lower = message.toLowerCase()
+      if (lower.includes('email')) setErrors((current) => ({ ...current, email: message }))
+      else if (lower.includes('nic')) setErrors((current) => ({ ...current, nic: message }))
+      else if (lower.includes('business')) {
+        setErrors((current) => ({ ...current, applicantBusinessName: message }))
+      } else setServerError(message)
+      return
+    }
     sessionStorage.removeItem(storageKey)
     sessionStorage.removeItem('applicantSearchQuery') // clear the NIC on the search page
     setDone(true)
