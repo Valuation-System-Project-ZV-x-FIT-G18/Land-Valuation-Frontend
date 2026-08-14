@@ -6,9 +6,9 @@ import { buildReportHtml } from '@/Role_Pages/technical-officer/draft/utils/buil
 import { downloadTemplateReport, getBuildValues, getSavedReport, saveReport } from '@/Role_Pages/technical-officer/draft/api/draft'
 import { getEvidence, getValuation } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
 
-type Props = { projectId: string; valuationId: number; onBack: () => void }
+type Props = { projectId: string; valuationId: number; onBack: () => void; correctionMode?: boolean; rejectReason?: string }
 
-const DraftEditor = ({ projectId, valuationId, onBack }: Props) => {
+const DraftEditor = ({ projectId, valuationId, onBack, correctionMode = false, rejectReason = '' }: Props) => {
   const paperRef = useRef<HTMLDivElement>(null)
   const [html, setHtml] = useState('')
   const [loading, setLoading] = useState(true)
@@ -65,9 +65,14 @@ const DraftEditor = ({ projectId, valuationId, onBack }: Props) => {
         </div>
       </div>
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-white">Create <GradientText>Draft</GradientText></h1>
+        <h1 className="text-3xl font-bold text-white">{correctionMode ? 'Draft ' : 'Create '}<GradientText>{correctionMode ? 'Corrections' : 'Draft'}</GradientText></h1>
         <p className="mt-1 text-sm text-emerald-100/65">{projectId} | Valuation #{valuationId}</p>
       </div>
+      {correctionMode && rejectReason && (
+        <div className="rounded-lg border border-amber-400/40 bg-amber-400/10 p-3 text-sm text-amber-200">
+          <b>Manager L3 correction request:</b> {rejectReason}
+        </div>
+      )}
       {notice && <p className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 p-3 text-sm text-emerald-200">{notice}</p>}
       {error && <p className="rounded-lg border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-200">{error}</p>}
       {loading ? <p className="py-16 text-center text-emerald-100/65">Building the report from saved data...</p> : (

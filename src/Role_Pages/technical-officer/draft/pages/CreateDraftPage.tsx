@@ -6,8 +6,7 @@ import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/
 import DraftEditor from '@/Role_Pages/technical-officer/draft/components/DraftEditor'
 
 const isReadyForDraft = (assignment: Assignment) =>
-  ['Assignment Accepted', 'rejected_to_to'].includes(assignment.status) ||
-  assignment.reviewStatus === 'rejected_to_to'
+  assignment.status === 'Assignment Accepted' && assignment.reviewStatus !== 'rejected_to_to'
 
 const CreateDraftPage = () => {
   const { user } = useAuth()

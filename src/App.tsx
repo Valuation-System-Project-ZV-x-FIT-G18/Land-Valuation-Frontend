@@ -44,6 +44,7 @@ import FleetSummaryPage from '@/Role_Pages/coordinator/fleet-management/pages/Fl
 import AssignOfficersPage from '@/Role_Pages/coordinator/fleet-management/pages/AssignOfficersPage'
 import TOAttendanceReviewPage from '@/Role_Pages/coordinator/fleet-management/pages/TOAttendanceReviewPage'
 import CreateDraftPage from '@/Role_Pages/technical-officer/draft/pages/CreateDraftPage'
+import TOCorrectionsPage from '@/Role_Pages/technical-officer/draft/pages/TOCorrectionsPage'
 
 // Defines every URL and which page component it shows.
 // Layout (header, footer, background, login popup) wraps all pages.
@@ -103,6 +104,10 @@ const App = () => {
             <Route
               path="/technical-officer/draft"
               element={<CreateDraftPage />}
+            />
+            <Route
+              path="/technical-officer/corrections"
+              element={<TOCorrectionsPage />}
             />
             <Route
               path="/manager/check-drafts"
