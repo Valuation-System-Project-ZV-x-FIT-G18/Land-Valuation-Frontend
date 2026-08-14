@@ -44,10 +44,10 @@ const DashboardPage = () => {
             <Link
               key={a.to}
               to={a.to}
-              className="group relative overflow-hidden rounded-2xl border border-blue-200 bg-white/95 p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-blue-400 hover:shadow-lg"
+              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-emerald-950/40 p-5 shadow-card backdrop-blur-sm transition duration-200 hover:-translate-y-0.5 hover:border-gold-400/40 hover:shadow-card-hover"
             >
               <div className="flex items-start justify-between">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-700 ring-1 ring-blue-200 transition group-hover:bg-blue-700 group-hover:text-white">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/5 text-gold-300 transition group-hover:bg-gold-400/15">
                   <SidebarIcon name={a.icon} />
                 </div>
                 <svg
@@ -57,13 +57,13 @@ const DashboardPage = () => {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="h-4 w-4 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-blue-700"
+                  className="h-4 w-4 text-emerald-100/40 transition group-hover:translate-x-0.5 group-hover:text-gold-300"
                 >
                   <path d="M7 17 17 7M8 7h9v9" />
                 </svg>
               </div>
-              <p className="mt-3 font-semibold text-slate-900">{a.label}</p>
-              <p className="mt-0.5 text-xs text-slate-500">Open {a.label.toLowerCase()}</p>
+              <p className="mt-3 font-semibold text-gold-300">{a.label}</p>
+              <p className="mt-0.5 text-xs text-emerald-100/60">Open {a.label.toLowerCase()}</p>
             </Link>
           ))}
         </div>

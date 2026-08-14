@@ -30,7 +30,7 @@ type FormFieldProps = {
 
 // Inner input styling (the border/ring lives on the wrapper below).
 const field =
-  'w-full bg-transparent px-4 py-3 text-slate-900 placeholder-slate-400 outline-none'
+  'w-full bg-transparent px-4 py-3 text-white placeholder-emerald-200/40 outline-none'
 
 const FormField = ({
   label,
@@ -61,13 +61,13 @@ const FormField = ({
     ? 'border-red-400/70 focus-within:border-red-400 focus-within:ring-red-400/30'
     : readOnly
       ? 'border-white/10'
-      : 'border-slate-300 focus-within:border-blue-500 focus-within:ring-blue-200'
+      : 'border-white/15 focus-within:border-gold-400/60 focus-within:ring-gold-400/30'
 
   return (
     <div>
       <label
         htmlFor={name}
-        className="mb-1.5 block text-sm font-medium text-slate-700"
+        className="mb-1.5 block text-sm font-medium text-emerald-100"
       >
         {label}
       </label>
@@ -75,7 +75,7 @@ const FormField = ({
       {/* Wrapper carries the border + focus ring so the prefix and input
           read as a single field. */}
       <div
-        className={`flex items-stretch overflow-hidden rounded-xl border bg-white transition focus-within:ring-2 ${borderClass}`}
+        className={`flex items-stretch overflow-hidden rounded-xl border bg-white/5 transition focus-within:ring-2 ${borderClass}`}
       >
         {prefix && (
           <span className="flex select-none items-center border-r border-white/15 px-3 text-sm font-medium text-emerald-100/90">

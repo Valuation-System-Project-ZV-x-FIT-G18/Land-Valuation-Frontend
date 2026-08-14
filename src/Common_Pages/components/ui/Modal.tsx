@@ -46,17 +46,17 @@ const Modal = ({ open, onClose, title, children }: ModalProps) => {
       />
 
       {/* Panel */}
-      <div className="relative z-10 max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 text-slate-800 shadow-2xl sm:max-h-[calc(100dvh-3rem)]">
+      <div className="relative z-10 max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border border-gold-400/25 bg-emerald-950 p-6 shadow-2xl sm:max-h-[calc(100dvh-3rem)]">
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute right-4 top-4 text-lg text-slate-400 transition hover:text-blue-700"
+          className="absolute right-4 top-4 text-lg text-emerald-200 transition hover:text-gold-300"
         >
           ✕
         </button>
 
-        {title && <h3 className="mb-4 text-xl font-bold text-slate-900">{title}</h3>}
+        {title && <h3 className="mb-4 text-xl font-bold text-white">{title}</h3>}
         {children}
       </div>
     </div>,

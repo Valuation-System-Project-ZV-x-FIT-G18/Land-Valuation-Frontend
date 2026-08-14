@@ -125,7 +125,7 @@ const FloatingChatbot = () => {
         </section>
       )}
 
-      <button type="button" onClick={() => setOpen((value) => !value)} aria-label={open ? 'Close AI assistant' : 'Open AI assistant'} className="group relative ml-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-blue-700 via-blue-600 to-sky-500 text-white shadow-[0_10px_28px_rgba(30,64,175,0.28),0_0_0_5px_rgba(59,130,246,0.10)] transition duration-200 hover:-translate-y-1 hover:scale-[1.03] hover:from-blue-800 hover:to-sky-600 hover:shadow-[0_14px_34px_rgba(30,64,175,0.34),0_0_0_7px_rgba(59,130,246,0.13)]">
+      <button type="button" onClick={() => setOpen((value) => !value)} aria-label={open ? 'Close AI assistant' : 'Open AI assistant'} className="group relative ml-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-white/70 bg-gradient-to-br from-gold-100 via-gold-300 to-gold-500 text-emerald-950 shadow-[0_10px_30px_rgba(0,0,0,0.38),0_0_0_5px_rgba(227,194,74,0.12)] transition duration-200 hover:-translate-y-1 hover:scale-[1.03] hover:shadow-[0_14px_36px_rgba(0,0,0,0.4),0_0_0_7px_rgba(227,194,74,0.16)]">
         {open ? <span className="text-3xl font-light leading-none">×</span> : <ChatbotIcon className="h-11 w-11 transition-transform duration-200 group-hover:scale-105" />}
         {!open && <span className="absolute right-0.5 top-0.5 h-3.5 w-3.5 rounded-full border-2 border-emerald-950 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" aria-hidden="true" />}
       </button>

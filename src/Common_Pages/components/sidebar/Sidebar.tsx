@@ -13,14 +13,14 @@ const itemBase =
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `${itemBase} ${
     isActive
-      ? 'bg-blue-200 text-blue-950 shadow-sm ring-1 ring-blue-300'
-      : 'text-slate-600 hover:bg-white hover:text-blue-800'
+      ? 'bg-gradient-to-r from-gold-400/25 to-transparent text-gold-100 shadow-sm'
+      : 'text-emerald-100/70 hover:bg-white/5 hover:text-white'
   }`
 
 const Chip = ({ children, active }: { children: ReactNode; active: boolean }) => (
   <span
     className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base transition ${
-      active ? 'bg-blue-600 text-white' : 'bg-slate-200/70 text-slate-600 group-hover:bg-blue-100'
+      active ? 'bg-gold-400/20' : 'bg-white/5 group-hover:bg-white/10'
     }`}
   >
     {children}
@@ -38,7 +38,7 @@ const Item = (props: {
     {({ isActive }) => (
       <>
         {isActive && (
-          <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 animate-fade-in rounded-r bg-blue-600" />
+          <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 animate-fade-in rounded-r bg-gold-400 shadow-[0_0_10px_rgba(227,194,74,0.6)]" />
         )}
         <Chip active={isActive}>{props.icon}</Chip>
         <span>{props.label}</span>
@@ -71,7 +71,7 @@ const Sidebar = ({ open, onClose }: SidebarProps) => {
       )}
 
       <aside
-        className={`app-sidebar fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-blue-200 bg-gradient-to-b from-blue-50 via-blue-100 to-[#dce9f8] shadow-lg transition-transform duration-300 md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-white/10 bg-gradient-to-b from-emerald-900 to-emerald-950 shadow-2xl transition-transform duration-300 md:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -79,9 +79,9 @@ const Sidebar = ({ open, onClose }: SidebarProps) => {
         <Link
           to="/dashboard"
           onClick={onClose}
-          className="flex items-center gap-3 border-b border-slate-200 px-5 py-4"
+          className="flex items-center gap-3 border-b border-white/10 px-5 py-4"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-700 to-sky-500 shadow-sm">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-gold-500 shadow-lg">
             <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 text-white">
               <path
                 d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
@@ -93,8 +93,8 @@ const Sidebar = ({ open, onClose }: SidebarProps) => {
             </svg>
           </span>
           <span className="flex flex-col leading-none">
-            <span className="text-lg font-bold tracking-wide text-slate-900">CODEHUB</span>
-            <span className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-slate-500">
+            <span className="text-lg font-bold tracking-wide text-white">CODEHUB</span>
+            <span className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-emerald-200/70">
               Land Valuation
             </span>
           </span>
@@ -102,7 +102,7 @@ const Sidebar = ({ open, onClose }: SidebarProps) => {
 
         {/* Menu (scrolls if long) */}
         <div className="flex-1 overflow-y-auto px-3 py-4">
-          <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+          <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200/50">
             Menu
           </p>
           <nav className="space-y-1">
@@ -116,7 +116,7 @@ const Sidebar = ({ open, onClose }: SidebarProps) => {
         </div>
 
         {/* Bottom: Settings + Logout */}
-        <div className="space-y-1 border-t border-slate-200 p-3">
+        <div className="space-y-1 border-t border-white/10 p-3">
           <Item to="/settings" icon={<SidebarIcon name="settings" />} label="Settings" onClick={onClose} />
           <button
             type="button"

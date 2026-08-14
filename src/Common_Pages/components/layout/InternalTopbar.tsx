@@ -22,7 +22,7 @@ const IconButton = ({
     type="button"
     aria-label={label}
     onClick={onClick}
-    className="relative rounded-lg p-2 text-slate-500 transition hover:bg-blue-50 hover:text-blue-700"
+    className="relative rounded-lg p-2 text-emerald-100/80 transition hover:bg-white/10 hover:text-white"
   >
     {children}
     {dot && (
@@ -39,7 +39,7 @@ const InternalTopbar = ({ onMenu }: { onMenu: () => void }) => {
   const onMessages = location.pathname === '/messages'
 
   return (
-    <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-slate-300/80 bg-white/85 px-4 py-3 shadow-sm backdrop-blur-xl sm:px-6">
+    <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-white/10 bg-emerald-950/70 px-4 py-3 backdrop-blur-md sm:px-6">
       {/* Mobile: open the sidebar */}
       <button
         type="button"
@@ -84,8 +84,8 @@ const InternalTopbar = ({ onMenu }: { onMenu: () => void }) => {
           >
             <Avatar userId={user?.userId ?? ''} name={user?.name ?? ''} photoPath={user?.photoPath} size="sm" />
             <div className="hidden leading-tight sm:block">
-              <p className="text-sm font-semibold text-slate-900">{user?.name}</p>
-              <p className="text-xs font-medium text-blue-600">{user?.role}</p>
+              <p className="text-sm font-semibold text-white">{user?.name}</p>
+              <p className="text-xs font-medium text-gold-300">{user?.role}</p>
             </div>
             <svg
               viewBox="0 0 24 24"
@@ -106,7 +106,7 @@ const InternalTopbar = ({ onMenu }: { onMenu: () => void }) => {
                 className="fixed inset-0 z-40"
                 onClick={() => setMenuOpen(false)}
               />
-              <div className="absolute right-0 z-50 mt-2 w-64 origin-top-right animate-scale-in overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+              <div className="absolute right-0 z-50 mt-2 w-64 origin-top-right animate-scale-in overflow-hidden rounded-2xl border border-white/10 bg-emerald-950/95 shadow-card-hover backdrop-blur-md">
                 <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
                   <Avatar userId={user?.userId ?? ''} name={user?.name ?? ''} photoPath={user?.photoPath} size="md" />
                   <div className="leading-tight">

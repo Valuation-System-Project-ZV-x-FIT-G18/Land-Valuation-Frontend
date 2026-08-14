@@ -21,17 +21,17 @@ const Table = ({
   className = '',
 }: TableProps) => {
   if (rows.length === 0) {
-    return <p className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">{emptyText}</p>
+    return <p className="text-sm text-emerald-200/50">{emptyText}</p>
   }
 
   return (
     <div className={`overflow-x-auto ${className}`}>
       <table
-        className="w-full overflow-hidden rounded-xl border border-slate-200 bg-white text-left text-sm"
+        className="w-full border-collapse text-left text-sm"
         style={{ minWidth: `${minWidth}px` }}
       >
         <thead>
-          <tr className="border-b border-slate-300 bg-slate-100 text-xs uppercase tracking-wide text-slate-700">
+          <tr className="border-b border-white/10 text-xs uppercase tracking-wide text-emerald-200/50">
             {columns.map((c) => (
               <th key={c} className="px-3 py-2 font-medium">
                 {c}
@@ -43,10 +43,10 @@ const Table = ({
           {rows.map((row, i) => (
             <tr
               key={i}
-              className="border-b border-slate-100 transition-colors last:border-0 hover:bg-blue-50/60"
+              className="border-b border-white/5 transition-colors last:border-0 hover:bg-white/5"
             >
               {row.map((cell, j) => (
-                <td key={j} className="px-3 py-3 text-slate-700">
+                <td key={j} className="px-3 py-2.5 text-emerald-100/90">
                   {cell}
                 </td>
               ))}
