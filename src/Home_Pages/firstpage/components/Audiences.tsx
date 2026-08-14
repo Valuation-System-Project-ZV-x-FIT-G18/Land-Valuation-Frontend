@@ -25,7 +25,7 @@ const audiences = [
 ]
 
 const Audiences = () => (
-  <section className="home-toned-section mx-auto max-w-7xl px-4 py-20 sm:px-8">
+  <section className="mx-auto max-w-7xl px-4 py-20 sm:px-8">
     <Reveal className="mx-auto max-w-2xl text-center">
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-300/80">
         One Platform
@@ -41,7 +41,7 @@ const Audiences = () => (
     <div className="mt-14 grid gap-6 lg:grid-cols-3">
       {audiences.map((a, i) => (
         <Reveal key={a.title} delay={i * 130}>
-          <div className="card-hover group h-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm hover:border-blue-300 hover:shadow-lg">
+          <div className="card-hover group h-full overflow-hidden rounded-2xl border border-white/10 bg-emerald-950/40 shadow-card backdrop-blur-sm hover:border-gold-400/40 hover:shadow-card-hover">
             {/* Photo with gradient overlay */}
             <div className="relative h-44 overflow-hidden">
               <img
@@ -50,8 +50,8 @@ const Audiences = () => (
                 loading="lazy"
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/20 to-transparent" />
-              <span className="absolute bottom-3 left-4 rounded-full border border-cyan-200/80 bg-cyan-50/95 px-3 py-1 text-xs font-semibold text-brand-navy shadow-sm backdrop-blur-sm">
+              <div className="absolute inset-0 bg-gradient-to-t from-emerald-950 via-emerald-950/40 to-transparent" />
+              <span className="absolute bottom-3 left-4 rounded-full bg-gold-400/90 px-3 py-1 text-xs font-semibold text-emerald-950 shadow">
                 {a.tag}
               </span>
             </div>
