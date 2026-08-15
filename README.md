@@ -1,222 +1,201 @@
-# 🏡 Land Valuation System
+# Land Valuation System — Frontend
 
-A web application that manages the **complete land valuation process** — from a customer requesting a valuation, to a technical officer inspecting the land, to managers approving the report, and finally the bank viewing the finished report after payment.
+The React frontend for the **CODEHUB Land Valuation System**, an academic project by **ZV × FIT — Group 18**. The application supports the land-valuation workflow from the initial public request through inspection, staged management review, payment, and final report access.
 
-Built as a group project by **ZV × FIT – Group 18**.
+This repository contains the user interface. The full application also requires the [Land Valuation Backend](https://github.com/Valuation-System-Project-ZV-x-FIT-G18/Land-Valuation-Backend).
 
----
+## Repository links
 
-## 📖 About the Project (in simple words)
+- [Frontend repository — `dev` branch](https://github.com/Valuation-System-Project-ZV-x-FIT-G18/Land-Valuation-Frontend/tree/dev)
+- [Backend repository — `dev` branch](https://github.com/Valuation-System-Project-ZV-x-FIT-G18/Land-Valuation-Backend/tree/dev)
 
-When someone applies for a **bank loan** using their land as security, the bank needs to know how much that land is really worth. This system handles that whole process online, step by step:
+Use the `dev` branch in both repositories to review the latest project version.
 
-1. A **customer (Loan Applicant)** requests a land valuation.
-2. A **Coordinator** registers the applicant, creates a project, and assigns the work.
-3. A **Technical Officer** visits the site — records inspection details, marks GPS locations, takes photos, checks nearby land prices, and writes a draft report.
-4. **Managers (Level 3 → Level 2 → Level 1)** review the report one stage at a time and approve it.
-5. Once **Level 1 locks** the report, the applicant **pays the valuation fee**.
-6. After payment, the **Bank** can view the final, official report.
+## Main workflow
 
-Everyone logs in and only sees the tools meant for their own job.
+1. A loan applicant submits a valuation request.
+2. A coordinator registers the applicant, creates a project, and assigns a technical officer.
+3. The technical officer records inspection information, GPS data, site photographs, nearby-land evidence, and the draft valuation report.
+4. Managers L3, L2, and L1 review the report in stages.
+5. The applicant submits the payment slip after final approval.
+6. The bank accesses the completed report after payment verification.
 
----
+## User roles
 
-## 👥 User Roles
+| Role | Main responsibilities |
+| --- | --- |
+| Loan Applicant | Submit requests and project details, upload documents, and submit payment evidence |
+| Coordinator | Register applicants, create projects, assign officers, and monitor progress |
+| Technical Officer | Perform inspections, mapping, evidence collection, analysis, and draft preparation |
+| Manager L3 / L2 / L1 | Review, return, approve, and finalize valuation reports in stages |
+| Bank | Access eligible completed valuation reports |
+| Admin | Create and maintain staff and bank accounts |
 
-| Role | What they do |
-|------|--------------|
-| **Loan Applicant** | Requests a valuation, uploads documents, makes the payment |
-| **Coordinator** | Registers applicants & banks, creates projects, assigns technical officers |
-| **Technical Officer** | Site inspection, GPS mapping, site photos, nearby-price analysis, writes the draft report |
-| **Manager L3 / L2 / L1** | Review the draft report in stages and approve, reject, or lock it |
-| **Bank** | Views the finished valuation report |
-| **Admin** | Creates the staff accounts (all internal roles) |
+## Technology
 
----
+- React 18
+- TypeScript
+- Vite 5
+- React Router 6
+- Tailwind CSS
+- Leaflet and React Leaflet
 
-## 🛠️ Technology Used
+The backend uses NestJS, PostgreSQL, Supabase Storage, Nodemailer, and optional external AI/search services.
 
-**Frontend**
-- React 18 + TypeScript
-- Vite (dev server & build tool)
-- Tailwind CSS (styling)
-- React Router (page navigation)
-- Leaflet (maps)
+## Requirements
 
-**Backend**
-- NestJS + TypeScript
-- PostgreSQL (database)
-- Nodemailer (sending emails)
-- bcryptjs (password security)
+- Node.js 18 or later
+- npm
+- Git
+- PostgreSQL or a PostgreSQL-compatible hosted database such as Neon
+- Both project repositories checked out on the same machine
 
----
-
-## 📁 Project Structure
-
-The project is split into **two parts** (two GitHub repositories):
-
-```
-Land-Valuation-Backend/     → NestJS API server (the "brain" + database)
-  src/
-    Home_Pages/    → login, contact, public valuation request
-    Role_Pages/    → code for each role (coordinator, manager, etc.)
-    Common_Pages/  → shared code (database, email, notifications)
-
-Land-Valuation-Frontend/    → React website (what users see and click)
-  src/
-    Home_Pages/    → homepage, login pages, dashboard
-    Role_Pages/    → screens for each role
-    Common_Pages/  → shared UI components (buttons, cards, etc.)
-```
-
----
-
-## ✅ Before You Start (Requirements)
-
-Install these on your computer first:
-
-1. **[Node.js](https://nodejs.org/)** (version 18 or newer) — runs the project
-2. **[PostgreSQL](https://www.postgresql.org/download/)** — the database (or a free cloud one like [Neon](https://neon.tech) / [Supabase](https://supabase.com))
-3. **[Git](https://git-scm.com/)** — to download the code
-
----
-
-## ⬇️ How to Download the Project
-
-Open a terminal (Command Prompt / PowerShell / Terminal) and run:
+## Clone the latest development version
 
 ```bash
-# Download the backend
-git clone https://github.com/Valuation-System-Project-ZV-x-FIT-G18/Land-Valuation-Backend.git
-
-# Download the frontend
-git clone https://github.com/Valuation-System-Project-ZV-x-FIT-G18/Land-Valuation-Frontend.git
+git clone --branch dev https://github.com/Valuation-System-Project-ZV-x-FIT-G18/Land-Valuation-Backend.git
+git clone --branch dev https://github.com/Valuation-System-Project-ZV-x-FIT-G18/Land-Valuation-Frontend.git
 ```
 
-> 💡 You need **both** the backend and the frontend to run the full app.
+## Backend setup
 
----
-
-## ▶️ How to Run the Project
-
-You will run the **backend** and the **frontend** in **two separate terminals**.
-
-### Step 1 — Set up the Backend
+Run these commands in the backend repository:
 
 ```bash
 cd Land-Valuation-Backend
-
-# 1. Install the packages
 npm install
+```
 
-# 2. Create a file named  .env  in this folder (see the example below)
+Create `Land-Valuation-Backend/.env`. The minimum configuration is:
 
-# 3. Create the database tables (run this once)
-psql "<your DATABASE_URL>" -f schema.sql
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/land_valuation
+PORT=4000
+```
 
-# 4. Create the first Admin login
+Optional integrations can be configured when their features are required:
+
+```env
+# Email notifications
+SMTP_HOST=smtp.example.com
+SMTP_PORT=465
+SMTP_USER=your-user
+SMTP_PASS=your-password
+SMTP_FROM=CODEHUB Land Valuation <no-reply@example.com>
+
+# Private document and image storage
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SECRET_KEY=your-service-role-key
+SUPABASE_STORAGE_BUCKET=land-valuation-private
+
+# Optional AI, OCR, and nearby-listing integrations
+GEMINI_API_KEY=your-key
+OCR_SPACE_API_KEY=your-key
+SERPAPI_API_KEY=your-key
+```
+
+Never commit or share the real `.env` file. It contains database credentials and secret keys.
+
+Create the database schema and initial administrator once:
+
+```bash
+psql "postgresql://user:password@localhost:5432/land_valuation" -f schema.sql
 node seed-admin.mjs
+```
 
-# 5. Start the backend
+Start the backend:
+
+```bash
 npm run start:dev
 ```
 
-✅ The backend now runs at **http://localhost:4000/api**
+The API will be available at `http://localhost:4000/api`.
 
-### Step 2 — Set up the Frontend
+> The initial local administrator created by `seed-admin.mjs` is `Adm001` with password `Test@123`. Change this password before using the system outside a local demonstration environment.
 
-Open a **new terminal**:
+## Frontend setup
+
+Open a second terminal and run:
 
 ```bash
 cd Land-Valuation-Frontend
-
-# 1. Install the packages
 npm install
-
-# 2. Start the website
 npm run dev
 ```
 
-✅ The website now runs at **http://localhost:3000**
+Open `http://localhost:3000`.
 
-### Step 3 — Open the App
+During development, Vite proxies all `/api` requests to `http://localhost:4000`, so the frontend does not require its own `.env` file for local use.
 
-Go to **http://localhost:3000** in your browser. 🎉
+## Validation conventions
 
-> The frontend automatically sends `/api/...` requests to the backend on port 4000, so you don't need any extra setup.
+Shared validation rules are used throughout the frontend and mirrored by the backend DTO validation. Important formats include:
 
----
+- Phone numbers: a valid Sri Lankan mobile or landline number entered as nine digits after the fixed `+94` prefix
+- NIC: 12 digits, or 9 digits followed by `V` or `X`
+- Email: a valid email address; email addresses and NIC values must be unique across accounts
+- Password: at least 8 characters with uppercase, lowercase, numeric, and symbol characters
+- Postal code: 4–5 digits
 
-## 🔑 Environment Variables (`.env` file)
+The backend is the final validation authority. API validation and duplicate-account errors are displayed as user-friendly field messages in the frontend.
 
-The backend needs a `.env` file inside the `Land-Valuation-Backend` folder. Create it and fill in your own values:
+## Available commands
 
-```env
-# Database connection (from your local PostgreSQL or a cloud provider)
-DATABASE_URL=postgresql://user:password@localhost:5432/valuation
+### Frontend
 
-# Backend port (optional — defaults to 4000)
-PORT=4000
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the Vite development server on port 3000 |
+| `npm run build` | Type-check and create a production build in `dist/` |
+| `npm run preview` | Preview the production build locally |
 
-# Email settings (for sending login details & notifications)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-email-app-password
-SMTP_FROM=your-email@gmail.com
+### Backend
 
-# Optional AI features (land description & document reading)
-GEMINI_API_KEY=your-gemini-key
-OCR_SPACE_API_KEY=your-ocr-key
+| Command | Purpose |
+| --- | --- |
+| `npm run start:dev` | Start NestJS in watch mode on port 4000 |
+| `npm run build` | Compile the backend into `dist/` |
+| `npm run start:prod` | Run the compiled backend |
+
+## Project structure
+
+```text
+Land-Valuation-Frontend/
+├── public/                 Static assets
+├── src/
+│   ├── Common_Pages/       Shared UI, authentication, hooks, validation, and utilities
+│   ├── Home_Pages/         Public pages, login, dashboard, messages, and settings
+│   ├── Role_Pages/         Role-specific screens and API clients
+│   ├── App.tsx             Application routes
+│   └── main.tsx            React entry point
+├── vite.config.ts          Vite configuration and backend proxy
+└── package.json            Dependencies and scripts
 ```
 
-> ⚠️ **Never share or upload your `.env` file** — it holds passwords and secret keys. It is already ignored by Git.
+## Troubleshooting
 
----
+- **`Could not reach the server`** — confirm the backend has finished starting on port 4000. Initial database schema checks can take some time with a hosted database.
+- **Database connection errors** — verify `DATABASE_URL`, network access, database availability, and SSL parameters required by the provider.
+- **Port 3000 or 4000 already in use** — stop the existing process or change the relevant development port and proxy configuration together.
+- **Email is not sent** — account creation can still succeed for best-effort notifications; verify the SMTP values and provider-specific app-password requirements.
+- **Uploads fail** — verify all three Supabase variables and ensure the configured private bucket exists.
 
-## 👤 Default Login
+## Security notes
 
-After running `node seed-admin.mjs`, open the **internal login** page and sign in as **Admin**. The default password for the sample accounts is:
+- Do not commit `.env`, credentials, API keys, uploaded documents, build output, or runtime logs.
+- Use a Supabase service-role key only on the backend; never expose it to the browser.
+- Replace demonstration credentials before deployment.
+- Grant repository access only to intended reviewers when the repositories are private.
 
-```
-Test@123
-```
-
-Use the **Admin** account to create the other staff logins (Coordinator, Technical Officer, Managers, Bank).
-
----
-
-## 📜 Useful Commands
-
-**Backend** (`Land-Valuation-Backend`)
-| Command | What it does |
-|---------|--------------|
-| `npm run start:dev` | Run the backend with auto-reload (development) |
-| `npm run build` | Build the backend for production |
-| `npm run start:prod` | Run the built backend |
-
-**Frontend** (`Land-Valuation-Frontend`)
-| Command | What it does |
-|---------|--------------|
-| `npm run dev` | Run the website (development) |
-| `npm run build` | Build the website for production |
-| `npm run preview` | Preview the production build |
-
----
-
-## 👨‍💻 Team — ZV × FIT Group 18
-
-Developed collaboratively, with each member owning specific parts:
+## Team — ZV × FIT Group 18
 
 | Area | Contributor |
-|------|-------------|
+| --- | --- |
 | Coordinator | Radhika Narampanawa |
-| Bank & Loan Applicant | Pranidi Methmini |
-| Managers (L1 / L2 / L3) | Amandi Shanali |
+| Bank and Loan Applicant | Pranidi Methmini |
+| Managers L1 / L2 / L3 | Amandi Shanali |
 | Technical Officer | Reshani Dilsara |
-| Admin, Home & Setup | Chathu Hewage |
-| Common / Shared code | Pranidi Methmini |
+| Admin, Home, and Setup | Chathu Hewage |
+| Common and Shared Code | Pranidi Methmini |
 
----
-
-_© 2026 Land Valuation System — ZV × FIT Group 18. For academic purposes._
+© 2026 ZV × FIT Group 18. Created for academic purposes.

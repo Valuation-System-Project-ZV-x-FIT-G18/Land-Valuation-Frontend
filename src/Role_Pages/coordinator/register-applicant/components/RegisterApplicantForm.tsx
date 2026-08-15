@@ -25,7 +25,11 @@ import type {
 // the Create Project flow, so this form only collects identity and contact.
 const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
   const navigate = useNavigate()
-  const storageKey = `registerApplicant:${initialNic || 'new'}`
+  // Keep one stable key: `initialNic` arrives through router state, which may
+  // not be available after a browser refresh. A key derived from it could make
+  // the saved draft appear to disappear even though it still existed under a
+  // different sessionStorage key.
+  const storageKey = 'registerApplicantDraft'
 
   // Non-password fields persist on refresh; passwords are never stored.
   const [form, setForm] = useSessionState(storageKey, {
