@@ -1,13 +1,11 @@
-import { useNavigate } from 'react-router-dom'
 import Reveal from '@/Common_Pages/components/ui/Reveal'
 import Button from '@/Common_Pages/components/ui/Button'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useLoginModal } from '@/Common_Pages/components/auth/useLoginModal'
 
 // Closing call-to-action band — a full-width photo panel with a green overlay
-// and the two primary actions, so the page ends on a clear next step.
+// and the primary login action, so the page ends on a clear next step.
 const CtaBand = () => {
-  const navigate = useNavigate()
   const { openLogin } = useLoginModal()
 
   return (
@@ -33,10 +31,6 @@ const CtaBand = () => {
               already using CODEHUB.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Button type="button" size="lg" onClick={() => navigate('/request-valuation')}>
-                Request Valuation Now
-                <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
-              </Button>
               <Button type="button" variant="outline" size="lg" onClick={openLogin}>
                 Login to Your Account
               </Button>

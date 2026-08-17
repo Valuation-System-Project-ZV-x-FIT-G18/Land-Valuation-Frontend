@@ -1,12 +1,9 @@
 import OsmLocationPicker from '@/Common_Pages/components/ui/OsmLocationPicker'
 
-type FlyPoint = { lat: number; lng: number; zoom: number; nonce: number }
-
 type Props = {
   lat: number | null
   lng: number | null
   onPick: (lat: number, lng: number) => void
-  flyTo?: FlyPoint | null
 }
 
 const LocationPicker = ({ lat, lng, onPick }: Props) => (

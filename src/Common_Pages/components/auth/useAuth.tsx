@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, type ReactNode } from 'react'
 import { useSessionState } from '@/Common_Pages/hooks/useSessionState'
 
 // Holds the currently logged-in user for the whole app.
@@ -14,7 +14,7 @@ export type AuthUser = {
 
 type AuthValue = {
   user: AuthUser | null
-  login: (user: AuthUser) => void
+  login: (user: AuthUser, accessToken?: string) => void
   logout: () => void
 }
 
@@ -22,9 +22,30 @@ const AuthContext = createContext<AuthValue | null>(null)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useSessionState<AuthUser | null>('authUser', null)
+  const [accessToken, setAccessToken] = useSessionState<string>('accessToken', '')
+
+  useEffect(() => {
+    const originalFetch = window.fetch.bind(window)
+    window.fetch = async (input, init = {}) => {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+      if (!url.startsWith('/api/') || !accessToken) return originalFetch(input, init)
+      const headers = new Headers(init.headers ?? (input instanceof Request ? input.headers : undefined))
+      headers.set('Authorization', `Bearer ${accessToken}`)
+      const response = await originalFetch(input, { ...init, headers })
+      if (response.status === 401) { setUser(null); setAccessToken('') }
+      return response
+    }
+    return () => { window.fetch = originalFetch }
+  }, [accessToken])
+
+  const login = (nextUser: AuthUser, token?: string) => {
+    setUser(nextUser)
+    if (token) setAccessToken(token)
+  }
+  const logout = () => { setUser(null); setAccessToken('') }
   return (
     <AuthContext.Provider
-      value={{ user, login: (u) => setUser(u), logout: () => setUser(null) }}
+      value={{ user: accessToken ? user : null, login, logout }}
     >
       {children}
     </AuthContext.Provider>

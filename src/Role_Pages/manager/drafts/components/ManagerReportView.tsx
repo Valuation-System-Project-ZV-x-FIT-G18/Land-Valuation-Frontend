@@ -7,7 +7,6 @@ import { getBuildValues, getSavedReport } from '@/Role_Pages/technical-officer/d
 import { buildReportHtml } from '@/Role_Pages/technical-officer/draft/utils/buildReportHtml'
 import { getValuation, getEvidence } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
 import { draftAction, getDraftFields, STATUS_LABEL } from '@/Role_Pages/manager/drafts/api/manager-drafts'
-import { downloadReportWord } from '@/Common_Pages/utils/downloadReportWord'
 
 type Props = {
   projectId: string
@@ -99,8 +98,6 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
     )
   }
 
-  const downloadWord = () => downloadReportWord(current(), `Valuation-Report-${projectId}-V${valuationId}`)
-
   const confirmLock = async () => {
     const price = Number(reportPrice.replace(/,/g, ''))
     if (!Number.isFinite(price) || price <= 0) {
@@ -114,9 +111,34 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
   return (
     <div className="mx-auto max-w-4xl space-y-4">
       <Button type="button" variant="outline" onClick={onBack} className="!px-5 !py-2.5 text-sm">← Back</Button>
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-white sm:text-3xl">Draft Report — <GradientText>{projectId}</GradientText> · Valuation #{valuationId}</h1>
-        <p className="mt-1 text-xs text-emerald-200/60">Status: {STATUS_LABEL[reviewStatus] ?? reviewStatus}</p>
+      <div className="flex flex-col gap-4 border-b border-white/10 pb-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white sm:text-3xl">Draft Report — <GradientText>{projectId}</GradientText></h1>
+          <p className="mt-1 text-xs text-emerald-200/60">
+            Valuation #{valuationId} · {STATUS_LABEL[reviewStatus] ?? reviewStatus}
+          </p>
+        </div>
+        <div className="grid w-full gap-3 sm:w-auto sm:grid-cols-2">
+          <label className="block sm:w-40">
+            <span className="mb-1 block text-xs font-medium text-emerald-100/60">Inspection date</span>
+            <input
+              type="date"
+              value={inspectionDate}
+              readOnly
+              className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-emerald-100/65 outline-none"
+            />
+          </label>
+          <label className="block sm:w-40">
+            <span className="mb-1 block text-xs font-medium text-emerald-100/60">Valuation date</span>
+            <input
+              type="date"
+              value={valuationDate}
+              disabled={readOnly}
+              onChange={(e) => setValuationDate(e.target.value)}
+              className="w-full rounded-lg border border-white/15 bg-slate-800 px-3 py-2 text-sm text-white outline-none focus:border-gold-400/60 disabled:opacity-60"
+            />
+          </label>
+        </div>
       </div>
 
       {showReason && rejectReason && (
@@ -130,24 +152,10 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
         </div>
       )}
 
-      <div className="grid gap-3 rounded-xl border border-white/10 bg-white/5 p-4 sm:grid-cols-2">
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-emerald-100/70">Inspection date</span>
-          <input type="date" value={inspectionDate} readOnly className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-emerald-100/65 outline-none" />
-          <span className="mt-1 block text-[11px] text-emerald-100/45">Saved by the Technical Officer in Inspection Data.</span>
-        </label>
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-emerald-100/70">Valuation date</span>
-          <input type="date" value={valuationDate} disabled={readOnly} onChange={(e) => setValuationDate(e.target.value)} className="w-full rounded-lg border border-white/15 bg-slate-800 px-3 py-2 text-sm text-white outline-none focus:border-gold-400/60 disabled:opacity-60" />
-          <span className="mt-1 block text-[11px] text-emerald-100/45">Confirmed by the Manager and used for {'{valuationDate}'}.</span>
-        </label>
-      </div>
-
       <div className="flex flex-wrap items-center justify-center gap-3">
         {!readOnly && (
           <Button type="button" variant="outline" onClick={save} disabled={!!busy} className="!px-5 !py-2 text-sm">{busy === 'Save' ? 'Saving…' : '💾 Save edits'}</Button>
         )}
-        <Button type="button" variant="outline" onClick={downloadWord} className="!px-5 !py-2 text-sm">⬇ Download Word</Button>
         {level === 'L3' && (reviewStatus === 'pending_l3' || reviewStatus === 'draft' || reviewStatus === 'rejected_l3') && (
           <>
             <Button type="button" variant="outline" onClick={() => reject('rejected_to_to', 'Technical Officer')} disabled={!!busy} className="!px-5 !py-2 text-sm !border-amber-400/50 !text-amber-200">

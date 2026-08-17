@@ -16,7 +16,7 @@ export type RegisteredUser = {
 export type EditableUser = {
   firstName: string
   lastName: string
-  email: string
+  role: string
   phone: string
   province: string
   district: string

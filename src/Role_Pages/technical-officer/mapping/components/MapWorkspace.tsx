@@ -32,7 +32,6 @@ const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => 
   const [accessSources, setAccessSources] = useSessionState<string[]>(k('accessSrc'), [])
   const [locality, setLocality] = useSessionState(k('locality'), '')
   const [localitySources, setLocalitySources] = useSessionState<string[]>(k('localitySrc'), [])
-  const [flyTo, setFlyTo] = useState<{ lat: number; lng: number; zoom: number; nonce: number } | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [goNext, setGoNext] = useState(false)
@@ -68,7 +67,7 @@ const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => 
     setLngText(ln !== null ? String(ln) : '')
   }
 
-  // Typing a coordinate updates the marker live; blurring recenters the map.
+  // Typing a coordinate updates the marker live.
   const editLat = (v: string) => {
     setLatText(v)
     const n = parseFloat(v)
@@ -79,12 +78,6 @@ const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => 
     const n = parseFloat(v)
     if (!Number.isNaN(n)) setLng(n)
   }
-  const recenter = () => {
-    if (lat !== null && lng !== null) {
-      setFlyTo({ lat, lng, zoom: 17, nonce: Date.now() })
-    }
-  }
-
   const save = async () => {
     if (!has) return setError('Choose a location before saving.')
     setSaving(true); setError(''); setSaved(false)
@@ -147,7 +140,7 @@ const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => 
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_330px]">
         <Step n={1} title="Pin the property location">
           <p className="mb-4 text-sm leading-6 text-emerald-100/60">Search by address or landmark, then click the exact property position on the map.</p>
-          <LocationPicker lat={lat} lng={lng} flyTo={flyTo} onPick={(la, ln) => setPoint(la, ln)} />
+          <LocationPicker lat={lat} lng={lng} onPick={(la, ln) => setPoint(la, ln)} />
         </Step>
 
         <Step n={2} title="Confirm coordinates">
@@ -157,7 +150,6 @@ const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => 
             label="Latitude"
             value={latText}
             onChange={(e) => editLat(e.target.value)}
-            onBlur={recenter}
             inputMode="decimal"
             placeholder="e.g. 6.845210"
             className="font-mono text-gold-200"
@@ -166,7 +158,6 @@ const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => 
             label="Longitude"
             value={lngText}
             onChange={(e) => editLng(e.target.value)}
-            onBlur={recenter}
             inputMode="decimal"
             placeholder="e.g. 79.921380"
             className="font-mono text-gold-200"

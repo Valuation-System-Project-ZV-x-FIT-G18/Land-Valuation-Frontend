@@ -1,5 +1,6 @@
+//06
 import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import DescriptionsEditor from '@/Role_Pages/technical-officer/descriptions/components/DescriptionsEditor'
@@ -11,6 +12,7 @@ import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/
 // Projects → valuations → generate/edit that project's report descriptions.
 const GenerateDescriptionsPage = () => {
   const location = useLocation()
+  const navigate = useNavigate()
   const { user } = useAuth()
   const toId = user?.userId ?? ''
   const [completed, setCompleted] = useState<string[]>([])
@@ -26,6 +28,9 @@ const GenerateDescriptionsPage = () => {
     return (
       <DescriptionsEditor
         projectId={selected?.projectId ?? directProjectId}
+        onContinueToDraft={selected
+          ? () => navigate('/technical-officer/draft', { state: { assignment: selected } })
+          : undefined}
         onBack={() => {
           setSelected(null)
           setDirectProjectId('')

@@ -1,4 +1,6 @@
+//03
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
@@ -9,8 +11,11 @@ const isReadyForDraft = (assignment: Assignment) =>
   assignment.status === 'Assignment Accepted' && assignment.reviewStatus !== 'rejected_to_to'
 
 const CreateDraftPage = () => {
+  const location = useLocation()
   const { user } = useAuth()
-  const [selected, setSelected] = useState<Assignment | null>(null)
+  const [selected, setSelected] = useState<Assignment | null>(
+    () => (location.state as { assignment?: Assignment } | null)?.assignment ?? null,
+  )
   if (selected) return <DraftEditor projectId={selected.projectId} valuationId={selected.valuationId} onBack={() => setSelected(null)} />
   return (
     <div className="mx-auto max-w-3xl space-y-6">
