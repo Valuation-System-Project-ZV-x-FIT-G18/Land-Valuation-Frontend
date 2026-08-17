@@ -15,7 +15,7 @@ export type NewRole = {
   postalCode: string
   address: string
   dateOfBirth: string
-  branchCode: string // Bank only — becomes the login ID
+  branchCode: string // Bank-only internal account and branch identifier
   branchName: string // Bank only
   bankName: string // Bank only
   designation: string // Bank only — the contact person's designation
