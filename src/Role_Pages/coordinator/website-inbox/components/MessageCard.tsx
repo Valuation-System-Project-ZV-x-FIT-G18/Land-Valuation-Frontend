@@ -19,14 +19,14 @@ const MessageCard = ({ name, email, phone, message, createdAt }: MessageCardProp
           <time dateTime={createdAt} className="shrink-0 text-[11px] font-medium text-emerald-200/40">{formatDate(createdAt)}</time>
         </div>
         <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-6 text-emerald-50/85">{message}</p>
-        <div className="mt-5 flex flex-wrap gap-2 border-t border-white/10 pt-4">
-          <a href={`mailto:${email}`} className="inline-flex items-center gap-2 rounded-lg bg-gold-400/15 px-3 py-2 text-xs font-semibold text-gold-300 transition hover:bg-gold-400/25">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>Reply by email
-          </a>
-          {phone && <a href={`tel:${phone}`} className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-emerald-100/75 transition hover:bg-white/10 hover:text-white">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L8 9.7a16 16 0 0 0 6 6l1.26-1.26a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62a2 2 0 0 1 2 2.29Z" /></svg>{phone}
-          </a>}
-          <span className="ml-auto max-w-full self-center truncate text-xs text-emerald-200/45">{email}</span>
+        <div className="mt-5 flex flex-wrap gap-2 border-t border-white/10 pt-4" aria-label="Contact information">
+          <span className="inline-flex min-w-0 items-center gap-2 rounded-lg bg-gold-400/15 px-3 py-2 text-xs font-semibold text-gold-300">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5 shrink-0"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>
+            <span className="break-all">{email}</span>
+          </span>
+          {phone && <span className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-emerald-100/75">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L8 9.7a16 16 0 0 0 6 6l1.26-1.26a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62a2 2 0 0 1 2 2.29Z" /></svg>{phone}
+          </span>}
         </div>
       </div>
     </div>
