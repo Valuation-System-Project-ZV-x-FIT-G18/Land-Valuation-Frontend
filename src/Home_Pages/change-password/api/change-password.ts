@@ -7,7 +7,6 @@ type ChangeResult =
   | { ok: false; error: string }
 
 export async function submitChangePassword(
-  userId: string,
   currentPassword: string,
   newPassword: string,
 ): Promise<ChangeResult> {
@@ -15,7 +14,7 @@ export async function submitChangePassword(
     const res = await fetch('/api/auth/change-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, currentPassword, newPassword }),
+      body: JSON.stringify({ currentPassword, newPassword }),
     })
     const body = await res.json().catch(() => ({}) as Record<string, unknown>)
     if (res.ok) return { ok: true, user: body.user as AuthUser }
