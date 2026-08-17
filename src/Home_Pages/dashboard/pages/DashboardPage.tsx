@@ -24,6 +24,8 @@ const DashboardPage = () => {
   const { user } = useAuth()
   if (!user) return null
 
+  const isCoordinator = user.role === 'Coordinator'
+
   // The role's own menu items + Project Status (available to everyone).
   const actions: SidebarItem[] = [
     ...(roleMenus[user.role] ?? []),
@@ -37,7 +39,46 @@ const DashboardPage = () => {
       </h1>
       <WelcomeCard name={user.name} role={user.role} userId={user.userId} photoPath={user.photoPath} />
 
-      <div>
+      {isCoordinator ? (
+        <Card className="overflow-hidden">
+          <div className="grid lg:grid-cols-[1.35fr_0.65fr]">
+            <div className="p-6 sm:p-8">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-400/15 text-gold-300">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 19V9m5 10V5m5 14v-7m5 7V8" />
+                  </svg>
+                </span>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-300/80">Workspace overview</p>
+                  <h2 className="mt-1 font-display text-xl font-semibold text-white">Coordination centre</h2>
+                </div>
+              </div>
+
+              <p className="mt-5 max-w-2xl text-sm leading-6 text-emerald-100/65">
+                Manage the valuation workflow from one organised workspace. Use the sidebar to access applicant records, projects, valuations, payments and field operations.
+              </p>
+
+              <div className="mt-6 flex items-center gap-2 text-xs text-emerald-200/50">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.65)]" />
+                System workspace is ready
+              </div>
+            </div>
+
+            <div className="flex flex-col justify-center border-t border-white/10 bg-white/[0.025] p-6 sm:p-8 lg:border-l lg:border-t-0">
+              <p className="text-xs font-medium uppercase tracking-wider text-emerald-200/45">Today</p>
+              <p className="mt-2 font-display text-2xl font-semibold text-white">
+                {new Intl.DateTimeFormat(undefined, { weekday: 'long' }).format(new Date())}
+              </p>
+              <p className="mt-1 text-sm text-emerald-100/60">
+                {new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date())}
+              </p>
+              <div className="mt-5 h-px bg-gradient-to-r from-gold-400/40 to-transparent" />
+              <p className="mt-4 text-xs leading-5 text-emerald-200/50">Select a section from the sidebar to begin your work.</p>
+            </div>
+          </div>
+        </Card>
+      ) : <div>
         <p className="mb-3 text-sm text-emerald-100/70">{ROLE_TAGLINE[user.role] ?? 'Your workspace.'}</p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {actions.map((a) => (
@@ -67,9 +108,9 @@ const DashboardPage = () => {
             </Link>
           ))}
         </div>
-      </div>
+      </div>}
 
-      {actions.length === 1 && (
+      {!isCoordinator && actions.length === 1 && (
         <Card className="p-5 text-sm text-emerald-100/70">
           More options for your role will appear here as they are enabled.
         </Card>
