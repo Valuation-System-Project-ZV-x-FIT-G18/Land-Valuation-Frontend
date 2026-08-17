@@ -93,6 +93,20 @@ const ProjectValuationPicker = ({ toId, actionLabel = 'Open →', onSelect, comp
   // Level 2 — the valuations inside the chosen project.
   if (project) {
     const vals = assignments.filter((a) => a.projectId === project).sort((a, b) => a.valuationId - b.valuationId)
+    if (vals.length === 0) {
+      return (
+        <Card className="p-8 text-center">
+          <p className="font-semibold text-gold-200">No valuations available</p>
+          <p className="mt-1 text-sm text-emerald-100/70">
+            The selected project does not contain any valuations right now.
+            Please choose another project.
+          </p>
+          <Button type="button" variant="outline" onClick={() => setProject(null)} className="mt-4 !px-5 !py-2 text-sm">
+            ← All projects
+          </Button>
+        </Card>
+      )
+    }
     const head = vals[0]
     return (
       <div className="space-y-3">
