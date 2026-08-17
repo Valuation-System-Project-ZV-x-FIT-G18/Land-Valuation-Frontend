@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
 import Button from '@/Common_Pages/components/ui/Button'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
-import { getBuildValues, getSavedReport } from '@/Role_Pages/technical-officer/draft/api/draft'
+import { downloadTemplateReport, getBuildValues, getSavedReport } from '@/Role_Pages/technical-officer/draft/api/draft'
 import { buildReportHtml } from '@/Role_Pages/technical-officer/draft/utils/buildReportHtml'
 import { getValuation, getEvidence } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
-import { downloadReportWord } from '@/Common_Pages/utils/downloadReportWord'
 
 // Read-only, finalised report for a bank client (no editing, no review actions).
 const ClientReportView = ({ projectId, onBack }: { projectId: string; onBack: () => void }) => {
@@ -24,7 +23,7 @@ const ClientReportView = ({ projectId, onBack }: { projectId: string; onBack: ()
     })()
   }, [projectId])
 
-  const downloadWord = () => downloadReportWord(html, `Valuation-Report-${projectId}`)
+  const downloadWord = () => downloadTemplateReport(projectId)
 
   return (
     <div className="mx-auto max-w-4xl space-y-4">

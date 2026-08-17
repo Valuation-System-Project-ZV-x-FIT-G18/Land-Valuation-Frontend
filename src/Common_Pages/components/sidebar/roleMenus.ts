@@ -6,7 +6,6 @@ export const roleMenus: Record<string, SidebarItem[]> = {
     { label: 'User Details', to: '/admin/user-details', icon: 'users' },
   ],
   Coordinator: [
-    { label: 'New Requests', to: '/coordinator/new-requests', icon: 'mail' },
     { label: 'Contact Messages', to: '/coordinator/contact-messages', icon: 'mail' },
     { label: 'Register Applicant', to: '/coordinator/create-project', icon: 'userAdd' },
     { label: 'Create Project', to: '/coordinator/new-project', icon: 'document' },

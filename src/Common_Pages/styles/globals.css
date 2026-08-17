@@ -8,6 +8,69 @@ html {
   overflow-x: hidden;
 }
 
+/* Keep the blank inspection form on exactly three A4 sheets:
+   1) Access + land, 2) boundaries + locality, 3) valuation + sign-off. */
+@media print {
+  .inspection-print-page-break {
+    break-before: page !important;
+    page-break-before: always !important;
+    margin-top: 0 !important;
+  }
+
+  .inspection-print-fields {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .inspection-print-section {
+    break-inside: auto !important;
+    margin-top: 4mm !important;
+  }
+
+  .inspection-print-section h2,
+  .inspection-print-group,
+  .inspection-print-field {
+    break-inside: avoid !important;
+  }
+
+  .inspection-print-group {
+    grid-column: 1 / -1 !important;
+    margin: 2mm 0 0 !important;
+    padding: 1.5mm 2mm !important;
+  }
+
+  .inspection-print-field,
+  .inspection-print-field:nth-child(even) {
+    min-height: 12mm !important;
+    padding: 2mm 2.5mm 1mm !important;
+    border-right: 1px solid #d0d0d0 !important;
+    border-top: 1px solid #d0d0d0 !important;
+  }
+
+  .inspection-print-field:nth-child(odd) {
+    border-right: 0 !important;
+  }
+
+  .inspection-print-field-wide {
+    grid-column: 1 / -1 !important;
+    min-height: 17mm !important;
+    border-right: 0 !important;
+  }
+
+  .inspection-print-field label {
+    font-size: 8pt !important;
+  }
+
+  .inspection-writing-lines i,
+  .inspection-print-choice-answer i {
+    height: 5mm !important;
+  }
+
+  .inspection-writing-lines-tall i:nth-child(n+3) {
+    display: none !important;
+  }
+}
+
 *,
 *::before,
 *::after {

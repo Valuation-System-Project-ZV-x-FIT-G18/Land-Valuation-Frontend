@@ -54,7 +54,7 @@ const SettingsPage = () => {
       /* ignore unreadable/corrupt draft */
     }
 
-    getProfile(user.userId).then((res) => {
+    getProfile().then((res) => {
       if (res.profile) setProfile(draft ?? res.profile)
       else setServerError(res.error ?? 'Could not load your profile.')
       setLoading(false)
@@ -113,7 +113,7 @@ const SettingsPage = () => {
     if (!file || !profile) return
     setUploading(true)
     setServerError('')
-    const res = await uploadAvatar(user.userId, file)
+    const res = await uploadAvatar(file)
     setUploading(false)
     if (res.ok && res.photoPath) {
       setProfile({ ...profile, photoPath: res.photoPath })

@@ -323,7 +323,7 @@ const InspectionForm = ({ projectId, toId, onBack }: InspectionFormProps) => {
       </div>
 
       {printableInspectionSections.map((section, sectionIndex) => (
-        <section className={`inspection-print-section${section.fields.some((field) => field.group) ? ' inspection-print-section-long' : ''}`} key={`print-${section.title}`}>
+        <section className={`inspection-print-section${section.fields.some((field) => field.group) ? ' inspection-print-section-long' : ''}${sectionIndex === 2 || sectionIndex === 4 ? ' inspection-print-page-break' : ''}`} key={`print-${section.title}`}>
           <h2><b>{sectionIndex + 1}</b>{section.title}</h2>
           <div className="inspection-print-fields">
             {section.fields.map((field, fieldIndex) => (

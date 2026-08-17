@@ -1,13 +1,12 @@
 import Card from '@/Common_Pages/components/ui/Card'
 
-// One website submission (a valuation request or a contact message).
+// One contact-form submission from the public website.
 type MessageCardProps = {
   name: string
   email: string
   phone: string
   message: string
   createdAt: string
-  nic?: string
 }
 
 const formatDate = (value: string) => {
@@ -17,7 +16,7 @@ const formatDate = (value: string) => {
     : d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
-const MessageCard = ({ name, email, phone, message, createdAt, nic }: MessageCardProps) => (
+const MessageCard = ({ name, email, phone, message, createdAt }: MessageCardProps) => (
   <Card className="p-5 sm:p-6">
     <div className="flex flex-wrap items-start justify-between gap-2">
       <div>
@@ -25,7 +24,6 @@ const MessageCard = ({ name, email, phone, message, createdAt, nic }: MessageCar
         <p className="text-xs text-emerald-200/60">
           {email}
           {phone ? ` · ${phone}` : ''}
-          {nic ? ` · NIC ${nic}` : ''}
         </p>
       </div>
       <span className="shrink-0 text-xs text-emerald-200/40">{formatDate(createdAt)}</span>

@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 // Shows the user's uploaded profile picture, or their initials if none is set.
 // Used anywhere a user is represented: topbar, dashboard, settings.
 
@@ -28,13 +30,17 @@ export const avatarUrl = (userId: string, photoPath: string) =>
   `/api/auth/avatar?userId=${encodeURIComponent(userId)}&v=${encodeURIComponent(photoPath)}`
 
 const Avatar = ({ userId, name, photoPath, size = 'md', className = '' }: AvatarProps) => {
+  const [imageFailed, setImageFailed] = useState(false)
   const base = `flex shrink-0 items-center justify-center overflow-hidden rounded-full font-bold text-emerald-950 shadow ring-2 ring-white/10 ${sizeClasses[size]} ${className}`
 
-  if (photoPath) {
+  useEffect(() => setImageFailed(false), [userId, photoPath])
+
+  if (photoPath && !imageFailed) {
     return (
       <img
         src={avatarUrl(userId, photoPath)}
         alt={name}
+        onError={() => setImageFailed(true)}
         className={`${base} bg-emerald-900 object-cover`}
       />
     )

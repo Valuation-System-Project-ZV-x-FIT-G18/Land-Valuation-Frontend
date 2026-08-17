@@ -1,3 +1,4 @@
+//02
 import { useEffect, useState } from 'react'
 import Card from '@/Common_Pages/components/ui/Card'
 import Button from '@/Common_Pages/components/ui/Button'
@@ -56,9 +57,9 @@ const ORDER: { key: SectionKey; label: string }[] = [
   { key: 'certification', label: 'Certification' },
 ]
 
-type Props = { projectId: string; onBack: () => void }
+type Props = { projectId: string; onBack: () => void; onContinueToDraft?: () => void }
 
-const DescriptionsEditor = ({ projectId, onBack }: Props) => {
+const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft }: Props) => {
   const [texts, setTexts] = useState<Descriptions>(empty)
   const [sources, setSources] = useState<SourceSection[]>([])
   const [photos, setPhotos] = useState<string[]>([])
@@ -66,6 +67,7 @@ const DescriptionsEditor = ({ projectId, onBack }: Props) => {
   const [saving, setSaving] = useState(false)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
+  const [saved, setSaved] = useState(false)
 
   // On open: load the editable sources + photos, and any previously saved text.
   useEffect(() => {
@@ -88,14 +90,17 @@ const DescriptionsEditor = ({ projectId, onBack }: Props) => {
     return Object.fromEntries((sec?.fields ?? []).map((f) => [f.key, f.value]))
   }
 
-  const setField = (section: SectionKey, key: string, value: string) =>
+  const setField = (section: SectionKey, key: string, value: string) => {
+    setSaved(false)
     setSources((prev) =>
       prev.map((s) =>
         s.section === section ? { ...s, fields: s.fields.map((f) => (f.key === key ? { ...f, value } : f)) } : s,
       ),
     )
+  }
 
   const regenerate = async (section: SectionKey) => {
+    setSaved(false)
     setBusy(section)
     setError('')
     setNotice('')
@@ -107,6 +112,7 @@ const DescriptionsEditor = ({ projectId, onBack }: Props) => {
   }
 
   const regenerateAll = async () => {
+    setSaved(false)
     setBusy('all')
     setError('')
     setNotice('')
@@ -136,6 +142,7 @@ const DescriptionsEditor = ({ projectId, onBack }: Props) => {
     setSaving(false)
     if (res.ok) {
       setNotice('✓ Descriptions saved to the database.')
+      setSaved(true)
     } else {
       setError(res.error ?? 'Could not save.')
     }
@@ -176,7 +183,10 @@ const DescriptionsEditor = ({ projectId, onBack }: Props) => {
             key={key}
             label={label}
             text={texts[key] ?? ''}
-            onTextChange={(v) => setTexts((t) => ({ ...t, [key]: v }))}
+            onTextChange={(v) => {
+              setSaved(false)
+              setTexts((t) => ({ ...t, [key]: v }))
+            }}
             fields={isImage ? [] : (sources.find((s) => s.section === key)?.fields ?? [])}
             photos={isImage ? photos : undefined}
             onFieldChange={(fk, v) => setField(key, fk, v)}
@@ -198,9 +208,16 @@ const DescriptionsEditor = ({ projectId, onBack }: Props) => {
         onChange={(v) => setTexts((t) => ({ ...t, valuation: v }))}
       />}
 
-      <Button type="button" fullWidth variant="success" loading={saving} disabled={busy !== null} onClick={handleSave}>
-        {saving ? 'Saving…' : 'OK — Save Descriptions'}
-      </Button>
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <Button type="button" fullWidth variant="success" loading={saving} disabled={busy !== null} onClick={handleSave}>
+          {saving ? 'Saving…' : 'Save Descriptions'}
+        </Button>
+        {saved && onContinueToDraft && (
+          <Button type="button" fullWidth onClick={onContinueToDraft}>
+            Continue to Create Draft →
+          </Button>
+        )}
+      </div>
 
     </div>
   )

@@ -1,16 +1,4 @@
-// Website submissions the coordinator can review:
-//  - valuation requests (the public "Request a Land Valuation" form)
-//  - contact messages (the homepage "Any inquiries" form)
-
-export type ValuationRequest = {
-  id: number
-  name: string
-  phone: string
-  email: string
-  nic: string
-  message: string
-  createdAt: string
-}
+// Contact-form submissions the coordinator can review.
 
 export type ContactMessage = {
   id: number
@@ -19,19 +7,6 @@ export type ContactMessage = {
   phone: string
   message: string
   createdAt: string
-}
-
-export async function getValuationRequests(): Promise<{
-  requests: ValuationRequest[]
-  error?: string
-}> {
-  try {
-    const res = await fetch('/api/valuation')
-    if (!res.ok) return { requests: [], error: 'Could not load requests.' }
-    return await res.json()
-  } catch {
-    return { requests: [], error: 'Could not reach the server.' }
-  }
 }
 
 export async function getContactMessages(): Promise<{

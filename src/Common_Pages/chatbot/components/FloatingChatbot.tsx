@@ -5,20 +5,12 @@ import { askChatbot, type ChatTurn } from '@/Common_Pages/chatbot/api/chatbot'
 type DisplayTurn = ChatTurn & { sources?: string[] }
 
 const ChatbotIcon = ({ className = 'h-8 w-8' }: { className?: string }) => (
-  <svg viewBox="0 0 48 48" fill="none" className={className} aria-hidden="true">
-    <path d="M24 7v5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-    <circle cx="24" cy="5.5" r="2.5" fill="#F7D86A" stroke="#064E3B" strokeWidth="1.5" />
-    <rect x="8" y="12" width="32" height="27" rx="11" fill="#F8FAF5" stroke="#064E3B" strokeWidth="2.5" />
-    <path d="M8 25H5.5a2.5 2.5 0 0 0 0 5H8M40 25h2.5a2.5 2.5 0 0 1 0 5H40" fill="#F7D86A" stroke="#064E3B" strokeWidth="2.5" strokeLinecap="round" />
-    <circle cx="18" cy="24" r="3" fill="#065F46" />
-    <circle cx="30" cy="24" r="3" fill="#065F46" />
-    <circle cx="17.2" cy="23.2" r=".8" fill="white" />
-    <circle cx="29.2" cy="23.2" r=".8" fill="white" />
-    <path d="M18.5 31c1.5 1.5 3.25 2.2 5.5 2.2s4-.7 5.5-2.2" stroke="#D09F19" strokeWidth="2.2" strokeLinecap="round" />
-    <circle cx="13.5" cy="29" r="2" fill="#F4A7A7" opacity=".65" />
-    <circle cx="34.5" cy="29" r="2" fill="#F4A7A7" opacity=".65" />
-    <path d="M15 40.5h18" stroke="#064E3B" strokeWidth="2.5" strokeLinecap="round" />
-  </svg>
+  <img
+    src="/images/ai-assistant-portrait.png"
+    alt=""
+    className={`${className} rounded-full object-cover`}
+    aria-hidden="true"
+  />
 )
 
 const ROLE_SUGGESTION: Record<string, string> = {
@@ -83,8 +75,8 @@ const FloatingChatbot = () => {
         >
           <header className="flex items-center justify-between border-b border-white/10 bg-gradient-to-r from-emerald-900 to-emerald-800 px-4 py-3">
             <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-gold-200 to-gold-400 shadow-inner">
-                <ChatbotIcon className="h-8 w-8" />
+              <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-gold-300/60 shadow-inner">
+                <ChatbotIcon className="h-full w-full" />
               </span>
               <div>
                 <p className="text-sm font-semibold text-white">CODEHUB Assistant</p>
@@ -126,7 +118,7 @@ const FloatingChatbot = () => {
       )}
 
       <button type="button" onClick={() => setOpen((value) => !value)} aria-label={open ? 'Close AI assistant' : 'Open AI assistant'} className="group relative ml-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-white/70 bg-gradient-to-br from-gold-100 via-gold-300 to-gold-500 text-emerald-950 shadow-[0_10px_30px_rgba(0,0,0,0.38),0_0_0_5px_rgba(227,194,74,0.12)] transition duration-200 hover:-translate-y-1 hover:scale-[1.03] hover:shadow-[0_14px_36px_rgba(0,0,0,0.4),0_0_0_7px_rgba(227,194,74,0.16)]">
-        {open ? <span className="text-3xl font-light leading-none">×</span> : <ChatbotIcon className="h-11 w-11 transition-transform duration-200 group-hover:scale-105" />}
+        {open ? <span className="text-3xl font-light leading-none">×</span> : <ChatbotIcon className="h-14 w-14 transition-transform duration-200 group-hover:scale-105" />}
         {!open && <span className="absolute right-0.5 top-0.5 h-3.5 w-3.5 rounded-full border-2 border-emerald-950 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" aria-hidden="true" />}
       </button>
     </div>
