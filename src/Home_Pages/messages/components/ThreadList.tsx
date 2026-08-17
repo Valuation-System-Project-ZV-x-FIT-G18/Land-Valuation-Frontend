@@ -11,26 +11,26 @@ type ThreadListProps = {
 const ThreadList = ({ threads, activeId, onSelect }: ThreadListProps) => {
   if (threads.length === 0) {
     return (
-      <p className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center text-xs text-emerald-200/50">
+      <p className="p-6 text-center text-xs text-slate-500">
         No conversations yet.
       </p>
     )
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1">
       {threads.map((t) => (
         <button
           key={t.otherId}
           type="button"
           onClick={() => onSelect(t)}
-          className={`flex w-full items-start gap-3 rounded-2xl border p-3 text-left transition ${
+          className={`flex w-full items-start gap-3 rounded-md border px-3 py-2.5 text-left transition ${
             activeId === t.otherId
-              ? 'border-gold-400/40 bg-white/10'
-              : 'border-white/10 bg-white/5 hover:bg-white/10'
+              ? 'border-gold-400/30 bg-gold-400/10'
+              : 'border-transparent hover:border-slate-700 hover:bg-slate-800/45'
           }`}
         >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/40 to-gold-500/30 text-sm font-bold text-white">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-700/60 text-sm font-semibold text-emerald-50">
             {t.name.charAt(0).toUpperCase()}
           </span>
           <div className="min-w-0 flex-1">
@@ -42,8 +42,8 @@ const ThreadList = ({ threads, activeId, onSelect }: ThreadListProps) => {
                 </span>
               )}
             </div>
-            <p className="truncate text-xs text-emerald-200/50">{t.role}</p>
-            <p className="mt-0.5 truncate text-xs text-emerald-100/60">{t.lastBody}</p>
+            <p className="truncate text-xs text-slate-400">{t.role}</p>
+            <p className="mt-0.5 truncate text-xs text-slate-500">{t.lastBody}</p>
           </div>
         </button>
       ))}

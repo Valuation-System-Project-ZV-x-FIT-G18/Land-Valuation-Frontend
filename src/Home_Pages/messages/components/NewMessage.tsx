@@ -1,81 +1,82 @@
-//04
-import { useState } from 'react'
-import Card from '@/Common_Pages/components/ui/Card'
-import Button from '@/Common_Pages/components/ui/Button'
-import SelectField from '@/Common_Pages/components/ui/SelectField'
-import { useAuth } from '@/Common_Pages/components/auth/useAuth'
-import { listUsersByRole } from '@/Home_Pages/messages/api/messages'
+import { useEffect, useState } from 'react'
+import { searchUsers } from '@/Home_Pages/messages/api/messages'
 import type { DirectoryUser, Partner } from '@/Home_Pages/messages/types/messages'
 
-// Every role that can be messaged, including the external roles.
-const allRoles = [
-  'Admin',
-  'Coordinator',
-  'Technical Officer',
-  'Manager L1',
-  'Manager L2',
-  'Manager L3',
-  'Bank', // external
-  'Loan Applicant', // external
-]
-
-// Pick a role, then a person of that role, to open a chat with them.
-const NewMessage = ({ onStart }: { onStart: (p: Partner) => void }) => {
-  const { user } = useAuth()
-  const [role, setRole] = useState('')
+const NewMessage = ({ onStart }: { onStart: (partner: Partner) => void }) => {
+  const [query, setQuery] = useState('')
   const [users, setUsers] = useState<DirectoryUser[]>([])
-  const [userId, setUserId] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const onRole = async (r: string) => {
-    setRole(r)
-    setUserId('')
-    setUsers([])
-    setError('')
-    if (!r) return
-    setLoading(true)
-    const res = await listUsersByRole(r)
-    setUsers(res.users.filter((u) => u.userId !== user?.userId)) // exclude yourself
-    if (res.error) setError(res.error)
-    setLoading(false)
-  }
+  useEffect(() => {
+    let active = true
+    const timer = setTimeout(async () => {
+      setLoading(true)
+      setError('')
+      const result = await searchUsers(query)
+      if (!active) return
+      setUsers(result.users)
+      setError(result.error ?? '')
+      setLoading(false)
+    }, 250)
+    return () => {
+      active = false
+      clearTimeout(timer)
+    }
+  }, [query])
 
-  const start = () => {
-    const u = users.find((x) => x.userId === userId)
-    if (!u) return setError('Choose a recipient.')
-    onStart({ userId: u.userId, name: u.name, role })
+  const open = (user: DirectoryUser) => {
+    onStart({ userId: user.userId, name: user.name, role: user.role })
   }
-
-  // You message OTHER roles — hide your own role from the list.
-  const roles = allRoles.filter((r) => r !== user?.role)
-  const roleOptions = [{ value: '', label: 'Select a role' }, ...roles.map((r) => ({ value: r, label: r }))]
-  const userOptions = [
-    { value: '', label: loading ? 'Loading…' : users.length ? 'Select a person' : 'No users in this role' },
-    ...users.map((u) => ({ value: u.userId, label: `${u.name} (${u.userId})` })),
-  ]
 
   return (
-    <Card className="p-6 sm:p-8">
-      <h3 className="mb-5 text-lg font-bold text-white">New Message</h3>
-      <div className="space-y-5">
-        <SelectField label="Role" name="role" value={role} onChange={(e) => onRole(e.target.value)} options={roleOptions} />
-        <SelectField
-          label="Recipient"
-          name="recipient"
-          value={userId}
-          onChange={(e) => {
-            setUserId(e.target.value)
-            setError('')
-          }}
-          options={userOptions}
-        />
-        {error && <p className="text-sm text-red-300">{error}</p>}
-        <Button type="button" fullWidth onClick={start} disabled={!userId}>
-          Open Chat
-        </Button>
+    <div className="flex h-full flex-col">
+      <div className="border-b border-slate-700/60 p-5">
+        <h3 className="text-lg font-bold text-white">New message</h3>
+        <p className="mt-1 text-sm text-emerald-100/60">Search by name, email, role, or account ID.</p>
+        <label className="mt-4 block">
+          <span className="sr-only">Search people</span>
+          <input
+            autoFocus
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search people"
+            className="w-full rounded-md border border-slate-600/70 bg-slate-900/40 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-gold-400/60 focus:ring-2 focus:ring-gold-400/20"
+          />
+        </label>
       </div>
-    </Card>
+
+      <div className="flex-1 overflow-y-auto p-3">
+        {loading ? (
+          <p className="p-6 text-center text-sm text-emerald-100/50">Searching...</p>
+        ) : error ? (
+          <p className="p-6 text-center text-sm text-red-300">{error}</p>
+        ) : users.length === 0 ? (
+          <p className="p-6 text-center text-sm text-emerald-100/50">No matching people found.</p>
+        ) : (
+          <div className="space-y-1">
+            {users.map((user) => (
+              <button
+                key={user.userId}
+                type="button"
+                onClick={() => open(user)}
+                className="flex w-full items-center gap-3 rounded-md border border-transparent px-3 py-3 text-left transition hover:border-slate-700 hover:bg-slate-800/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/60"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-700/60 text-sm font-semibold text-white">
+                  {user.name.charAt(0).toUpperCase()}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold text-white">{user.name}</span>
+                  <span className="block truncate text-xs text-emerald-100/55">{user.email}</span>
+                </span>
+                <span className="shrink-0 text-xs text-gold-200/80">{user.role}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 

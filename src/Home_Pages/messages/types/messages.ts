@@ -1,7 +1,7 @@
 // Types for the in-system messaging feature.
 
-// A person you can message (chosen after picking a role).
-export type DirectoryUser = { userId: string; name: string }
+// A person returned by the searchable user directory.
+export type DirectoryUser = { userId: string; name: string; role: string; email: string }
 
 // The other party in a conversation.
 export type Partner = { userId: string; name: string; role: string }

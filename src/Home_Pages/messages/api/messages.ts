@@ -7,11 +7,11 @@ import type {
 
 // API calls for messaging.
 
-export async function listUsersByRole(
-  role: string,
+export async function searchUsers(
+  search: string,
 ): Promise<{ users: DirectoryUser[]; error?: string }> {
   try {
-    const res = await fetch(`/api/messages/users?role=${encodeURIComponent(role)}`)
+    const res = await fetch(`/api/messages/users?search=${encodeURIComponent(search)}`)
     if (!res.ok) return { users: [], error: 'Could not load users.' }
     return await res.json()
   } catch {
@@ -19,9 +19,9 @@ export async function listUsersByRole(
   }
 }
 
-export async function getThreads(userId: string): Promise<{ threads: Thread[] }> {
+export async function getThreads(): Promise<{ threads: Thread[] }> {
   try {
-    const res = await fetch(`/api/messages/threads?userId=${encodeURIComponent(userId)}`)
+    const res = await fetch('/api/messages/threads')
     if (!res.ok) return { threads: [] }
     return await res.json()
   } catch {
@@ -30,13 +30,10 @@ export async function getThreads(userId: string): Promise<{ threads: Thread[] }>
 }
 
 export async function getConversation(
-  userId: string,
   otherId: string,
 ): Promise<{ messages: Message[] }> {
   try {
-    const res = await fetch(
-      `/api/messages/conversation?userId=${encodeURIComponent(userId)}&otherId=${encodeURIComponent(otherId)}`,
-    )
+    const res = await fetch(`/api/messages/conversation?otherId=${encodeURIComponent(otherId)}`)
     if (!res.ok) return { messages: [] }
     return await res.json()
   } catch {
@@ -45,7 +42,6 @@ export async function getConversation(
 }
 
 export async function sendMessage(
-  senderId: string,
   recipientId: string,
   body: string,
   file?: File | null,
@@ -53,7 +49,6 @@ export async function sendMessage(
   try {
     // multipart so an optional PDF/file can ride along with the text.
     const form = new FormData()
-    form.append('senderId', senderId)
     form.append('recipientId', recipientId)
     form.append('body', body)
     if (file) form.append('file', file)
@@ -67,7 +62,12 @@ export async function sendMessage(
   }
 }
 
-// Download URL for a message's attachment (only participants are authorized).
-export function attachmentUrl(messageId: number, userId: string): string {
-  return `/api/messages/attachment?id=${messageId}&userId=${encodeURIComponent(userId)}`
+// Fetch through the authenticated API client so the JWT reaches the backend.
+export async function downloadAttachment(messageId: number): Promise<Blob | null> {
+  try {
+    const res = await fetch(`/api/messages/attachment?id=${messageId}`)
+    return res.ok ? await res.blob() : null
+  } catch {
+    return null
+  }
 }
