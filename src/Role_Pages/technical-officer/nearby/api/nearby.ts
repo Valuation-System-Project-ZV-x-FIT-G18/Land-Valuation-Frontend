@@ -115,8 +115,23 @@ export async function analyse(projectId: string, input: AnalyseInput): Promise<R
 export async function getAnalysis(projectId: string): Promise<Report | null> {
   try {
     const res = await fetch(`${base}?projectId=${encodeURIComponent(projectId)}`)
-    const body = await res.json()
-    return (body.data as Report) ?? null
+    const body = await res.json().catch(() => null)
+    const data = body?.data
+
+    // Older/empty database rows may contain `{}`. Only return data that has the
+    // complete shape consumed by NearbyAnalyser; otherwise start a new analysis.
+    if (
+      !res.ok ||
+      !data ||
+      !Array.isArray(data.evidence?.comparables) ||
+      !data.calculation ||
+      !data.conclusion ||
+      !data.summary
+    ) {
+      return null
+    }
+
+    return data as Report
   } catch {
     return null
   }

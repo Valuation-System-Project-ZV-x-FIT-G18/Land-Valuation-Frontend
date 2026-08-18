@@ -22,9 +22,11 @@ const chip = 'shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-xs fon
 const projectStage = (assignments: Assignment[]) => {
   const rejected = assignments.some((a) => a.reviewStatus.toLowerCase().includes('reject'))
   const completed = assignments.every((a) => a.reviewStatus.toLowerCase().includes('locked') || a.status.toLowerCase().includes('complete'))
+  const submitted = assignments.some((a) => a.status === 'Draft Submitted' || a.reviewStatus.toLowerCase().startsWith('pending_'))
   const isNew = assignments.some((a) => a.status === 'Technical Officer Assigned')
   if (rejected) return { label: 'Correction required', classes: 'border-amber-300/45 bg-amber-300/10 text-amber-200' }
   if (completed) return { label: 'Completed', classes: 'border-sky-300/40 bg-sky-300/10 text-sky-100' }
+  if (submitted) return { label: 'Submitted for review', classes: 'border-sky-300/40 bg-sky-300/10 text-sky-100' }
   if (isNew) return { label: 'New assignment', classes: 'border-gold-400/45 bg-gold-400/10 text-gold-200' }
   return { label: 'In progress', classes: 'border-emerald-300/35 bg-emerald-300/10 text-emerald-100' }
 }

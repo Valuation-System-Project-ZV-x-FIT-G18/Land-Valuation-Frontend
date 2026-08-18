@@ -12,7 +12,7 @@ import {
 
 const TRENDS = ['going up steadily', 'staying the same', 'slowing down']
 
-const NearbyAnalyser = ({ projectId, onBack }: { projectId: string; onBack: () => void }) => {
+const NearbyAnalyser = ({ projectId, onBack, onContinue }: { projectId: string; onBack: () => void; onContinue: () => void }) => {
   const [loc, setLoc] = useState<NearbyLocation | null>(null)
   const [comps, setComps] = useState<Comparable[]>([])
   const [aiComps, setAiComps] = useState(false)
@@ -21,6 +21,7 @@ const NearbyAnalyser = ({ projectId, onBack }: { projectId: string; onBack: () =
   const [inp, setInp] = useState({ rate: '', date: new Date().toISOString().slice(0, 10), trend: TRENDS[1] })
   const [busy, setBusy] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [savedToDatabase, setSavedToDatabase] = useState(false)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
   const [searchMessage, setSearchMessage] = useState<{ kind: 'error' | 'notice'; text: string } | null>(null)
@@ -60,6 +61,7 @@ const NearbyAnalyser = ({ projectId, onBack }: { projectId: string; onBack: () =
     getAnalysis(projectId).then((saved) => {
       if (saved) {
         setReport(saved)
+        setSavedToDatabase(true)
         setComps(saved.evidence.comparables)
         setInp((p) => ({
           ...p, rate: String(saved.calculation.ratePerPerch || p.rate),
@@ -84,7 +86,7 @@ const NearbyAnalyser = ({ projectId, onBack }: { projectId: string; onBack: () =
   const deleteComp = (i: number) => setComps((cs) => cs.filter((_, idx) => idx !== i))
 
   const generate = async () => {
-    setBusy(true); setError(''); setNotice('')
+    setBusy(true); setError(''); setNotice(''); setSavedToDatabase(false)
     const res = await analyse(projectId, {
       comparables: comps,
       ratePerPerch: Number(inp.rate) || 0,
@@ -103,6 +105,7 @@ const NearbyAnalyser = ({ projectId, onBack }: { projectId: string; onBack: () =
     const res = await saveAnalysis(projectId, report)
     setSaving(false)
     if (res.ok) {
+      setSavedToDatabase(true)
       setNotice('✓ Analysis saved to the database.')
     } else {
       setError(res.error ?? 'Could not save.')
@@ -196,6 +199,7 @@ const NearbyAnalyser = ({ projectId, onBack }: { projectId: string; onBack: () =
           </div>
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <Button type="button" loading={saving} onClick={save}>Save summary</Button>
+            {savedToDatabase && <Button type="button" variant="outline" onClick={onContinue}>Continue to Generate Descriptions →</Button>}
             {notice && <p className="text-sm text-emerald-300">{notice}</p>}
             {error && <p className="text-sm text-red-300">{error}</p>}
           </div>

@@ -1,13 +1,15 @@
-import { useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import NearbyAnalyser from '@/Role_Pages/technical-officer/nearby/components/NearbyAnalyser'
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
+import { saveWorkflowSelection } from '@/Role_Pages/technical-officer/assignments/utils/workflowSelection'
 
 const NearbyAnalysisPage = () => {
   const location = useLocation()
+  const navigate = useNavigate()
   const { user } = useAuth()
   const [selected, setSelected] = useState<Assignment | null>(() =>
     (location.state as { assignment?: Assignment } | null)?.assignment ?? null,
@@ -16,10 +18,18 @@ const NearbyAnalysisPage = () => {
     (location.state as { projectId?: string } | null)?.projectId ?? '',
   )
 
+  useEffect(() => {
+    const projectId = selected?.projectId ?? directProjectId
+    if (user?.userId && projectId) saveWorkflowSelection(user.userId, { assignment: selected ?? undefined, projectId })
+  }, [directProjectId, selected, user?.userId])
+
   if (selected || directProjectId) {
     return (
       <NearbyAnalyser
         projectId={selected?.projectId ?? directProjectId}
+        onContinue={() => navigate('/technical-officer/descriptions', {
+          state: selected ? { assignment: selected } : { projectId: directProjectId },
+        })}
         onBack={() => { setSelected(null); setDirectProjectId('') }}
       />
     )
