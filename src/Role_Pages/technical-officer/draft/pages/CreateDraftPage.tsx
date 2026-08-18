@@ -1,19 +1,20 @@
-import { useState } from 'react'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import DraftEditor from '@/Role_Pages/technical-officer/draft/components/DraftEditor'
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
-import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
+import { useWorkflowProject } from '@/Role_Pages/technical-officer/shared/useWorkflowProject'
+
+const DRAFT_STORAGE_KEY = 'technical-officer-draft-project'
 
 // Technical Officer > Create Draft.
 // Projects → valuations → assemble/edit that project's valuation report draft.
 const CreateDraftPage = () => {
   const { user } = useAuth()
   const toId = user?.userId ?? ''
-  const [selected, setSelected] = useState<Assignment | null>(null)
+  const { projectId, selectProject } = useWorkflowProject(DRAFT_STORAGE_KEY)
 
-  if (selected) {
-    return <DraftEditor projectId={selected.projectId} onBack={() => setSelected(null)} />
+  if (projectId) {
+    return <DraftEditor projectId={projectId} onBack={() => selectProject(null)} />
   }
 
   return (
@@ -29,7 +30,8 @@ const CreateDraftPage = () => {
       <ProjectValuationPicker
         toId={toId}
         actionLabel="Create draft →"
-        onSelect={setSelected}
+        persistenceKey={DRAFT_STORAGE_KEY}
+        onSelect={(assignment) => selectProject(assignment.projectId)}
         // Hide anything already submitted / in review / locked / sent back
         // (sent-back ones live under "Corrections").
         statusFilter={(a) =>

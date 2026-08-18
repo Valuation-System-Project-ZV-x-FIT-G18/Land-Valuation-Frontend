@@ -1,19 +1,20 @@
-import { useState } from 'react'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import NearbyAnalyser from '@/Role_Pages/technical-officer/nearby/components/NearbyAnalyser'
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
-import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
+import { useWorkflowProject } from '@/Role_Pages/technical-officer/shared/useWorkflowProject'
+
+const NEARBY_STORAGE_KEY = 'technical-officer-nearby-project'
 
 // Technical Officer > Analyse Nearby Lands.
 // Projects → valuations → analyse comparable land values for that project.
 const NearbyAnalysisPage = () => {
   const { user } = useAuth()
   const toId = user?.userId ?? ''
-  const [selected, setSelected] = useState<Assignment | null>(null)
+  const { projectId, selectProject } = useWorkflowProject(NEARBY_STORAGE_KEY)
 
-  if (selected) {
-    return <NearbyAnalyser projectId={selected.projectId} onBack={() => setSelected(null)} />
+  if (projectId) {
+    return <NearbyAnalyser projectId={projectId} onBack={() => selectProject(null)} />
   }
 
   return (
@@ -26,7 +27,12 @@ const NearbyAnalysisPage = () => {
           Choose a project, then a valuation, to review nearby land prices and build its evidence.
         </p>
       </div>
-      <ProjectValuationPicker toId={toId} actionLabel="Analyse →" onSelect={setSelected} />
+      <ProjectValuationPicker
+        toId={toId}
+        actionLabel="Analyse →"
+        persistenceKey={NEARBY_STORAGE_KEY}
+        onSelect={(assignment) => selectProject(assignment.projectId)}
+      />
     </div>
   )
 }

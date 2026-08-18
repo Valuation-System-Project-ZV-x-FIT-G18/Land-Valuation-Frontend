@@ -42,6 +42,23 @@ const AssignmentCard = ({ a }: { a: Assignment }) => {
         <StatusBadge status={a.status} />
       </div>
 
+      <div className="mt-5 rounded-xl border border-white/10 bg-white/5 p-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-emerald-100/55">Valuation workflow</p>
+        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+          <span className="font-medium text-gold-200">1. Assignment</span>
+          <span className="text-emerald-100/35">→</span>
+          <span className="font-medium text-gold-200">2. Inspection</span>
+          <span className="text-emerald-100/35">→</span>
+          <span className="text-emerald-100/65">3. Site photos</span>
+          <span className="text-emerald-100/35">→</span>
+          <span className="text-emerald-100/65">4. Map & analysis</span>
+          <span className="text-emerald-100/35">→</span>
+          <span className="text-emerald-100/65">5. Description</span>
+          <span className="text-emerald-100/35">→</span>
+          <span className="text-emerald-100/65">6. Draft</span>
+        </div>
+      </div>
+
       {/* Visit schedule */}
       <Section icon="📅" title="Site Visit">
         <Detail label="Date" value={a.date} />

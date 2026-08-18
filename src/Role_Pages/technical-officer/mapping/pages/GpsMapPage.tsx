@@ -1,19 +1,20 @@
-import { useState } from 'react'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import MapWorkspace from '@/Role_Pages/technical-officer/mapping/components/MapWorkspace'
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
-import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
+import { useWorkflowProject } from '@/Role_Pages/technical-officer/shared/useWorkflowProject'
+
+const GPS_MAP_STORAGE_KEY = 'technical-officer-gps-map-project'
 
 // Technical Officer > GPS & Map Integration.
 // Projects → valuations → pin the location & build map/access info.
 const GpsMapPage = () => {
   const { user } = useAuth()
   const toId = user?.userId ?? ''
-  const [selected, setSelected] = useState<Assignment | null>(null)
+  const { projectId: selectedProjectId, selectProject } = useWorkflowProject(GPS_MAP_STORAGE_KEY)
 
-  if (selected) {
-    return <MapWorkspace projectId={selected.projectId} onBack={() => setSelected(null)} />
+  if (selectedProjectId) {
+    return <MapWorkspace projectId={selectedProjectId} onBack={() => selectProject(null)} />
   }
 
   return (
@@ -26,7 +27,12 @@ const GpsMapPage = () => {
           Choose a project, then a valuation, to pin its location and generate map &amp; access details.
         </p>
       </div>
-      <ProjectValuationPicker toId={toId} actionLabel="Open map →" onSelect={setSelected} />
+      <ProjectValuationPicker
+        toId={toId}
+        actionLabel="Open map →"
+        persistenceKey={GPS_MAP_STORAGE_KEY}
+        onSelect={(assignment) => selectProject(assignment.projectId)}
+      />
     </div>
   )
 }

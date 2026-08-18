@@ -11,10 +11,11 @@ import {
   saveInspection,
   type InspectionData,
 } from '@/Role_Pages/technical-officer/inspections/api/inspections'
+import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 
-type InspectionFormProps = { projectId: string; toId: string; onBack: () => void }
+type InspectionFormProps = { projectId: string; toId: string; assignment?: Assignment; onBack: () => void }
 
-const InspectionForm = ({ projectId, toId, onBack }: InspectionFormProps) => {
+const InspectionForm = ({ projectId, toId, assignment, onBack }: InspectionFormProps) => {
   const navigate = useNavigate()
   const [data, setData] = useState<InspectionData>({})
   const [savedPrompt, setSavedPrompt] = useState(false) // "go to site photos?" popup
@@ -90,6 +91,25 @@ const InspectionForm = ({ projectId, toId, onBack }: InspectionFormProps) => {
           Inspection — <GradientText>{projectId}</GradientText>
         </h1>
       </div>
+
+      {assignment && (
+        <Card className="border-gold-400/25 bg-gold-400/5 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-gold-300">Working on</p>
+              <p className="mt-1 font-semibold text-white">
+                {assignment.projectId} · Valuation #{assignment.valuationId}
+              </p>
+              <p className="mt-0.5 text-sm text-emerald-100/65">
+                {assignment.owner.name} · {assignment.location.district || 'Location to be confirmed'}
+              </p>
+            </div>
+            <Button type="button" variant="outline" onClick={onBack} className="!px-3 !py-2 text-xs">
+              Change project
+            </Button>
+          </div>
+        </Card>
+      )}
 
       {/* One-click auto-fill for the inspection fields (testing helper). */}
       <div className="text-center">
@@ -184,7 +204,7 @@ const InspectionForm = ({ projectId, toId, onBack }: InspectionFormProps) => {
             <Button
               type="button"
               fullWidth
-              onClick={() => navigate('/technical-officer/site-photos', { state: { projectId } })}
+              onClick={() => navigate('/technical-officer/site-photos', { state: { projectId, valuationId: assignment?.valuationId ?? null } })}
             >
               Yes, upload photos
             </Button>

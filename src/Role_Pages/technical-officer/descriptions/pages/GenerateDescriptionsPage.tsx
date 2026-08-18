@@ -4,7 +4,9 @@ import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import DescriptionsEditor from '@/Role_Pages/technical-officer/descriptions/components/DescriptionsEditor'
 import { getCompletedProjects } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
-import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
+import { useWorkflowProject } from '@/Role_Pages/technical-officer/shared/useWorkflowProject'
+
+const DESCRIPTIONS_STORAGE_KEY = 'technical-officer-descriptions-project'
 
 // Technical Officer > Generate Descriptions.
 // Projects → valuations → generate/edit that project's report descriptions.
@@ -12,19 +14,19 @@ const GenerateDescriptionsPage = () => {
   const { user } = useAuth()
   const toId = user?.userId ?? ''
   const [completed, setCompleted] = useState<string[]>([])
-  const [selected, setSelected] = useState<Assignment | null>(null)
+  const { projectId, selectProject } = useWorkflowProject(DESCRIPTIONS_STORAGE_KEY)
 
   const loadCompleted = () => getCompletedProjects().then(setCompleted)
   useEffect(() => {
     loadCompleted()
   }, [])
 
-  if (selected) {
+  if (projectId) {
     return (
       <DescriptionsEditor
-        projectId={selected.projectId}
+        projectId={projectId}
         onBack={() => {
-          setSelected(null)
+          selectProject(null)
           loadCompleted() // refresh the "✓ Saved" badge
         }}
       />
@@ -41,7 +43,13 @@ const GenerateDescriptionsPage = () => {
           Choose a project, then a valuation, to generate or edit its descriptions.
         </p>
       </div>
-      <ProjectValuationPicker toId={toId} actionLabel="Generate →" onSelect={setSelected} completed={completed} />
+      <ProjectValuationPicker
+        toId={toId}
+        actionLabel="Generate →"
+        persistenceKey={DESCRIPTIONS_STORAGE_KEY}
+        onSelect={(assignment) => selectProject(assignment.projectId)}
+        completed={completed}
+      />
     </div>
   )
 }
