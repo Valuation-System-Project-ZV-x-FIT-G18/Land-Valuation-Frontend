@@ -9,6 +9,9 @@ export type ManagerProject = {
   rejectReason: string
   updatedAt?: string
   workflowActionAt?: string
+  reviewType: 'new' | 'recheck'
+  previousReturnReason?: string
+  previousReturnedAt?: string
   valuations: ManagerValuation[]
 }
 

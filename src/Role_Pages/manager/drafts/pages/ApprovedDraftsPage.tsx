@@ -20,9 +20,9 @@ const COPY = {
   },
   rejected: {
     heading: <>Rejected <GradientText>Reports</GradientText></>,
-    description: 'Complete history of reports rejected at your manager level.',
+    description: 'Reports rejected at your manager level that have not yet been approved after correction.',
     countLabel: 'rejected report',
-    emptyText: 'No rejected reports yet.',
+    emptyText: 'No reports are currently awaiting approval after rejection.',
   },
 }
 
@@ -31,7 +31,8 @@ type Row = { project: ManagerProject; valuationId: number; status: string; techn
 const LEVEL: Record<string, 'L1' | 'L2' | 'L3'> = { 'Manager L1': 'L1', 'Manager L2': 'L2', 'Manager L3': 'L3' }
 
 // Manager L1 / L2 / L3 > Approved Drafts / Rejected Drafts.
-// Every draft this level has approved (passed up) or rejected (sent back down).
+// Approved is historical. Rejected shows only reports not subsequently
+// approved by the same manager level after correction.
 const ApprovedDraftsPage = ({ view = 'approved' }: { view?: 'approved' | 'rejected' }) => {
   const { user } = useAuth()
   const level = LEVEL[user?.role ?? ''] ?? 'L3'

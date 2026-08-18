@@ -12,13 +12,20 @@ type Props = {
   level: 'L1' | 'L2' | 'L3' | 'COORD' | 'TO' | 'VIEW'
   reviewStatus: string
   rejectReason: string
+  reviewType?: 'new' | 'recheck'
+  previousReturnReason?: string
+  previousReturnedAt?: string
+  resubmittedAt?: string
   onBack: () => void
   onDone: () => void
   onFinalized?: () => void
 }
 
 // Editable draft report with the manager review actions.
-const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, rejectReason, onBack, onDone, onFinalized }: Props) => {
+const ManagerReportView = ({
+  projectId, valuationId, level, reviewStatus, rejectReason, reviewType,
+  previousReturnReason, previousReturnedAt, resubmittedAt, onBack, onDone, onFinalized,
+}: Props) => {
   const paperRef = useRef<HTMLDivElement>(null)
   const [html, setHtml] = useState('')
   const [loading, setLoading] = useState(true)
@@ -158,6 +165,19 @@ const ManagerReportView = ({ projectId, valuationId, level, reviewStatus, reject
       {showReason && rejectReason && (
         <div className="rounded-lg border border-amber-400/40 bg-amber-400/10 p-3 text-sm text-amber-200">
           <b>Rejected:</b> {rejectReason}
+        </div>
+      )}
+      {reviewType === 'recheck' && (
+        <div className="rounded-lg border border-amber-400/40 bg-amber-400/10 p-4 text-sm text-amber-100">
+          <p className="font-semibold text-amber-200">Recheck Submission</p>
+          <p className="mt-1 text-amber-100/80">This report was previously returned for correction and has been resubmitted for review.</p>
+          {(previousReturnedAt || resubmittedAt) && (
+            <p className="mt-2 text-xs text-amber-100/60">
+              {previousReturnedAt && <>Previously returned {new Date(previousReturnedAt).toLocaleString('en-GB')}.</>}
+              {resubmittedAt && <> Resubmitted {new Date(resubmittedAt).toLocaleString('en-GB')}.</>}
+            </p>
+          )}
+          {previousReturnReason && <p className="mt-2"><span className="font-semibold">Previous correction reason:</span> {previousReturnReason}</p>}
         </div>
       )}
       {locked && (

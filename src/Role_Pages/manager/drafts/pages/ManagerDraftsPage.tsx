@@ -61,6 +61,14 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
       : 'border-white/15 bg-white/5 text-emerald-100/70'
     return <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${c}`}>{STATUS_LABEL[status] ?? status}</span>
   }
+  const reviewBadge = (reviewType: ManagerProject['reviewType']) => (
+    <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${reviewType === 'recheck'
+      ? 'border-amber-400/50 bg-amber-400/10 text-amber-200'
+      : 'border-sky-400/40 bg-sky-400/10 text-sky-200'}`}
+    >
+      {reviewType === 'recheck' ? 'Recheck' : 'New Review'}
+    </span>
+  )
 
   // Final Reports — a report opened directly from the flat table.
   if (isFinal && viewingFinal) {
@@ -86,6 +94,10 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
         level={level}
         reviewStatus={project.reviewStatus}
         rejectReason={project.rejectReason}
+        reviewType={view === 'check' ? project.reviewType : undefined}
+        previousReturnReason={project.previousReturnReason}
+        previousReturnedAt={project.previousReturnedAt}
+        resubmittedAt={project.updatedAt}
         onBack={() => setValuationId(null)}
         onDone={() => { setValuationId(null); setProject(null); load() }}
         onFinalized={() => navigate('/manager/final-reports')}
@@ -99,7 +111,9 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
       <div className="mx-auto max-w-3xl space-y-4">
         <Button type="button" variant="outline" onClick={() => setProject(null)} className="!px-5 !py-2 text-sm">← All projects</Button>
         <Card className="p-4">
-          <p className="flex items-center gap-2 font-semibold text-gold-300">{project.projectId} {badge(project.reviewStatus)}</p>
+          <p className="flex flex-wrap items-center gap-2 font-semibold text-gold-300">
+            {project.projectId} {badge(project.reviewStatus)} {!isCorr && reviewBadge(project.reviewType)}
+          </p>
           <p className="text-sm text-emerald-100/80">{project.ownerName} · {project.location || '—'}</p>
         </Card>
         {project.valuations.map((v) => (
@@ -192,7 +206,9 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
           {filtered.map((p) => (
             <button key={p.projectId} type="button" onClick={() => setProject(p)} className={card}>
               <div className="min-w-0">
-                <p className="flex items-center gap-2 font-semibold text-gold-300">{p.projectId} {badge(p.reviewStatus)}</p>
+                <p className="flex flex-wrap items-center gap-2 font-semibold text-gold-300">
+                  {p.projectId} {badge(p.reviewStatus)} {!isCorr && reviewBadge(p.reviewType)}
+                </p>
                 <p className="mt-0.5 truncate text-sm text-emerald-100/80">{p.ownerName} · {p.location || '—'}</p>
               </div>
               <span className={chip}>{p.valuations.length} valuation{p.valuations.length > 1 ? 's' : ''} →</span>
