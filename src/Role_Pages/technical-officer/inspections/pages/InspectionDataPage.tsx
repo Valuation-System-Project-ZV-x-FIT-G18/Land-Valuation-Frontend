@@ -4,6 +4,7 @@ import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import InspectionForm from '@/Role_Pages/technical-officer/inspections/components/InspectionForm'
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
+import TOWorkflowStepper from '@/Role_Pages/technical-officer/shared/TOWorkflowStepper'
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 
 // Technical Officer > Inspection Data.
@@ -24,6 +25,7 @@ const InspectionDataPage = () => {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      <TOWorkflowStepper current="inspection" />
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           Inspection <GradientText>Data</GradientText>

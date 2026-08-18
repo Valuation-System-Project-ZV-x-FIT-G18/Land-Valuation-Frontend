@@ -7,6 +7,7 @@ import Modal from '@/Common_Pages/components/ui/Modal'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import AssignmentCard from '@/Role_Pages/technical-officer/assignments/components/AssignmentCard'
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
+import TOWorkflowStepper from '@/Role_Pages/technical-officer/shared/TOWorkflowStepper'
 import { acceptAssignment, rejectAssignment } from '@/Role_Pages/coordinator/fleet-management/api/fleet'
 import { getAssignments, type Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 
@@ -209,6 +210,7 @@ const AssignedProjectsPage = () => {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      <TOWorkflowStepper current="assigned" />
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           Assigned <GradientText>Projects</GradientText>

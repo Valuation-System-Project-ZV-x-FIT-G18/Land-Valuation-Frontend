@@ -4,6 +4,7 @@ import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import MapWorkspace from '@/Role_Pages/technical-officer/mapping/components/MapWorkspace'
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
+import TOWorkflowStepper from '@/Role_Pages/technical-officer/shared/TOWorkflowStepper'
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 
 // Technical Officer > GPS & Map Integration.
@@ -21,6 +22,7 @@ const GpsMapPage = () => {
 
   return (
     <div className="mx-auto max-w-5xl space-y-7">
+      <TOWorkflowStepper current="gps" />
       <div className="rounded-2xl border border-white/10 bg-emerald-950/40 px-6 py-8 text-center shadow-card backdrop-blur-sm sm:px-10 sm:py-10">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold-300/75">Technical Officer Workspace</p>
         <h1 className="mt-3 text-3xl font-bold text-white sm:text-4xl">

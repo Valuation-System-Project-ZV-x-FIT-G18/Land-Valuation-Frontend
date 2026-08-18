@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
+import TOWorkflowStepper from '@/Role_Pages/technical-officer/shared/TOWorkflowStepper'
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 import DraftEditor from '@/Role_Pages/technical-officer/draft/components/DraftEditor'
 
@@ -19,6 +20,7 @@ const CreateDraftPage = () => {
   if (selected) return <DraftEditor projectId={selected.projectId} valuationId={selected.valuationId} onBack={() => setSelected(null)} />
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      <TOWorkflowStepper current="draft" />
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">Create <GradientText>Draft</GradientText></h1>
         <p className="mx-auto mt-2 max-w-xl text-emerald-100/70">Select a project to collect its saved information, review the editable report and generate the Word document.</p>

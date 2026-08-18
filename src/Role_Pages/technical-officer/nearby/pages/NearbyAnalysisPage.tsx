@@ -4,6 +4,7 @@ import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import NearbyAnalyser from '@/Role_Pages/technical-officer/nearby/components/NearbyAnalyser'
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
+import TOWorkflowStepper from '@/Role_Pages/technical-officer/shared/TOWorkflowStepper'
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 
 const NearbyAnalysisPage = () => {
@@ -27,6 +28,7 @@ const NearbyAnalysisPage = () => {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      <TOWorkflowStepper current="nearby" />
       <div className="text-center">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-gold-300/75">Market comparison</p>
         <h1 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
