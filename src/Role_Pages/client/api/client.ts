@@ -2,6 +2,21 @@
 
 export type FeeBand = { from: number; to: number; rate: number; amount: number }
 
+// External-client pages may render before AuthProvider's fetch interceptor has
+// been installed after a refresh. Attach the persisted token directly so the
+// first Bank/Applicant request cannot race as an unauthenticated request.
+function clientFetch(input: RequestInfo | URL, init: RequestInit = {}) {
+  let accessToken = ''
+  try {
+    accessToken = JSON.parse(sessionStorage.getItem('accessToken') ?? '""') as string
+  } catch {
+    accessToken = ''
+  }
+  const headers = new Headers(init.headers)
+  if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`)
+  return fetch(input, { ...init, headers })
+}
+
 export type ClientReport = {
   projectId: string
   ownerName: string
@@ -35,7 +50,7 @@ export type ClientDashboardProject = {
 }
 
 export async function getClientDashboardProjects(): Promise<ClientDashboardProject[]> {
-  const res = await fetch('/api/client/dashboard/projects')
+  const res = await clientFetch('/api/client/dashboard/projects')
   const body = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error(body.message || body.error || 'Could not load valuation requests.')
   return (body.projects as ClientDashboardProject[]) ?? []
@@ -43,7 +58,7 @@ export async function getClientDashboardProjects(): Promise<ClientDashboardProje
 
 export async function getApplicantReports(nic: string): Promise<ClientReport[]> {
   try {
-    const res = await fetch(`/api/client/applicant/projects?nic=${encodeURIComponent(nic)}`)
+    const res = await clientFetch(`/api/client/applicant/projects?nic=${encodeURIComponent(nic)}`)
     if (!res.ok) return []
     return (await res.json()).projects ?? []
   } catch {
@@ -60,7 +75,7 @@ export async function payWithSlip(
     const fd = new FormData()
     fd.append('projectId', projectId)
     fd.append('slip', slip)
-    const res = await fetch('/api/client/applicant/pay-slip', { method: 'POST', body: fd })
+    const res = await clientFetch('/api/client/applicant/pay-slip', { method: 'POST', body: fd })
     const body = await res.json().catch(() => ({}))
     return res.ok && body.ok ? { ok: true } : { ok: false, error: body.error || 'Upload failed.' }
   } catch {
@@ -70,7 +85,7 @@ export async function payWithSlip(
 
 export async function getBankReports(bankId: string): Promise<ClientReport[]> {
   try {
-    const res = await fetch(`/api/client/bank/projects?bankId=${encodeURIComponent(bankId)}`)
+    const res = await clientFetch(`/api/client/bank/projects?bankId=${encodeURIComponent(bankId)}`)
     if (!res.ok) return []
     return (await res.json()).projects ?? []
   } catch {
