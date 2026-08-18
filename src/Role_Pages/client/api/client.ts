@@ -92,3 +92,28 @@ export async function getBankReports(bankId: string): Promise<ClientReport[]> {
     return []
   }
 }
+
+export async function getBankFinalReport(projectId: string): Promise<string> {
+  const res = await clientFetch(`/api/client/bank/report?projectId=${encodeURIComponent(projectId)}`)
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(body.message || body.error || 'Could not load the finalized report.')
+  if (!body.reportHtml) throw new Error('The saved finalized report is empty.')
+  return String(body.reportHtml)
+}
+
+export async function downloadBankReportPdf(projectId: string): Promise<void> {
+  const res = await clientFetch(`/api/technical-officer/draft/pdf?projectId=${encodeURIComponent(projectId)}&type=final`)
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.message || body.error || 'Could not download the finalized PDF.')
+  }
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `Final-Valuation-Report-${projectId}.pdf`
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
