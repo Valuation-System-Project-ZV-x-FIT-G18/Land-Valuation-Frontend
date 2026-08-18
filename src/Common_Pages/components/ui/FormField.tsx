@@ -26,6 +26,12 @@ type FormFieldProps = {
   readOnly?: boolean
   min?: string
   max?: string
+  autoComplete?: string
+  // Hard-stops browser autofill. Chrome ignores autoComplete="off" for
+  // name/email/phone fields, so we render the input read-only at page load
+  // (browsers never autofill a read-only field) and flip it editable the
+  // moment the user focuses it. This is invisible to the user.
+  preventAutofill?: boolean
 }
 
 // Inner input styling (the border/ring lives on the wrapper below).
@@ -49,11 +55,22 @@ const FormField = ({
   readOnly = false,
   min,
   max,
+  autoComplete,
+  preventAutofill = false,
 }: FormFieldProps) => {
   // Password fields get a show/hide (eye) toggle instead of staying masked.
   const [reveal, setReveal] = useState(false)
   const isPassword = type === 'password'
   const inputType = isPassword && reveal ? 'text' : type
+
+  // Autofill guard: locked (read-only) until the field is first focused.
+  const [autofillLocked, setAutofillLocked] = useState(preventAutofill)
+  const unlockAutofill = () => {
+    if (autofillLocked) setAutofillLocked(false)
+  }
+  // Real read-only (a genuinely non-editable field) vs. the temporary
+  // autofill lock — only the former should look/behave dimmed.
+  const domReadOnly = readOnly || autofillLocked
 
   // Border/ring turns red when there is an error, gold otherwise.
   // Read-only (auto) fields are dimmed and not editable.
@@ -89,9 +106,12 @@ const FormField = ({
             name={name}
             value={value}
             onChange={onChange}
+            onFocus={preventAutofill ? unlockAutofill : undefined}
             onBlur={onBlur}
             rows={rows}
+            readOnly={domReadOnly}
             placeholder={placeholder}
+            autoComplete={autoComplete}
             className={`${field} resize-none`}
           />
         ) : (
@@ -101,13 +121,15 @@ const FormField = ({
             name={name}
             value={value}
             onChange={onChange}
+            onFocus={preventAutofill ? unlockAutofill : undefined}
             onBlur={onBlur}
             placeholder={placeholder}
             maxLength={maxLength}
             inputMode={inputMode}
-            readOnly={readOnly}
+            readOnly={domReadOnly}
             min={min}
             max={max}
+            autoComplete={autoComplete}
             className={`${field} ${readOnly ? 'cursor-default text-emerald-100/70' : ''}`}
           />
         )}

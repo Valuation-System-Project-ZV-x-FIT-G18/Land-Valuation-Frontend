@@ -90,12 +90,16 @@ const ValuationForm = ({ onDone }: ValuationFormProps) => {
 
   // Auto-fill from Create Project ("create a valuation?" flow): it passes the
   // new project's id + applicant NIC, so we load it straight away — no lookup.
-  // The state is then cleared so a later refresh uses the saved session values.
+  // A fresh arrival is a BRAND-NEW valuation, so wipe any details left over in
+  // the session from a previous one (only the project itself carries in). The
+  // state is then cleared so a later refresh keeps the in-progress values.
   useEffect(() => {
     const incoming = location.state as { projectId?: string; nic?: string } | null
     if (incoming?.projectId) {
       setProjectId(incoming.projectId)
       setNic(incoming.nic ?? '')
+      setValues(buildEmptyValues()) // start blank — no stale bank/purpose/date/priority
+      setLetter([]) // never carry over the previous request letter
       navigate(location.pathname, { replace: true })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -120,6 +124,12 @@ const ValuationForm = ({ onDone }: ValuationFormProps) => {
       bankContactPerson: sel.contactPerson,
       bankContactNo: sel.contactNo,
     }))
+    // Clear each inline error as soon as its value is chosen.
+    setErrors((p) => ({
+      ...p,
+      bankName: sel.bankName ? '' : p.bankName,
+      bankBranchCode: sel.branchCode ? '' : p.bankBranchCode,
+    }))
     setServerError('')
   }
 
@@ -143,10 +153,11 @@ const ValuationForm = ({ onDone }: ValuationFormProps) => {
   const handleSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault()
     const found = validate()
+    // Bank/branch aren't in the section config, so validate them here — as
+    // inline field errors shown under each dropdown, not a bottom banner.
+    if (!values.bankName) found.bankName = 'Please select a bank.'
+    if (!values.bankBranchCode) found.bankBranchCode = 'Please select a branch.'
     if (Object.values(found).some(Boolean)) return setErrors(found)
-    if (!values.bankName || !values.bankBranchCode) {
-      return setServerError('Please select the bank and branch for this valuation.')
-    }
     setErrors({})
     setServerError('')
     setSubmitting(true)
@@ -315,6 +326,8 @@ const ValuationForm = ({ onDone }: ValuationFormProps) => {
                   bankName={values.bankName ?? ''}
                   branchCode={values.bankBranchCode ?? ''}
                   onSelect={onBankSelect}
+                  bankError={errors.bankName}
+                  branchError={errors.bankBranchCode}
                 />
               </div>
             )}

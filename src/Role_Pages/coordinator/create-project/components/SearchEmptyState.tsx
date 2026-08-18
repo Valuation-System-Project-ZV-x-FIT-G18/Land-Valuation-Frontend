@@ -3,7 +3,7 @@
 
 const chips = [
   { icon: '🪪', label: 'NIC Lookup' },
-  { icon: '📁', label: 'Project ID' },
+  { icon: '📁', label: 'Linked Projects' },
   { icon: '⚡', label: 'Instant Results' },
 ]
 
@@ -28,8 +28,8 @@ const SearchEmptyState = () => (
 
     <h3 className="mt-4 text-xl font-bold text-white">Search for an Applicant</h3>
     <p className="mx-auto mt-2 max-w-xs text-sm text-emerald-100/70">
-      Enter a NIC number or Project ID above to instantly look up a loan
-      applicant.
+      Enter an applicant NIC number above to instantly find their account and
+      linked projects.
     </p>
 
     <div className="mt-5 flex flex-wrap justify-center gap-2">

@@ -31,6 +31,7 @@ import MakePaymentPage from '@/Role_Pages/client/pages/MakePaymentPage'
 import BankViewReportPage from '@/Role_Pages/client/pages/BankViewReportPage'
 import CreateProjectPage from '@/Role_Pages/coordinator/create-project/pages/CreateProjectPage'
 import RegisterApplicantPage from '@/Role_Pages/coordinator/register-applicant/pages/RegisterApplicantPage'
+import EditApplicantPage from '@/Role_Pages/coordinator/register-applicant/pages/EditApplicantPage'
 import NewProjectPage from '@/Role_Pages/coordinator/new-project/pages/NewProjectPage'
 import NewValuationPage from '@/Role_Pages/coordinator/new-valuation/pages/NewValuationPage'
 import ProjectStatusPage from '@/Role_Pages/coordinator/project-status/pages/ProjectStatusPage'
@@ -140,6 +141,10 @@ const App = () => {
             <Route
               path="/coordinator/register-applicant"
               element={<RegisterApplicantPage />}
+            />
+            <Route
+              path="/coordinator/edit-applicant"
+              element={<EditApplicantPage />}
             />
             <Route
               path="/coordinator/new-project"
