@@ -33,7 +33,7 @@ const DashboardPage = () => {
   if (user.role === 'Loan Applicant') return <ClientDashboard user={user} audience="applicant" />
   if (user.role === 'Technical Officer') return <TechnicalOfficerDashboard user={user} />
 
-  const isCoordinator = false
+  const isCoordinator = user.role === 'Coordinator'
 
   // The role's own menu items + Project Status (available to everyone).
   const actions: SidebarItem[] = [
