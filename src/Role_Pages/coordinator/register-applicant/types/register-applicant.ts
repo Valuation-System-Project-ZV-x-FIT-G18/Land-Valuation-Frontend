@@ -3,14 +3,10 @@
 // What the form collects (full name is split into parts on submit).
 export type RegisterApplicantValues = {
   fullName: string
-  initials: string
   applicantBusinessName: string
   nic: string
-  dateOfBirth: string
   phone: string
   email: string
-  password: string
-  confirmPassword: string
 }
 
 // What gets sent to the backend.
@@ -20,10 +16,9 @@ export type RegisterApplicantPayload = {
   initials: string
   applicantBusinessName?: string
   nic: string
-  dateOfBirth: string
+  dateOfBirth?: string
   email: string
   phone: string
-  password: string
 }
 
 export type RegisterErrors = Partial<Record<keyof RegisterApplicantValues, string>>
@@ -32,6 +27,8 @@ export type RegisterErrors = Partial<Record<keyof RegisterApplicantValues, strin
 export type SectionProps = {
   values: RegisterApplicantValues
   errors: RegisterErrors
+  // Edit mode locks the NIC (it's the applicant's login id and can't change).
+  nicReadOnly?: boolean
   onChange: (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement

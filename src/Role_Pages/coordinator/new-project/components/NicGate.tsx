@@ -94,7 +94,12 @@ const NicGate = ({ onConfirmed }: NicGateProps) => {
             type="button"
             fullWidth
             className="mt-5"
-            onClick={() => navigate('/coordinator/register-applicant', { state: { nic } })}
+            onClick={() => {
+              // Start a brand-new applicant: wipe any half-filled form so every
+              // fresh registration opens empty (only the searched NIC carries in).
+              sessionStorage.removeItem('registerApplicant:form')
+              navigate('/coordinator/register-applicant', { state: { nic } })
+            }}
           >
             + Register New Applicant
           </Button>

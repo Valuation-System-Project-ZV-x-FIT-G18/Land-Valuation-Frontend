@@ -5,6 +5,7 @@ import GradientText from '@/Common_Pages/components/ui/GradientText'
 import SuccessModal from '@/Common_Pages/components/ui/SuccessModal'
 import FleetTable from '@/Role_Pages/coordinator/fleet-management/components/FleetTable'
 import AssignOfficerForm from '@/Role_Pages/coordinator/fleet-management/components/AssignOfficerForm'
+import WorkflowStepper from '@/Role_Pages/coordinator/shared/WorkflowStepper'
 import { baseCols, officerCells } from '@/Role_Pages/coordinator/fleet-management/components/officerRows'
 import {
   getFleetOfficers,
@@ -68,6 +69,8 @@ const AssignOfficersPage = () => {
       >
         ← Fleet Management
       </Button>
+
+      <WorkflowStepper current="assign" />
 
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">

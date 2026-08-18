@@ -5,6 +5,7 @@ import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import InspectionForm from '@/Role_Pages/technical-officer/inspections/components/InspectionForm'
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
 import { getAssignments, type Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
+import TOWorkflowStepper from '@/Role_Pages/technical-officer/shared/TOWorkflowStepper'
 
 // Technical Officer > Inspection Data.
 // Projects → valuations → OCR upload + inspection form for that project.
@@ -68,6 +69,7 @@ const InspectionDataPage = () => {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      <TOWorkflowStepper current="inspection" />
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           Inspection <GradientText>Data</GradientText>
@@ -75,24 +77,6 @@ const InspectionDataPage = () => {
         <p className="mx-auto mt-2 max-w-md text-emerald-100/70">
           Step 2 of 6 — Select an active valuation to record site inspection data.
         </p>
-      </div>
-
-      {/* Workflow indicator */}
-      <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium">
-          <span className="text-emerald-100/60">Assignment</span>
-          <span className="text-emerald-100/35">→</span>
-          <span className="text-gold-300">Inspection</span>
-          <span className="text-emerald-100/35">→</span>
-          <span className="text-emerald-100/60">Photos</span>
-          <span className="text-emerald-100/35">→</span>
-          <span className="text-emerald-100/60">Map</span>
-          <span className="text-emerald-100/35">→</span>
-          <span className="text-emerald-100/60">Description</span>
-          <span className="text-emerald-100/35">→</span>
-          <span className="text-emerald-100/60">Draft</span>
-        </div>
-        <p className="mt-2 text-xs text-emerald-100/50">Current step</p>
       </div>
 
       {/* Search bar */}

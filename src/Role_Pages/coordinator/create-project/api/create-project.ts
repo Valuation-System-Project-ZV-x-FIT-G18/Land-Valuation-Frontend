@@ -21,21 +21,6 @@ export async function searchApplicantByNic(
   }
 }
 
-// Searches for an applicant by Project ID (GET /api/coordinator/applicants/by-project).
-export async function searchApplicantByProjectId(
-  projectId: string,
-): Promise<ApplicantSearchResult> {
-  try {
-    const res = await fetch(
-      `/api/coordinator/applicants/by-project?projectId=${encodeURIComponent(projectId.trim())}`,
-    )
-    if (!res.ok) return { found: false, error: 'Search failed. Please try again.' }
-    return (await res.json()) as ApplicantSearchResult
-  } catch {
-    return { found: false, error: 'Could not reach the server. Please try again.' }
-  }
-}
-
 // Registers a new loan applicant (POST /api/coordinator/applicants/register).
 export async function registerApplicant(
   data: RegisterApplicantData,

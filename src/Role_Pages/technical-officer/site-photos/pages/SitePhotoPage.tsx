@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
-import Card from '@/Common_Pages/components/ui/Card'
 import Input from '@/Common_Pages/components/ui/Input'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import SitePhotoUpload from '@/Role_Pages/technical-officer/site-photos/components/SitePhotoUpload'
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
+import TOWorkflowStepper from '@/Role_Pages/technical-officer/shared/TOWorkflowStepper'
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 
 const SITE_PHOTO_STORAGE_KEY = 'technical-officer-site-photo-project'
@@ -56,6 +56,7 @@ const SitePhotoPage = () => {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
+      <TOWorkflowStepper current="photos" />
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           Site <GradientText>Photo</GradientText>
@@ -64,24 +65,6 @@ const SitePhotoPage = () => {
           Select an assigned project to upload, review, or replace its site photographs.
         </p>
       </div>
-
-      <Card className="p-4 sm:p-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-300">Current workflow</p>
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-medium">
-              <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-emerald-100">1 Inspection</span>
-              <span className="text-white/30">→</span>
-              <span className="rounded-full border border-gold-400/60 bg-gold-400/15 px-3 py-1 text-gold-200">2 Site photos</span>
-              <span className="text-white/30">→</span>
-              <span className="rounded-full border border-white/10 px-3 py-1 text-white/50">3 GPS &amp; map</span>
-            </div>
-          </div>
-          <p className="max-w-xs text-xs leading-5 text-emerald-100/60">
-            Photos belong to the whole project, so you can open it directly without selecting a valuation again.
-          </p>
-        </div>
-      </Card>
 
       <Input
         aria-label="Search assigned projects"

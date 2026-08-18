@@ -4,6 +4,7 @@ import Button from '@/Common_Pages/components/ui/Button'
 import Modal from '@/Common_Pages/components/ui/Modal'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import ProjectForm from '@/Role_Pages/coordinator/new-project/components/ProjectForm'
+import WorkflowStepper from '@/Role_Pages/coordinator/shared/WorkflowStepper'
 import '@/Role_Pages/coordinator/new-project/styles/new-project-page.css'
 
 // Coordinator > Create Project.
@@ -15,6 +16,7 @@ const NewProjectPage = () => {
 
   return (
     <div className="space-y-8">
+      <WorkflowStepper current="project" />
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           Create <GradientText>Project</GradientText>

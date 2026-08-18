@@ -5,6 +5,7 @@ import Modal from '@/Common_Pages/components/ui/Modal'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import ValuationForm from '@/Role_Pages/coordinator/new-valuation/components/ValuationForm'
 import type { ValuationResult } from '@/Role_Pages/coordinator/new-valuation/components/ValuationForm'
+import WorkflowStepper from '@/Role_Pages/coordinator/shared/WorkflowStepper'
 
 // Coordinator > New Valuation.
 // Find an existing project (by NIC or Project ID) to unlock the form.
@@ -14,6 +15,7 @@ const NewValuationPage = () => {
 
   return (
     <div className="space-y-8">
+      <WorkflowStepper current="valuation" />
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           New <GradientText>Valuation</GradientText>

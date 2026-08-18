@@ -6,6 +6,7 @@ import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import DescriptionsEditor from '@/Role_Pages/technical-officer/descriptions/components/DescriptionsEditor'
 import { getCompletedProjects } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
+import TOWorkflowStepper from '@/Role_Pages/technical-officer/shared/TOWorkflowStepper'
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 import { loadWorkflowSelection, saveWorkflowSelection } from '@/Role_Pages/technical-officer/assignments/utils/workflowSelection'
 
@@ -50,6 +51,7 @@ const GenerateDescriptionsPage = () => {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      <TOWorkflowStepper current="descriptions" />
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           Generate <GradientText>Descriptions</GradientText>

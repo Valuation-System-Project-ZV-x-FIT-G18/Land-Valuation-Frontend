@@ -18,6 +18,8 @@ type Props = {
   bankName: string
   branchCode: string
   onSelect: (sel: BankSelection) => void
+  bankError?: string
+  branchError?: string
 }
 
 // Bank + Branch pickers for the New Valuation form. Banks are the ones the admin
@@ -26,7 +28,7 @@ type Props = {
 //
 // Branches are identified internally by Branch Code because the
 // Branch Name can be blank — using the code as the value keeps selection reliable.
-const BankBranchSelect = ({ bankName, branchCode, onSelect }: Props) => {
+const BankBranchSelect = ({ bankName, branchCode, onSelect, bankError, branchError }: Props) => {
   const [banks, setBanks] = useState<RegisteredBank[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -89,6 +91,7 @@ const BankBranchSelect = ({ bankName, branchCode, onSelect }: Props) => {
           value={bankName}
           onChange={(e) => handleBank(e.target.value)}
           options={bankOptions}
+          error={bankError}
         />
         <SelectField
           label="Branch *"
@@ -96,6 +99,7 @@ const BankBranchSelect = ({ bankName, branchCode, onSelect }: Props) => {
           value={branchCode}
           onChange={(e) => handleBranch(e.target.value)}
           options={branchOptions}
+          error={branchError}
         />
       </div>
 
