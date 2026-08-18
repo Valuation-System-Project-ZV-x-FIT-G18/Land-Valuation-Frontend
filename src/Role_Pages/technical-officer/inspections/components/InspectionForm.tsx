@@ -12,8 +12,9 @@ import {
   saveInspection,
   type InspectionData,
 } from '@/Role_Pages/technical-officer/inspections/api/inspections'
+import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 
-type InspectionFormProps = { projectId: string; toId: string; onBack: () => void }
+type InspectionFormProps = { projectId: string; toId: string; assignment?: Assignment; onBack: () => void }
 
 const printableInspectionSections = [
   {
@@ -69,7 +70,7 @@ const fieldHints: Record<string, string> = {
   signature: 'Enter signer name or signature reference',
 }
 
-const InspectionForm = ({ projectId, toId, onBack }: InspectionFormProps) => {
+const InspectionForm = ({ projectId, toId, assignment, onBack }: InspectionFormProps) => {
   const navigate = useNavigate()
   const [data, setData] = useState<InspectionData>({})
   const [savedPrompt, setSavedPrompt] = useState(false) // "go to site photos?" popup
@@ -286,7 +287,9 @@ const InspectionForm = ({ projectId, toId, onBack }: InspectionFormProps) => {
             <Button
               type="button"
               fullWidth
-              onClick={() => navigate('/technical-officer/site-photos', { state: { projectId } })}
+              onClick={() => navigate('/technical-officer/site-photos', {
+                state: { projectId, valuationId: assignment?.valuationId ?? null },
+              })}
             >
               Yes, upload photos
             </Button>

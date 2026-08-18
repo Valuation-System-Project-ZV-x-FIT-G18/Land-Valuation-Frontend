@@ -7,9 +7,17 @@ import { buildReportHtml } from '@/Role_Pages/technical-officer/draft/utils/buil
 import { downloadReportPdf, getBuildValues, getSavedReport, saveReport } from '@/Role_Pages/technical-officer/draft/api/draft'
 import { getEvidence, getValuation } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
 
-type Props = { projectId: string; valuationId: number; onBack: () => void; correctionMode?: boolean; rejectReason?: string }
+type Props = {
+  projectId: string
+  valuationId: number
+  onBack: () => void
+  correctionMode?: boolean
+  rejectReason?: string
+  readOnly?: boolean
+  reviewStatus?: string
+}
 
-const DraftEditor = ({ projectId, valuationId, onBack, correctionMode = false, rejectReason = '' }: Props) => {
+const DraftEditor = ({ projectId, valuationId, onBack, correctionMode = false, rejectReason = '', readOnly = false, reviewStatus = '' }: Props) => {
   const paperRef = useRef<HTMLDivElement>(null)
   const [html, setHtml] = useState('')
   const [loading, setLoading] = useState(true)
@@ -63,12 +71,13 @@ const DraftEditor = ({ projectId, valuationId, onBack, correctionMode = false, r
 
       <div className="flex flex-col gap-4 border-b border-white/10 pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">{correctionMode ? 'Draft ' : 'Create '}<GradientText>{correctionMode ? 'Corrections' : 'Draft'}</GradientText></h1>
+          <h1 className="text-3xl font-bold text-white">{correctionMode ? 'Draft ' : readOnly ? 'Submitted ' : 'Create '}<GradientText>{correctionMode ? 'Corrections' : 'Draft'}</GradientText></h1>
           <p className="mt-1 text-sm text-emerald-100/65">Project {projectId} · Valuation {valuationId}</p>
+          {readOnly && <p className="mt-2 inline-flex rounded-full border border-sky-300/30 bg-sky-300/10 px-3 py-1 text-xs font-medium capitalize text-sky-100">Review status: {reviewStatus.replace(/_/g, ' ') || 'submitted'}</p>}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button type="button" size="sm" variant="outline" loading={busy === 'pdf'} disabled={loading || (!!busy && busy !== 'pdf')} onClick={downloadPdf}>Download PDF</Button>
-          <Button type="button" size="sm" variant="success" loading={busy === 'submit'} disabled={loading || (!!busy && busy !== 'submit')} onClick={submit}>Submit for L3 review</Button>
+          {!readOnly && <Button type="button" size="sm" variant="success" loading={busy === 'submit'} disabled={loading || (!!busy && busy !== 'submit')} onClick={submit}>Submit for L3 review</Button>}
         </div>
       </div>
 
@@ -82,7 +91,7 @@ const DraftEditor = ({ projectId, valuationId, onBack, correctionMode = false, r
         <div className="overflow-x-auto rounded-xl bg-slate-200 p-4 sm:p-8">
           <div
             ref={paperRef}
-            contentEditable
+            contentEditable={!readOnly}
             suppressContentEditableWarning
             className="mx-auto min-h-[1120px] w-[794px] max-w-none bg-white p-[55px] text-black shadow-2xl outline-none"
             dangerouslySetInnerHTML={{ __html: html }}

@@ -16,6 +16,7 @@ export const roleMenus: Record<string, SidebarItem[]> = {
   ],
   'Technical Officer': [
     { label: 'Assigned Projects', to: '/technical-officer/assignments', icon: 'document' },
+    { label: 'My Attendance', to: '/technical-officer/attendance', icon: 'calendar' },
     { label: 'Inspection Data', to: '/technical-officer/inspections', icon: 'edit' },
     { label: 'Site Photo', to: '/technical-officer/site-photos', icon: 'camera' },
     { label: 'GPS & Map Integration', to: '/technical-officer/gps-map', icon: 'location' },

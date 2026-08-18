@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useCallback, useEffect, useState } from 'react'
 import Button from '@/Common_Pages/components/ui/Button'
 import FormField from '@/Common_Pages/components/ui/FormField'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
@@ -22,6 +21,8 @@ const AssignedProjectsPage = () => {
   const [rejectOpen, setRejectOpen] = useState(false)
   const [rejectReason, setRejectReason] = useState('')
   const [rejectError, setRejectError] = useState('')
+  const [filter, setFilter] = useState<'all' | 'new' | 'active' | 'corrections' | 'completed'>('all')
+  const [search, setSearch] = useState('')
   const selectionKey = toId ? `to-assigned-project-selection:${toId}` : ''
   const projectKey = toId ? `to-assigned-project-open:${toId}` : ''
 
@@ -75,6 +76,24 @@ const AssignedProjectsPage = () => {
     setSelected(null)
     if (selectionKey) localStorage.removeItem(selectionKey)
   }
+
+  const statusFilter = useCallback((assignment: Assignment) => {
+    const review = assignment.reviewStatus.toLowerCase()
+    const status = assignment.status.toLowerCase()
+    if (filter === 'new') return assignment.status === 'Technical Officer Assigned'
+    if (filter === 'corrections') return review.includes('reject')
+    if (filter === 'completed') return review.includes('locked') || status.includes('complete')
+    if (filter === 'active') return assignment.status !== 'Technical Officer Assigned' && !review.includes('reject') && !review.includes('locked') && !status.includes('complete')
+    return true
+  }, [filter])
+
+  const filterHelp = {
+    all: 'All projects assigned to you, including current work and completed records.',
+    new: 'New assignments waiting for your acceptance before work can begin.',
+    active: 'Projects you have accepted and can continue working on.',
+    corrections: 'Draft reports returned by a manager for you to correct and resubmit.',
+    completed: 'Finalised projects that are complete and kept here for reference.',
+  }[filter]
 
   const accept = async () => {
     if (!selected) return
@@ -155,14 +174,6 @@ const AssignedProjectsPage = () => {
         </div>
         {msg && <p className="text-sm text-emerald-200">{msg}</p>}
         <AssignmentCard a={selected} />
-        {selected.status === 'Assignment Accepted' && <Link
-          to="/technical-officer/inspections"
-          state={{ assignment: selected, projectId: selected.projectId }}
-          className="flex items-center justify-between rounded-2xl border border-gold-400/30 bg-gold-400/10 px-5 py-4 font-semibold text-gold-200 transition hover:border-gold-400/60 hover:bg-gold-400/15"
-        >
-          <span><span className="mr-3 text-xs uppercase tracking-wider text-gold-300/65">Next step</span>Inspection Data</span>
-          <span aria-hidden="true">→</span>
-        </Link>}
         <Modal open={rejectOpen} onClose={closeReject} title="Reject assignment">
           <p className="text-sm leading-6 text-emerald-100/70">
             Explain why you cannot take this assignment. Your reason will be shared with the
@@ -220,11 +231,42 @@ const AssignedProjectsPage = () => {
         </p>
       </div>
       {msg && <p className="text-center text-sm text-emerald-200">{msg}</p>}
+      <div className="flex flex-wrap justify-center gap-2" aria-label="Project status filters">
+        {([
+          ['all', 'All projects'],
+          ['new', 'New'],
+          ['active', 'In progress'],
+          ['corrections', 'Corrections'],
+          ['completed', 'Completed'],
+        ] as const).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setFilter(value)}
+            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${filter === value ? 'border-gold-400/60 bg-gold-400/15 text-gold-200' : 'border-white/15 text-emerald-100/70 hover:border-white/30'}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <p className="-mt-2 text-center text-sm text-white/75">{filterHelp}</p>
+      <label className="block">
+        <span className="sr-only">Search assigned projects</span>
+        <input
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Search by project ID, owner name or district"
+          className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-white/40 focus:border-gold-400/60 focus:ring-2 focus:ring-gold-400/15"
+        />
+      </label>
       <ProjectValuationPicker
         toId={toId}
         actionLabel="View details"
         onSelect={selectAssignment}
         persistenceKey={projectKey}
+        statusFilter={statusFilter}
+        emptyText="No projects match this status."
+        searchTerm={search}
       />
     </div>
   )

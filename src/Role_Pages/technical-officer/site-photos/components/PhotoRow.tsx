@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { PhotoType } from '@/Role_Pages/technical-officer/site-photos/constants/photoTypes'
 import type { UploadedPhoto } from '@/Role_Pages/technical-officer/site-photos/api/site-photos'
 import { photoUrl } from '@/Role_Pages/technical-officer/site-photos/api/site-photos'
@@ -20,10 +20,39 @@ const PhotoRow = ({ projectId, photo, uploaded, describe = false, onUpload }: Ph
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [caption, setCaption] = useState('')
+  const [previewUrl, setPreviewUrl] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const has = !!uploaded?.fileName
   // Show the freshly returned caption, or the one saved with the photo.
   const shownCaption = caption || uploaded?.description || ''
+
+  useEffect(() => {
+    if (!has) {
+      setPreviewUrl('')
+      return
+    }
+
+    let cancelled = false
+    let objectUrl = ''
+    fetch(photoUrl(projectId, photo.key, uploaded?.createdAt))
+      .then((response) => {
+        if (!response.ok) throw new Error('Could not load photo preview.')
+        return response.blob()
+      })
+      .then((blob) => {
+        if (cancelled) return
+        objectUrl = URL.createObjectURL(blob)
+        setPreviewUrl(objectUrl)
+      })
+      .catch(() => {
+        if (!cancelled) setPreviewUrl('')
+      })
+
+    return () => {
+      cancelled = true
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [has, photo.key, projectId, uploaded?.createdAt])
 
   const pick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -41,14 +70,16 @@ const PhotoRow = ({ projectId, photo, uploaded, describe = false, onUpload }: Ph
   return (
     <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3">
       {/* Thumbnail / placeholder */}
-      {has ? (
-        <a href={photoUrl(projectId, photo.key)} target="_blank" rel="noreferrer" className="shrink-0">
+      {has && previewUrl ? (
+        <a href={previewUrl || undefined} target="_blank" rel="noreferrer" className="shrink-0">
           <img
-            src={photoUrl(projectId, photo.key, uploaded?.createdAt)}
+            src={previewUrl}
             alt={photo.label}
             className="h-14 w-14 rounded-lg border border-white/10 object-cover"
           />
         </a>
+      ) : has ? (
+        <span className="h-14 w-14 shrink-0 animate-pulse rounded-lg border border-white/10 bg-white/5" aria-label="Loading photo preview" />
       ) : (
         <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-dashed border-white/20 text-lg text-emerald-200/40">
           🖼️

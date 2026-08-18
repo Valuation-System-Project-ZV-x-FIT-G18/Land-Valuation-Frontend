@@ -6,6 +6,7 @@ import WelcomeCard from '@/Home_Pages/dashboard/components/WelcomeCard'
 import ManagerDashboard from '@/Home_Pages/dashboard/components/ManagerDashboard'
 import AdminDashboard from '@/Home_Pages/dashboard/components/AdminDashboard'
 import ClientDashboard from '@/Home_Pages/dashboard/components/ClientDashboard'
+import TechnicalOfficerDashboard from '@/Home_Pages/dashboard/components/TechnicalOfficerDashboard'
 import { roleMenus, type SidebarItem } from '@/Common_Pages/components/sidebar/roleMenus'
 import SidebarIcon from '@/Common_Pages/components/sidebar/SidebarIcon'
 import '@/Home_Pages/dashboard/styles/dashboard-page.css'
@@ -30,6 +31,7 @@ const DashboardPage = () => {
   if (user.role === 'Admin') return <AdminDashboard user={user} />
   if (user.role === 'Bank') return <ClientDashboard user={user} audience="bank" />
   if (user.role === 'Loan Applicant') return <ClientDashboard user={user} audience="applicant" />
+  if (user.role === 'Technical Officer') return <TechnicalOfficerDashboard user={user} />
 
   const isCoordinator = false
 

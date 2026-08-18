@@ -32,6 +32,13 @@ const TOAttendancePage = () => {
   const [reason, setReason] = useState('')
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
+  const [requestFilter, setRequestFilter] = useState<'All' | LeaveStatus>('All')
+  const pendingCount = leaves.filter((leave) => leave.status === 'Pending').length
+  const approvedCount = leaves.filter((leave) => leave.status === 'Approved').length
+  const nextApprovedLeave = leaves
+    .filter((leave) => leave.status === 'Approved' && leave.date >= today)
+    .sort((a, b) => a.date.localeCompare(b.date))[0]
+  const visibleLeaves = requestFilter === 'All' ? leaves : leaves.filter((leave) => leave.status === requestFilter)
 
   const load = useCallback(() => {
     if (toId) getLeaves(toId).then(setLeaves)
@@ -59,6 +66,7 @@ const TOAttendancePage = () => {
   }
 
   const remove = async (id: number) => {
+    if (!window.confirm('Remove this pending leave request?')) return
     const res = await removeLeave(id)
     if (res.ok) {
       setNotice('Leave request removed.')
@@ -84,6 +92,24 @@ const TOAttendancePage = () => {
         </p>
       </div>
 
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Card className="p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/55">Pending requests</p>
+          <p className="mt-2 text-3xl font-bold text-gold-300">{pendingCount}</p>
+          <p className="mt-1 text-xs text-white/65">Awaiting coordinator approval</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/55">Approved leave</p>
+          <p className="mt-2 text-3xl font-bold text-emerald-200">{approvedCount}</p>
+          <p className="mt-1 text-xs text-white/65">Approved leave requests</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/55">Upcoming leave</p>
+          <p className="mt-2 truncate text-lg font-bold text-white">{nextApprovedLeave?.date ?? 'None scheduled'}</p>
+          <p className="mt-1 text-xs text-white/65">Next approved day off</p>
+        </Card>
+      </div>
+
       <Card className="p-6 sm:p-8">
         <h3 className="mb-4 text-sm font-semibold text-gold-300">Request a leave day</h3>
         <div className="grid gap-4 sm:grid-cols-3">
@@ -92,17 +118,36 @@ const TOAttendancePage = () => {
             <FormField label="Reason" name="reason" value={reason} onChange={(e) => { setReason(e.target.value); setError('') }} placeholder="e.g. Personal leave" />
           </div>
         </div>
+        <p className="mt-3 text-xs text-white/65">Leave requests must be for a future date and require coordinator approval.</p>
         {error && <p className="mt-3 text-sm text-red-300">{error}</p>}
         <Button type="button" fullWidth className="mt-4" onClick={submit}>Submit Leave Request</Button>
       </Card>
 
       <Card className="p-6 sm:p-8">
-        <h3 className="mb-3 text-sm font-semibold text-gold-300">My leave requests</h3>
-        {leaves.length === 0 ? (
-          <p className="text-sm text-emerald-100/60">You have no leave requests.</p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-sm font-semibold text-gold-300">My leave requests</h3>
+          <div className="flex flex-wrap gap-2" aria-label="Leave request status filters">
+            {(['All', 'Pending', 'Approved', 'Rejected'] as const).map((status) => (
+              <button
+                key={status}
+                type="button"
+                onClick={() => setRequestFilter(status)}
+                className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${requestFilter === status ? 'border-gold-400/60 bg-gold-400/15 text-gold-200' : 'border-white/15 text-white/65 hover:border-white/30'}`}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
+        </div>
+        {visibleLeaves.length === 0 ? (
+          <div className="py-8 text-center">
+            <p className="text-2xl" aria-hidden="true">📅</p>
+            <p className="mt-2 font-medium text-white">No leave requests found</p>
+            <p className="mt-1 text-sm text-white/65">{requestFilter === 'All' ? 'Request future leave days here when needed.' : `No ${requestFilter.toLowerCase()} requests right now.`}</p>
+          </div>
         ) : (
           <ul className="divide-y divide-white/10">
-            {leaves.map((l) => (
+            {visibleLeaves.map((l) => (
               <li key={l.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
                 <div className="min-w-0 text-emerald-100">
                   <div className="flex flex-wrap items-center gap-2">
@@ -111,11 +156,13 @@ const TOAttendancePage = () => {
                       {l.status}
                     </span>
                   </div>
-                  <p className="mt-1 break-words text-amber-200/90">{l.reason}</p>
+                  <p className="mt-1 break-words text-white/75">{l.reason}</p>
                 </div>
-                <button type="button" onClick={() => remove(l.id)} className="rounded-lg border border-white/15 px-3 py-1 text-xs text-emerald-200/70 transition hover:border-red-400/50 hover:text-red-300">
-                  Remove
-                </button>
+                {l.status === 'Pending' && (
+                  <button type="button" onClick={() => remove(l.id)} className="rounded-lg border border-white/15 px-3 py-1 text-xs text-emerald-200/70 transition hover:border-red-400/50 hover:text-red-300">
+                    Remove
+                  </button>
+                )}
               </li>
             ))}
           </ul>
