@@ -4,6 +4,9 @@ import GradientText from '@/Common_Pages/components/ui/GradientText'
 import Card from '@/Common_Pages/components/ui/Card'
 import WelcomeCard from '@/Home_Pages/dashboard/components/WelcomeCard'
 import ManagerDashboard from '@/Home_Pages/dashboard/components/ManagerDashboard'
+import CoordinatorDashboard from '@/Home_Pages/dashboard/components/CoordinatorDashboard'
+import AdminDashboard from '@/Home_Pages/dashboard/components/AdminDashboard'
+import ClientDashboard from '@/Home_Pages/dashboard/components/ClientDashboard'
 import { roleMenus, type SidebarItem } from '@/Common_Pages/components/sidebar/roleMenus'
 import SidebarIcon from '@/Common_Pages/components/sidebar/SidebarIcon'
 import '@/Home_Pages/dashboard/styles/dashboard-page.css'
@@ -25,8 +28,12 @@ const DashboardPage = () => {
   const { user } = useAuth()
   if (!user) return null
   if (user.role.startsWith('Manager L')) return <ManagerDashboard user={user} />
+  if (user.role === 'Coordinator') return <CoordinatorDashboard user={user} />
+  if (user.role === 'Admin') return <AdminDashboard user={user} />
+  if (user.role === 'Bank') return <ClientDashboard user={user} audience="bank" />
+  if (user.role === 'Loan Applicant') return <ClientDashboard user={user} audience="applicant" />
 
-  const isCoordinator = user.role === 'Coordinator'
+  const isCoordinator = false
 
   // The role's own menu items + Project Status (available to everyone).
   const actions: SidebarItem[] = [

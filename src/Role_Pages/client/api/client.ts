@@ -18,6 +18,29 @@ export type ClientReport = {
   minApplied: boolean
 }
 
+export type ClientDashboardProject = {
+  projectId: string
+  applicantNic: string
+  ownerName: string
+  property: string
+  location: string
+  projectStatus: string
+  reviewStatus: string
+  valuationStatus: string
+  technicalOfficerId: string
+  paid: boolean
+  slipPending: boolean
+  createdAt: string
+  reportAvailable: boolean
+}
+
+export async function getClientDashboardProjects(): Promise<ClientDashboardProject[]> {
+  const res = await fetch('/api/client/dashboard/projects')
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(body.message || body.error || 'Could not load valuation requests.')
+  return (body.projects as ClientDashboardProject[]) ?? []
+}
+
 export async function getApplicantReports(nic: string): Promise<ClientReport[]> {
   try {
     const res = await fetch(`/api/client/applicant/projects?nic=${encodeURIComponent(nic)}`)

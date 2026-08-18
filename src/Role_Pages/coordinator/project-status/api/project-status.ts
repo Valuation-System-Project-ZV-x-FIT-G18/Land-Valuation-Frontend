@@ -21,6 +21,16 @@ export async function searchProjects(
   }
 }
 
+export async function getDashboardProjects(): Promise<{ projects: ProjectRow[]; error?: string }> {
+  try {
+    const res = await fetch('/api/coordinator/projects/dashboard')
+    if (!res.ok) return { projects: [], error: 'Could not load project totals.' }
+    return await res.json()
+  } catch {
+    return { projects: [], error: 'Could not reach the server. Please try again.' }
+  }
+}
+
 // List every valuation raised against a project.
 export async function listValuations(
   projectId: string,
