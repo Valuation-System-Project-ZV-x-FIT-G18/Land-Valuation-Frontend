@@ -1,6 +1,8 @@
+import type { ReactNode } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import { roleMenus } from '@/Common_Pages/components/sidebar/roleMenus'
+import SidebarIcon from '@/Common_Pages/components/sidebar/SidebarIcon'
 
 // Fixed, full-height app sidebar for internal pages.
 // 256px wide, pinned left on desktop; slides in as a drawer on mobile.
@@ -15,8 +17,15 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
       : 'text-emerald-100/70 hover:bg-white/5 hover:text-white'
   }`
 
+const Chip = ({ children, active }: { children: ReactNode; active: boolean }) => (
+  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition ${active ? 'bg-gold-400/20' : 'bg-white/5 group-hover:bg-white/10'}`}>
+    {children}
+  </span>
+)
+
 const Item = (props: {
   to: string
+  icon: ReactNode
   label: string
   end?: boolean
   onClick?: () => void
@@ -27,6 +36,7 @@ const Item = (props: {
         {isActive && (
           <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 animate-fade-in rounded-r bg-gold-400 shadow-[0_0_10px_rgba(227,194,74,0.6)]" />
         )}
+        <Chip active={isActive}>{props.icon}</Chip>
         <span>{props.label}</span>
       </>
     )}
@@ -92,23 +102,26 @@ const Sidebar = ({ open, onClose }: SidebarProps) => {
             Menu
           </p>
           <nav className="space-y-1">
-            <Item to="/dashboard" label="Dashboard" end onClick={onClose} />
+            <Item to="/dashboard" icon={<SidebarIcon name="dashboard" />} label="Dashboard" end onClick={onClose} />
             {items.map((item) => (
-              <Item key={item.to} to={item.to} label={item.label} onClick={onClose} />
+              <Item key={item.to} to={item.to} icon={<SidebarIcon name={item.icon} />} label={item.label} onClick={onClose} />
             ))}
             {/* Project Status is available to every role (internal + external) */}
-            <Item to="/coordinator/project-states" label="Project Status" onClick={onClose} />
+            <Item to="/coordinator/project-states" icon={<SidebarIcon name="map" />} label="Project Status" onClick={onClose} />
           </nav>
         </div>
 
         {/* Bottom: Settings + Logout */}
         <div className="space-y-1 border-t border-white/10 p-3">
-          <Item to="/settings" label="Settings" onClick={onClose} />
+          <Item to="/settings" icon={<SidebarIcon name="settings" />} label="Settings" onClick={onClose} />
           <button
             type="button"
             onClick={handleLogout}
             className={`${itemBase} w-full text-emerald-100/70 hover:bg-red-500/10 hover:text-red-300`}
           >
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/5 transition group-hover:bg-red-500/15">
+              <SidebarIcon name="logout" />
+            </span>
             <span>Logout</span>
           </button>
         </div>

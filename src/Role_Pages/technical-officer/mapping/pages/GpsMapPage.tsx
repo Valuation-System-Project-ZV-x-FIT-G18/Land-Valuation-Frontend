@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import MapWorkspace from '@/Role_Pages/technical-officer/mapping/components/MapWorkspace'
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
+import { loadWorkflowSelection, saveWorkflowSelection } from '@/Role_Pages/technical-officer/assignments/utils/workflowSelection'
 
 // Technical Officer > GPS & Map Integration.
 // Projects → valuations → pin the location & build map/access info.
@@ -12,8 +13,15 @@ const GpsMapPage = () => {
   const location = useLocation()
   const { user } = useAuth()
   const toId = user?.userId ?? ''
-  const [selected, setSelected] = useState<Assignment | null>(() => (location.state as { assignment?: Assignment } | null)?.assignment ?? null)
-  const [directProjectId, setDirectProjectId] = useState(() => (location.state as { projectId?: string } | null)?.projectId ?? '')
+  const routedSelection = location.state as { assignment?: Assignment; projectId?: string } | null
+  const storedSelection = loadWorkflowSelection(toId)
+  const [selected, setSelected] = useState<Assignment | null>(() => routedSelection?.assignment ?? storedSelection?.assignment ?? null)
+  const [directProjectId, setDirectProjectId] = useState(() => routedSelection?.projectId ?? storedSelection?.projectId ?? '')
+
+  useEffect(() => {
+    const projectId = selected?.projectId ?? directProjectId
+    if (toId && projectId) saveWorkflowSelection(toId, { assignment: selected ?? undefined, projectId })
+  }, [directProjectId, selected, toId])
 
   if (selected || directProjectId) {
     return <MapWorkspace projectId={selected?.projectId ?? directProjectId} onBack={() => { setSelected(null); setDirectProjectId('') }} />
@@ -30,7 +38,13 @@ const GpsMapPage = () => {
           Select an assigned project to verify its exact position, review satellite imagery, and prepare professional access and locality notes.
         </p>
       </div>
-      <ProjectValuationPicker toId={toId} actionLabel="Open map →" onSelect={setSelected} />
+      <ProjectValuationPicker
+        toId={toId}
+        actionLabel="Open map →"
+        projectActionLabel="Open map →"
+        directProjectSelection
+        onSelect={setSelected}
+      />
     </div>
   )
 }
