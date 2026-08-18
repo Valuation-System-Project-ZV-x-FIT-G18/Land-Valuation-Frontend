@@ -108,7 +108,7 @@ const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft }: Props) => 
     setBusy(null)
     if (res.error) return setError(res.error)
     setTexts((t) => ({ ...t, [section]: res.text }))
-    setNotice(res.aiUsed ? '✨ Regenerated with AI.' : 'Regenerated from the sources (AI key not configured).')
+    setNotice(res.aiUsed ? '✨ Regenerated with AI.' : 'Regenerated from the sources using the template fallback.')
   }
 
   const regenerateAll = async () => {
