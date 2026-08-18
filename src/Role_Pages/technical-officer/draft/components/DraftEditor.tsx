@@ -4,7 +4,7 @@ import Button from '@/Common_Pages/components/ui/Button'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import SuccessModal from '@/Common_Pages/components/ui/SuccessModal'
 import { buildReportHtml } from '@/Role_Pages/technical-officer/draft/utils/buildReportHtml'
-import { getBuildValues, getSavedReport, saveReport } from '@/Role_Pages/technical-officer/draft/api/draft'
+import { downloadReportPdf, getBuildValues, getSavedReport, saveReport } from '@/Role_Pages/technical-officer/draft/api/draft'
 import { getEvidence, getValuation } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
 
 type Props = { projectId: string; valuationId: number; onBack: () => void; correctionMode?: boolean; rejectReason?: string }
@@ -47,6 +47,13 @@ const DraftEditor = ({ projectId, valuationId, onBack, correctionMode = false, r
     setSubmitted(true)
   }
 
+  const downloadPdf = async () => {
+    setBusy('pdf'); setError('')
+    const result = await downloadReportPdf(projectId, 'draft')
+    setBusy('')
+    if (!result.ok) setError(result.error || 'Could not generate the PDF.')
+  }
+
 
   return (
     <div className="mx-auto max-w-5xl space-y-5">
@@ -60,6 +67,7 @@ const DraftEditor = ({ projectId, valuationId, onBack, correctionMode = false, r
           <p className="mt-1 text-sm text-emerald-100/65">Project {projectId} · Valuation {valuationId}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button type="button" size="sm" variant="outline" loading={busy === 'pdf'} disabled={loading || (!!busy && busy !== 'pdf')} onClick={downloadPdf}>Download PDF</Button>
           <Button type="button" size="sm" variant="success" loading={busy === 'submit'} disabled={loading || (!!busy && busy !== 'submit')} onClick={submit}>Submit for L3 review</Button>
         </div>
       </div>

@@ -57,3 +57,26 @@ export async function downloadTemplateReport(projectId: string): Promise<{ ok: b
     return { ok: false, error: 'Could not reach the server.' }
   }
 }
+
+export async function downloadReportPdf(
+  projectId: string,
+  type: 'draft' | 'final',
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch(`/api/technical-officer/draft/pdf?projectId=${encodeURIComponent(projectId)}&type=${type}`)
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      return { ok: false, error: body.message || body.error || 'Could not generate the PDF.' }
+    }
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = type === 'draft' ? `Draft-Report-${projectId}.pdf` : `Final-Valuation-Report-${projectId}.pdf`
+    link.click()
+    URL.revokeObjectURL(url)
+    return { ok: true }
+  } catch {
+    return { ok: false, error: 'Could not reach the PDF service.' }
+  }
+}

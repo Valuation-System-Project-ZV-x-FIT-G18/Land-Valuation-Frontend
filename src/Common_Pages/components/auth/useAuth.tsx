@@ -32,7 +32,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const headers = new Headers(init.headers ?? (input instanceof Request ? input.headers : undefined))
       headers.set('Authorization', `Bearer ${accessToken}`)
       const response = await originalFetch(input, { ...init, headers })
-      if (response.status === 401) { setUser(null); setAccessToken('') }
+      // A request started with an older token may finish after the user has
+      // logged in again. Never let that stale 401 erase the new session.
+      const storedToken = (() => {
+        try { return JSON.parse(sessionStorage.getItem('accessToken') ?? '""') as string }
+        catch { return '' }
+      })()
+      if (response.status === 401 && storedToken === accessToken) {
+        setUser(null)
+        setAccessToken('')
+      }
       return response
     }
     return () => { window.fetch = originalFetch }

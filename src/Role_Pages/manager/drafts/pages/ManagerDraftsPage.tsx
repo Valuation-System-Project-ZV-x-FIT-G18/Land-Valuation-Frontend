@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import Card from '@/Common_Pages/components/ui/Card'
 import Button from '@/Common_Pages/components/ui/Button'
 import Badge from '@/Common_Pages/components/ui/Badge'
@@ -20,6 +21,8 @@ type FinalRow = { project: ManagerProject; valuationId: number; status: string; 
 //  final       — locked, finalised reports (shown as a flat table).
 const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' | 'final' }) => {
   const { user } = useAuth()
+  const location = useLocation()
+  const navigate = useNavigate()
   const level: 'L1' | 'L2' | 'L3' =
     user?.role === 'Manager L1' ? 'L1' : user?.role === 'Manager L2' ? 'L2' : 'L3'
   const isFinal = view === 'final'
@@ -34,11 +37,18 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
 
   const load = useCallback(() => {
     setLoading(true)
-    getAllProjects(level, view).then((p) => { setProjects(p); setLoading(false) })
-  }, [level, view])
+    getAllProjects(level, view).then((p) => {
+      setProjects(p)
+      const requestedId = (location.state as { projectId?: string } | null)?.projectId
+      if (view === 'check' && requestedId) setProject(p.find((item) => item.projectId === requestedId) ?? null)
+      setLoading(false)
+    })
+  }, [level, location.state, view])
 
   useEffect(() => { load() }, [load])
   useEffect(() => { setQ('') }, [view]) // clear the search when switching tabs
+
+  if (isFinal && level !== 'L1') return <Navigate to="/dashboard" replace />
 
   const filtered = filterProjects(projects, q)
 
@@ -59,7 +69,7 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
         projectId={viewingFinal.project.projectId}
         valuationId={viewingFinal.valuationId}
         level={level}
-        reviewStatus={viewingFinal.status}
+        reviewStatus={viewingFinal.project.reviewStatus}
         rejectReason={viewingFinal.project.rejectReason}
         onBack={() => setViewingFinal(null)}
         onDone={() => { setViewingFinal(null); load() }}
@@ -78,6 +88,7 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
         rejectReason={project.rejectReason}
         onBack={() => setValuationId(null)}
         onDone={() => { setValuationId(null); setProject(null); load() }}
+        onFinalized={() => navigate('/manager/final-reports')}
       />
     )
   }

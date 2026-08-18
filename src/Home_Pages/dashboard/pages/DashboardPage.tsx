@@ -3,6 +3,7 @@ import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import Card from '@/Common_Pages/components/ui/Card'
 import WelcomeCard from '@/Home_Pages/dashboard/components/WelcomeCard'
+import ManagerDashboard from '@/Home_Pages/dashboard/components/ManagerDashboard'
 import { roleMenus, type SidebarItem } from '@/Common_Pages/components/sidebar/roleMenus'
 import SidebarIcon from '@/Common_Pages/components/sidebar/SidebarIcon'
 import '@/Home_Pages/dashboard/styles/dashboard-page.css'
@@ -23,6 +24,7 @@ const ROLE_TAGLINE: Record<string, string> = {
 const DashboardPage = () => {
   const { user } = useAuth()
   if (!user) return null
+  if (user.role.startsWith('Manager L')) return <ManagerDashboard user={user} />
 
   const isCoordinator = user.role === 'Coordinator'
 

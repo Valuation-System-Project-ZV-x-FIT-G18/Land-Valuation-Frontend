@@ -27,20 +27,20 @@ export const roleMenus: Record<string, SidebarItem[]> = {
   'Manager L1': [
     { label: 'Check Drafts', to: '/manager/check-drafts', icon: 'document' },
     { label: 'Final Reports', to: '/manager/final-reports', icon: 'document' },
-    { label: 'Approved Drafts', to: '/manager/approved-drafts', icon: 'check' },
-    { label: 'Rejected Drafts', to: '/manager/rejected-drafts', icon: 'close' },
+    { label: 'Approved Reports', to: '/manager/approved-drafts', icon: 'check' },
+    { label: 'Rejected Reports', to: '/manager/rejected-drafts', icon: 'close' },
   ],
   'Manager L2': [
     { label: 'Check Drafts', to: '/manager/check-drafts', icon: 'document' },
     { label: 'Corrections', to: '/manager/corrections', icon: 'edit' },
-    { label: 'Approved Drafts', to: '/manager/approved-drafts', icon: 'check' },
-    { label: 'Rejected Drafts', to: '/manager/rejected-drafts', icon: 'close' },
+    { label: 'Approved Reports', to: '/manager/approved-drafts', icon: 'check' },
+    { label: 'Rejected Reports', to: '/manager/rejected-drafts', icon: 'close' },
   ],
   'Manager L3': [
     { label: 'Check Drafts', to: '/manager/check-drafts', icon: 'document' },
     { label: 'Corrections', to: '/manager/corrections', icon: 'edit' },
-    { label: 'Approved Drafts', to: '/manager/approved-drafts', icon: 'check' },
-    { label: 'Rejected Drafts', to: '/manager/rejected-drafts', icon: 'close' },
+    { label: 'Approved Reports', to: '/manager/approved-drafts', icon: 'check' },
+    { label: 'Rejected Reports', to: '/manager/rejected-drafts', icon: 'close' },
   ],
   'Loan Applicant': [
     { label: 'Fill Form', to: '/applicant/fill-form', icon: 'edit' },
