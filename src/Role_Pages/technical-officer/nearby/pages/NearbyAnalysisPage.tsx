@@ -32,7 +32,7 @@ const NearbyAnalysisPage = () => {
       <div className="text-center">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-gold-300/75">Market comparison</p>
         <h1 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
-          Find the <GradientText>3 Most Suitable Lands</GradientText>
+          Find <GradientText>Nearby Lands</GradientText>
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-emerald-100/65">
           Select a project to identify and rank the strongest nearby bare or residential land comparables by
