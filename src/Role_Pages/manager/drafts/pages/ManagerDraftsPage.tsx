@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import Card from '@/Common_Pages/components/ui/Card'
 import Button from '@/Common_Pages/components/ui/Button'
 import Badge from '@/Common_Pages/components/ui/Badge'
@@ -20,6 +21,8 @@ type FinalRow = { project: ManagerProject; valuationId: number; status: string; 
 //  final       — locked, finalised reports (shown as a flat table).
 const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' | 'final' }) => {
   const { user } = useAuth()
+  const location = useLocation()
+  const navigate = useNavigate()
   const level: 'L1' | 'L2' | 'L3' =
     user?.role === 'Manager L1' ? 'L1' : user?.role === 'Manager L2' ? 'L2' : 'L3'
   const isFinal = view === 'final'
@@ -34,11 +37,18 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
 
   const load = useCallback(() => {
     setLoading(true)
-    getAllProjects(level, view).then((p) => { setProjects(p); setLoading(false) })
-  }, [level, view])
+    getAllProjects(level, view).then((p) => {
+      setProjects(p)
+      const requestedId = (location.state as { projectId?: string } | null)?.projectId
+      if (view === 'check' && requestedId) setProject(p.find((item) => item.projectId === requestedId) ?? null)
+      setLoading(false)
+    })
+  }, [level, location.state, view])
 
   useEffect(() => { load() }, [load])
   useEffect(() => { setQ('') }, [view]) // clear the search when switching tabs
+
+  if (isFinal && level !== 'L1') return <Navigate to="/dashboard" replace />
 
   const filtered = filterProjects(projects, q)
 
@@ -51,6 +61,14 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
       : 'border-white/15 bg-white/5 text-emerald-100/70'
     return <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${c}`}>{STATUS_LABEL[status] ?? status}</span>
   }
+  const reviewBadge = (reviewType: ManagerProject['reviewType']) => (
+    <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${reviewType === 'recheck'
+      ? 'border-amber-400/50 bg-amber-400/10 text-amber-200'
+      : 'border-sky-400/40 bg-sky-400/10 text-sky-200'}`}
+    >
+      {reviewType === 'recheck' ? 'Recheck' : 'New Review'}
+    </span>
+  )
 
   // Final Reports — a report opened directly from the flat table.
   if (isFinal && viewingFinal) {
@@ -59,7 +77,7 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
         projectId={viewingFinal.project.projectId}
         valuationId={viewingFinal.valuationId}
         level={level}
-        reviewStatus={viewingFinal.status}
+        reviewStatus={viewingFinal.project.reviewStatus}
         rejectReason={viewingFinal.project.rejectReason}
         onBack={() => setViewingFinal(null)}
         onDone={() => { setViewingFinal(null); load() }}
@@ -76,8 +94,13 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
         level={level}
         reviewStatus={project.reviewStatus}
         rejectReason={project.rejectReason}
+        reviewType={view === 'check' ? project.reviewType : undefined}
+        previousReturnReason={project.previousReturnReason}
+        previousReturnedAt={project.previousReturnedAt}
+        resubmittedAt={project.updatedAt}
         onBack={() => setValuationId(null)}
         onDone={() => { setValuationId(null); setProject(null); load() }}
+        onFinalized={() => navigate('/manager/final-reports')}
       />
     )
   }
@@ -88,7 +111,9 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
       <div className="mx-auto max-w-3xl space-y-4">
         <Button type="button" variant="outline" onClick={() => setProject(null)} className="!px-5 !py-2 text-sm">← All projects</Button>
         <Card className="p-4">
-          <p className="flex items-center gap-2 font-semibold text-gold-300">{project.projectId} {badge(project.reviewStatus)}</p>
+          <p className="flex flex-wrap items-center gap-2 font-semibold text-gold-300">
+            {project.projectId} {badge(project.reviewStatus)} {!isCorr && reviewBadge(project.reviewType)}
+          </p>
           <p className="text-sm text-emerald-100/80">{project.ownerName} · {project.location || '—'}</p>
         </Card>
         {project.valuations.map((v) => (
@@ -181,7 +206,9 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
           {filtered.map((p) => (
             <button key={p.projectId} type="button" onClick={() => setProject(p)} className={card}>
               <div className="min-w-0">
-                <p className="flex items-center gap-2 font-semibold text-gold-300">{p.projectId} {badge(p.reviewStatus)}</p>
+                <p className="flex flex-wrap items-center gap-2 font-semibold text-gold-300">
+                  {p.projectId} {badge(p.reviewStatus)} {!isCorr && reviewBadge(p.reviewType)}
+                </p>
                 <p className="mt-0.5 truncate text-sm text-emerald-100/80">{p.ownerName} · {p.location || '—'}</p>
               </div>
               <span className={chip}>{p.valuations.length} valuation{p.valuations.length > 1 ? 's' : ''} →</span>

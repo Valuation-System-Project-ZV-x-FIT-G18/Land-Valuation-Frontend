@@ -2,10 +2,8 @@ import type { EditableUser } from '@/Role_Pages/admin/user-details/api/user-deta
 
 // Shared constants/helpers for the User Details table + edit form.
 
-export const emailOk = (v: string) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
-
 export const emptyForm: EditableUser = {
-  firstName: '', lastName: '', email: '', phone: '', province: '', district: '', city: '',
+  firstName: '', lastName: '', role: '', phone: '', province: '', district: '', city: '',
 }
 
 // Colour-code each role so the table is easy to scan at a glance.
@@ -24,7 +22,6 @@ export const ROLE_TONE: Record<string, 'gold' | 'info' | 'success' | 'warning' |
 export const editFields: { name: keyof EditableUser; label: string; type?: string }[] = [
   { name: 'firstName', label: 'First Name *' },
   { name: 'lastName', label: 'Last Name' },
-  { name: 'email', label: 'Email', type: 'email' },
   { name: 'phone', label: 'Phone' },
   { name: 'city', label: 'City' },
 ]

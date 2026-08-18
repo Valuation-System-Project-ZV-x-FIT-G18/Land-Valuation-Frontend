@@ -52,7 +52,7 @@ const ChangePasswordPage = () => {
     setErrors({})
     setServerError('')
     setSubmitting(true)
-    const res = await submitChangePassword(user.userId, current, next)
+    const res = await submitChangePassword(current, next)
     setSubmitting(false)
     if (res.ok) {
       login(res.user)

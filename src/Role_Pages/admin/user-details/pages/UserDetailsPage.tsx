@@ -20,7 +20,7 @@ import {
   type RegisteredUser,
   type EditableUser,
 } from '@/Role_Pages/admin/user-details/api/user-details'
-import { emailOk, emptyForm, ROLE_TONE, editFields, inputClass } from '@/Role_Pages/admin/user-details/pages/userDetailsHelpers'
+import { emptyForm, ROLE_TONE, editFields, inputClass } from '@/Role_Pages/admin/user-details/pages/userDetailsHelpers'
 
 // Admin > User Details. Every registered account, with edit/delete.
 const UserDetailsPage = () => {
@@ -60,7 +60,7 @@ const UserDetailsPage = () => {
   const openEdit = (u: RegisteredUser) => {
     const [firstName, ...rest] = u.name.split(' ')
     setForm({
-      firstName: firstName ?? '', lastName: rest.join(' '), email: u.email,
+      firstName: firstName ?? '', lastName: rest.join(' '), role: u.role,
       // Strip the fixed "+94" prefix back off — the edit form's phone field
       // only takes the 9-digit local part (the prefix is a fixed display
       // element, re-added by the backend when the edit is saved).
@@ -75,7 +75,6 @@ const UserDetailsPage = () => {
     const found: Partial<Record<keyof EditableUser, string>> = {}
     found.firstName = validateNamePart(f.firstName, 'First name')
     if (f.lastName.trim()) found.lastName = validateNamePart(f.lastName, 'Last name')
-    if (!emailOk(f.email)) found.email = 'Enter a valid email address.'
     if (f.phone.trim()) found.phone = validateLocalPhone(f.phone)
     if (f.city.trim()) found.city = validateCity(f.city)
     ;(Object.keys(found) as (keyof EditableUser)[]).forEach((k) => {
@@ -192,6 +191,29 @@ const UserDetailsPage = () => {
       </Card>
       <Modal open={!!editing} onClose={() => setEditing(null)} title="Edit User">
         <form onSubmit={handleSave} noValidate className="space-y-4">
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-emerald-100">Email</span>
+            <input
+              type="email"
+              value={editing?.email ?? ''}
+              readOnly
+              aria-readonly="true"
+              className={`${inputClass} cursor-not-allowed opacity-60`}
+            />
+            <span className="mt-1 block text-xs text-emerald-100/50">Email cannot be changed by an administrator.</span>
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-emerald-100">Role</span>
+            <select
+              value={form.role}
+              onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))}
+              className={inputClass}
+            >
+              {['Admin', 'Coordinator', 'Technical Officer', 'Manager L1', 'Manager L2', 'Manager L3', 'Bank', 'Loan Applicant'].map((role) => (
+                <option key={role} value={role} className="bg-emerald-900">{role}</option>
+              ))}
+            </select>
+          </label>
           {editFields.map((f) => (
             <FormField
               key={f.name}

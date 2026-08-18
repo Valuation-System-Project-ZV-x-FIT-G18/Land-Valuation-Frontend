@@ -1,5 +1,7 @@
 import type { FieldConfig } from '@/Role_Pages/coordinator/new-project/types/new-project'
 import { validateEmail } from '@/Common_Pages/validation/validateEmail'
+import { validatePhone } from '@/Common_Pages/validation/validatePhone'
+import { validatePostalCode } from '@/Common_Pages/validation/validatePostalCode'
 
 // Validates ONE config-driven form field (used by Create Project and New
 // Valuation). Returns an error message, or undefined when the value is valid.
@@ -11,8 +13,6 @@ import { validateEmail } from '@/Common_Pages/validation/validateEmail'
 //  - name has "phone"/"contact"-> contact-number format
 //  - type "number"             -> a non-negative number (percent <= 100)
 //  - type "date"               -> a real date, not in the future
-
-const contactPattern = /^\+?\d[\d\s-]{6,14}$/
 
 export function validateField(field: FieldConfig, value: string): string | undefined {
   const v = (value ?? '').trim()
@@ -28,10 +28,10 @@ export function validateField(field: FieldConfig, value: string): string | undef
 
   // Phone / contact-number fields.
   if (name.includes('phone') || name.includes('contact')) {
-    return contactPattern.test(v)
-      ? undefined
-      : 'Enter a valid contact number (7–15 digits).'
+    return validatePhone(v)
   }
+
+  if (name.includes('postalcode')) return validatePostalCode(v)
 
   // Numeric fields.
   if (field.type === 'number') {
@@ -39,9 +39,6 @@ export function validateField(field: FieldConfig, value: string): string | undef
     if (!Number.isFinite(n)) return 'Enter a valid number.'
     if (n < 0) return 'Value cannot be negative.'
     if (name.includes('coverage') && n > 100) return 'Percentage cannot exceed 100.'
-    if (name.includes('postalcode') && !/^\d{4,5}$/.test(v)) {
-      return 'Enter a valid postal code (4–5 digits).'
-    }
     return undefined
   }
 

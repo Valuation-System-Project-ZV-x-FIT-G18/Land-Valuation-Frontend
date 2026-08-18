@@ -24,7 +24,7 @@ type Props = {
 // registered (role "Bank" on the users table). Choosing a bank filters the branch
 // list; choosing a branch auto-fills the contact person and number.
 //
-// Branches are identified by their Branch Code (the bank's login ID) because the
+// Branches are identified internally by Branch Code because the
 // Branch Name can be blank — using the code as the value keeps selection reliable.
 const BankBranchSelect = ({ bankName, branchCode, onSelect }: Props) => {
   const [banks, setBanks] = useState<RegisteredBank[]>([])

@@ -7,7 +7,23 @@ export type ManagerProject = {
   location: string
   reviewStatus: string // draft | pending_l2 | rejected | pending_l1
   rejectReason: string
+  updatedAt?: string
+  workflowActionAt?: string
+  reviewType: 'new' | 'recheck'
+  previousReturnReason?: string
+  previousReturnedAt?: string
   valuations: ManagerValuation[]
+}
+
+export type ManagerActivity = {
+  projectId: string
+  action: string
+  fromStatus: string
+  toStatus: string
+  actorUserId: string
+  actorRole: string
+  reason: string
+  createdAt: string
 }
 
 // Friendly labels for the review states.
@@ -33,6 +49,21 @@ export const STATUS_TONE: Record<string, 'gold' | 'info' | 'success' | 'warning'
   rejected_to_to: 'warning',
 }
 
+// The dashboard can render before AuthProvider's fetch interceptor is installed
+// after a page refresh. Attach the persisted token here so the first manager
+// request is authenticated as well.
+function managerFetch(input: RequestInfo | URL, init: RequestInit = {}) {
+  let accessToken = ''
+  try {
+    accessToken = JSON.parse(sessionStorage.getItem('accessToken') ?? '""') as string
+  } catch {
+    accessToken = ''
+  }
+  const headers = new Headers(init.headers)
+  if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`)
+  return fetch(input, { ...init, headers })
+}
+
 // Free-text filter over a manager project list — matches Project ID, owner
 // name or location, case-insensitively.
 export function filterProjects(projects: ManagerProject[], query: string): ManagerProject[] {
@@ -49,17 +80,29 @@ export function filterProjects(projects: ManagerProject[], query: string): Manag
 export async function getAllProjects(
   level: string,
   view: 'check' | 'corrections' | 'final' | 'approved' | 'rejected' = 'check',
+  throwOnError = false,
 ): Promise<ManagerProject[]> {
   try {
-    const res = await fetch(
+    const res = await managerFetch(
       `/api/manager/drafts/projects?level=${encodeURIComponent(level)}&view=${view}`,
     )
-    if (!res.ok) return []
+    if (!res.ok) {
+      if (throwOnError) throw new Error(`Could not load manager projects (${res.status}).`)
+      return []
+    }
     const body = await res.json()
     return (body.projects as ManagerProject[]) ?? []
-  } catch {
+  } catch (error) {
+    if (throwOnError) throw error
     return []
   }
+}
+
+export async function getRecentManagerActivities(limit = 8): Promise<ManagerActivity[]> {
+  const res = await managerFetch(`/api/manager/drafts/recent-activities?limit=${encodeURIComponent(limit)}`)
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(body.message || body.error || 'Could not load recent manager activity.')
+  return (body.activities as ManagerActivity[]) ?? []
 }
 
 // Save the (edited) report HTML and move it to a new review status.
@@ -68,16 +111,52 @@ export async function draftAction(
   status: string,
   reportHtml?: string,
   reason = '',
+  valuationDate = '',
+  reportPrice?: number,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
-    const res = await fetch('/api/manager/drafts/action', {
+    const res = await managerFetch('/api/manager/drafts/action', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ projectId, status, reportHtml, reason }),
+      body: JSON.stringify({ projectId, status, reportHtml, reason, valuationDate: valuationDate || undefined, reportPrice }),
     })
     const body = await res.json().catch(() => ({}))
-    return res.ok && body.ok ? { ok: true } : { ok: false, error: body.error || 'Action failed.' }
+    return res.ok && body.ok ? { ok: true } : { ok: false, error: body.message || body.error || 'Action failed.' }
   } catch {
     return { ok: false, error: 'Could not reach the server.' }
+  }
+}
+
+export async function getDraftFields(projectId: string): Promise<{ inspectionDate: string; valuationDate: string }> {
+  try {
+    const res = await managerFetch(`/api/manager/drafts/fields?projectId=${encodeURIComponent(projectId)}`)
+    if (!res.ok) return { inspectionDate: '', valuationDate: '' }
+    return await res.json()
+  } catch {
+    return { inspectionDate: '', valuationDate: '' }
+  }
+}
+
+export type SavedManagerReport = {
+  reportHtml: string
+  reviewStatus: string
+  updatedAt: string
+}
+
+// Loads the canonical HTML stored in drafts.data.reportHtml through a
+// manager-authorized endpoint (manager users cannot call Technical Officer APIs).
+export async function getManagerReport(projectId: string): Promise<SavedManagerReport> {
+  const res = await managerFetch(`/api/manager/drafts/report?projectId=${encodeURIComponent(projectId)}`)
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    const missingRoute = res.status === 404 && String(body.message ?? '').startsWith('Cannot GET')
+    throw new Error(missingRoute
+      ? 'The backend is running an older version. Restart the backend to load finalized reports.'
+      : body.message || body.error || 'Could not load the saved report.')
+  }
+  return {
+    reportHtml: typeof body.reportHtml === 'string' ? body.reportHtml : '',
+    reviewStatus: typeof body.reviewStatus === 'string' ? body.reviewStatus : '',
+    updatedAt: typeof body.updatedAt === 'string' ? body.updatedAt : '',
   }
 }

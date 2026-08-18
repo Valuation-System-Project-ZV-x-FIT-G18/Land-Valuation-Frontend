@@ -1,3 +1,4 @@
+//02
 import { Routes, Route } from 'react-router-dom'
 import { LoginModalProvider } from '@/Common_Pages/components/auth/useLoginModal'
 import { AuthProvider } from '@/Common_Pages/components/auth/useAuth'
@@ -8,7 +9,6 @@ import HomePage from '@/Home_Pages/firstpage/pages/HomePage'
 import AboutPage from '@/Home_Pages/about/pages/AboutPage'
 import ServicesPage from '@/Home_Pages/services/pages/ServicesPage'
 import ContactPage from '@/Home_Pages/contact/pages/ContactPage'
-import RequestValuationPage from '@/Home_Pages/request-valuation/pages/RequestValuationPage'
 import InternalLoginPage from '@/Home_Pages/internal-login/pages/InternalLoginPage'
 import ExternalLoginPage from '@/Home_Pages/external-login/pages/ExternalLoginPage'
 import DashboardPage from '@/Home_Pages/dashboard/pages/DashboardPage'
@@ -17,7 +17,6 @@ import SettingsPage from '@/Home_Pages/settings/pages/SettingsPage'
 import AddRolePage from '@/Role_Pages/admin/add-role/pages/AddRolePage'
 import UserDetailsPage from '@/Role_Pages/admin/user-details/pages/UserDetailsPage'
 import MessagesPage from '@/Home_Pages/messages/pages/MessagesPage'
-import NewRequestsPage from '@/Role_Pages/coordinator/website-inbox/pages/NewRequestsPage'
 import ContactMessagesPage from '@/Role_Pages/coordinator/website-inbox/pages/ContactMessagesPage'
 import FillFormPage from '@/Role_Pages/loan-applicant/fill-form/pages/FillFormPage'
 import AssignedProjectsPage from '@/Role_Pages/technical-officer/assignments/pages/AssignedProjectsPage'
@@ -26,8 +25,6 @@ import SitePhotoPage from '@/Role_Pages/technical-officer/site-photos/pages/Site
 import GenerateDescriptionsPage from '@/Role_Pages/technical-officer/descriptions/pages/GenerateDescriptionsPage'
 import NearbyAnalysisPage from '@/Role_Pages/technical-officer/nearby/pages/NearbyAnalysisPage'
 import GpsMapPage from '@/Role_Pages/technical-officer/mapping/pages/GpsMapPage'
-import CreateDraftPage from '@/Role_Pages/technical-officer/draft/pages/CreateDraftPage'
-import TOCorrectionsPage from '@/Role_Pages/technical-officer/draft/pages/TOCorrectionsPage'
 import ManagerDraftsPage from '@/Role_Pages/manager/drafts/pages/ManagerDraftsPage'
 import ApprovedDraftsPage from '@/Role_Pages/manager/drafts/pages/ApprovedDraftsPage'
 import MakePaymentPage from '@/Role_Pages/client/pages/MakePaymentPage'
@@ -45,6 +42,8 @@ import TOAttendancePage from '@/Role_Pages/technical-officer/attendance/pages/TO
 import FleetSummaryPage from '@/Role_Pages/coordinator/fleet-management/pages/FleetSummaryPage'
 import AssignOfficersPage from '@/Role_Pages/coordinator/fleet-management/pages/AssignOfficersPage'
 import TOAttendanceReviewPage from '@/Role_Pages/coordinator/fleet-management/pages/TOAttendanceReviewPage'
+import CreateDraftPage from '@/Role_Pages/technical-officer/draft/pages/CreateDraftPage'
+import TOCorrectionsPage from '@/Role_Pages/technical-officer/draft/pages/TOCorrectionsPage'
 
 // Defines every URL and which page component it shows.
 // Layout (header, footer, background, login popup) wraps all pages.
@@ -59,7 +58,6 @@ const App = () => {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/services" element={<ServicesPage />} />
             <Route path="/contact" element={<ContactPage />} />
-            <Route path="/request-valuation" element={<RequestValuationPage />} />
             <Route path="/login/internal" element={<InternalLoginPage />} />
             <Route path="/login/external" element={<ExternalLoginPage />} />
           </Route>
@@ -98,16 +96,16 @@ const App = () => {
               element={<GpsMapPage />}
             />
             <Route
+              path="/technical-officer/attendance"
+              element={<TOAttendancePage />}
+            />
+            <Route
               path="/technical-officer/draft"
               element={<CreateDraftPage />}
             />
             <Route
               path="/technical-officer/corrections"
               element={<TOCorrectionsPage />}
-            />
-            <Route
-              path="/technical-officer/attendance"
-              element={<TOAttendancePage />}
             />
             <Route
               path="/manager/check-drafts"
@@ -131,10 +129,6 @@ const App = () => {
             />
             <Route path="/applicant/payment" element={<MakePaymentPage />} />
             <Route path="/bank/report" element={<BankViewReportPage />} />
-            <Route
-              path="/coordinator/new-requests"
-              element={<NewRequestsPage />}
-            />
             <Route
               path="/coordinator/contact-messages"
               element={<ContactMessagesPage />}

@@ -128,6 +128,7 @@ const AssignmentCard = ({ a }: { a: Assignment }) => {
           <Detail label="Address" value={a.owner.address} />
         </div>
       </Section>
+
     </Card>
   )
 }

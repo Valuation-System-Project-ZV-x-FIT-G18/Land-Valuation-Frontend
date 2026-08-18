@@ -3,11 +3,9 @@ import type { Profile } from '@/Home_Pages/settings/types/settings'
 // API calls for the Settings page.
 
 // Load the logged-in user's profile.
-export async function getProfile(
-  userId: string,
-): Promise<{ profile?: Profile; error?: string }> {
+export async function getProfile(): Promise<{ profile?: Profile; error?: string }> {
   try {
-    const res = await fetch(`/api/auth/profile?userId=${encodeURIComponent(userId)}`)
+    const res = await fetch('/api/auth/profile')
     if (!res.ok) return { error: 'Could not load your profile.' }
     const body = await res.json()
     return { profile: body.profile as Profile | undefined }
@@ -23,11 +21,11 @@ export async function updateProfile(
   profile: Profile,
 ): Promise<{ ok: boolean; profile?: Profile; error?: string }> {
   const {
-    userId, firstName, lastName, initials, email, phone,
+    firstName, lastName, initials, email, phone,
     dateOfBirth, province, district, city, postalCode, address,
   } = profile
   const payload = {
-    userId, firstName, lastName, initials, email, phone,
+    firstName, lastName, initials, email, phone,
     dateOfBirth, province, district, city, postalCode, address,
   }
   try {
@@ -49,12 +47,10 @@ export async function updateProfile(
 
 // Upload/replace the logged-in user's profile picture.
 export async function uploadAvatar(
-  userId: string,
   file: File,
 ): Promise<{ ok: boolean; photoPath?: string; error?: string }> {
   try {
     const form = new FormData()
-    form.append('userId', userId)
     form.append('file', file)
     const res = await fetch('/api/auth/avatar', { method: 'POST', body: form })
     const body = await res.json().catch(() => ({}) as Record<string, unknown>)

@@ -10,6 +10,7 @@ import { validateLocalPhone } from '@/Common_Pages/validation/validateLocalPhone
 import { validateDateOfBirth } from '@/Common_Pages/validation/validateDateOfBirth'
 import { validatePasswordStrength } from '@/Common_Pages/validation/validatePasswordStrength'
 import { namePattern } from '@/Common_Pages/validation/validateName'
+import { toLocalPhone } from '@/Common_Pages/validation/rules'
 import { useAutoField } from '@/Common_Pages/hooks/useAutoField'
 import { deriveName } from '@/Role_Pages/coordinator/register-applicant/lib/deriveName'
 import { registerApplicant } from '@/Role_Pages/coordinator/register-applicant/api/register-applicant'
@@ -24,11 +25,15 @@ import type {
 // the Create Project flow, so this form only collects identity and contact.
 const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
   const navigate = useNavigate()
-  const storageKey = `registerApplicant:${initialNic || 'new'}`
+  // Keep one stable key: `initialNic` arrives through router state, which may
+  // not be available after a browser refresh. A key derived from it could make
+  // the saved draft appear to disappear even though it still existed under a
+  // different sessionStorage key.
+  const storageKey = 'registerApplicantDraft'
 
   // Non-password fields persist on refresh; passwords are never stored.
   const [form, setForm] = useSessionState(storageKey, {
-    fullName: '', initials: '', nic: initialNic, dateOfBirth: '', phone: '', email: '',
+    fullName: '', initials: '', applicantBusinessName: '', nic: initialNic, dateOfBirth: '', phone: '', email: '',
   })
   const [pw, setPw] = useState({ password: '', confirmPassword: '' })
   const [errors, setErrors] = useState<RegisterErrors>({})
@@ -46,21 +51,6 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
     (v) => setForm((f) => ({ ...f, initials: v })),
   )
 
-  // Fill the form with sample data (testing helper). Keeps a NIC if one is
-  // already set; otherwise generates a fresh 12-digit one to avoid clashes.
-  const autoFill = () => {
-    setForm((f) => ({
-      ...f,
-      fullName: 'Kamal Sunil Perera',
-      nic: f.nic || '20' + String(Math.floor(1e9 + Math.random() * 9e9)),
-      dateOfBirth: '1995-05-20',
-      phone: '771234567',
-      email: 'test.applicant@example.com',
-    }))
-    setPw({ password: 'Password1', confirmPassword: 'Password1' })
-    setErrors({})
-  }
-
   // The error for a single field, given the latest values.
   const validateOne = (
     name: keyof RegisterApplicantValues,
@@ -70,6 +60,14 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
       case 'fullName':
         if (!deriveName(v.fullName).valid) return 'Enter the full name (first and last).'
         return namePattern.test(v.fullName.trim()) ? undefined : 'Name can only contain letters.'
+      case 'applicantBusinessName':
+        return v.applicantBusinessName.trim().length > 150
+          ? 'Business name cannot exceed 150 characters.'
+          : undefined
+      case 'initials':
+        return v.initials.trim().length > 60
+          ? 'Name with initials cannot exceed 60 characters.'
+          : undefined
       case 'nic':
         return validateNIC(v.nic)
       case 'dateOfBirth':
@@ -92,7 +90,7 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
   ) => {
     const name = e.target.name as keyof RegisterApplicantValues
     let value = e.target.value
-    if (name === 'phone') value = value.replace(/\D/g, '').slice(0, 9)
+    if (name === 'phone') value = toLocalPhone(value)
 
     if (name === 'password' || name === 'confirmPassword') {
       setPw((p) => ({ ...p, [name]: value }))
@@ -122,7 +120,7 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
 
   const validate = (): RegisterErrors => {
     const fields: (keyof RegisterApplicantValues)[] = [
-      'fullName', 'nic', 'dateOfBirth', 'email', 'phone', 'password', 'confirmPassword',
+      'fullName', 'initials', 'applicantBusinessName', 'nic', 'dateOfBirth', 'email', 'phone', 'password', 'confirmPassword',
     ]
     const e: RegisterErrors = {}
     fields.forEach((n) => {
@@ -144,6 +142,7 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
       firstName,
       lastName,
       initials: form.initials,
+      applicantBusinessName: form.applicantBusinessName,
       nic: form.nic,
       dateOfBirth: form.dateOfBirth,
       email: form.email,
@@ -151,7 +150,16 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
       password: pw.password,
     })
     setSubmitting(false)
-    if (!res.ok) return setServerError(res.error ?? 'Could not register the applicant.')
+    if (!res.ok) {
+      const message = res.error ?? 'Could not register the applicant. Please check the entered details.'
+      const lower = message.toLowerCase()
+      if (lower.includes('email')) setErrors((current) => ({ ...current, email: message }))
+      else if (lower.includes('nic')) setErrors((current) => ({ ...current, nic: message }))
+      else if (lower.includes('business')) {
+        setErrors((current) => ({ ...current, applicantBusinessName: message }))
+      } else setServerError(message)
+      return
+    }
     sessionStorage.removeItem(storageKey)
     sessionStorage.removeItem('applicantSearchQuery') // clear the NIC on the search page
     setDone(true)
@@ -192,15 +200,6 @@ const RegisterApplicantForm = ({ initialNic }: { initialNic: string }) => {
 
   return (
     <Card className="mx-auto mt-8 max-w-3xl p-6 sm:p-8">
-      <div className="mb-4 text-center">
-        <button
-          type="button"
-          onClick={autoFill}
-          className="rounded-lg border border-gold-400/40 bg-gold-400/10 px-4 py-2 text-xs font-medium text-gold-200 transition hover:bg-gold-400/20"
-        >
-          ⚡ Auto-fill form
-        </button>
-      </div>
       <form onSubmit={handleSubmit} noValidate className="space-y-8">
         <NameSection values={values} errors={errors} onChange={handleChange} onBlur={handleBlur} />
         <IdentityContactSection values={values} errors={errors} onChange={handleChange} onBlur={handleBlur} />

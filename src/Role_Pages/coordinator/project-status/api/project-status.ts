@@ -6,15 +6,34 @@ import type {
 
 // API calls for the Project Status page.
 
+function statusFetch(input: RequestInfo | URL, init: RequestInit = {}) {
+  let accessToken = ''
+  try { accessToken = JSON.parse(sessionStorage.getItem('accessToken') ?? '""') as string }
+  catch { accessToken = '' }
+  const headers = new Headers(init.headers)
+  if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`)
+  return fetch(input, { ...init, headers })
+}
+
 // Search projects by NIC or Project ID (empty query returns recent projects).
 export async function searchProjects(
   q: string,
 ): Promise<{ projects: ProjectRow[]; error?: string }> {
   try {
-    const res = await fetch(
+    const res = await statusFetch(
       `/api/coordinator/projects/status?q=${encodeURIComponent(q.trim())}`,
     )
     if (!res.ok) return { projects: [], error: 'Search failed. Please try again.' }
+    return await res.json()
+  } catch {
+    return { projects: [], error: 'Could not reach the server. Please try again.' }
+  }
+}
+
+export async function getDashboardProjects(): Promise<{ projects: ProjectRow[]; error?: string }> {
+  try {
+    const res = await statusFetch('/api/coordinator/projects/dashboard')
+    if (!res.ok) return { projects: [], error: 'Could not load project totals.' }
     return await res.json()
   } catch {
     return { projects: [], error: 'Could not reach the server. Please try again.' }
@@ -26,7 +45,7 @@ export async function listValuations(
   projectId: string,
 ): Promise<{ valuations: ValuationRow[]; error?: string }> {
   try {
-    const res = await fetch(
+    const res = await statusFetch(
       `/api/coordinator/valuations/by-project?projectId=${encodeURIComponent(projectId)}`,
     )
     if (!res.ok) return { valuations: [], error: 'Could not load valuations.' }
@@ -41,7 +60,7 @@ export async function getValuationStatus(
   rowId: number,
 ): Promise<{ status?: StatusDetail; error?: string }> {
   try {
-    const res = await fetch(
+    const res = await statusFetch(
       `/api/coordinator/valuations/status?id=${encodeURIComponent(rowId)}`,
     )
     if (!res.ok) return { error: 'Could not load status.' }
@@ -57,7 +76,7 @@ import type { TimelineStep } from '@/Role_Pages/coordinator/project-status/compo
 // The computed lifecycle steps for a valuation.
 export async function getTimeline(rowId: number): Promise<TimelineStep[]> {
   try {
-    const res = await fetch(`/api/coordinator/valuations/timeline?id=${encodeURIComponent(String(rowId))}`)
+    const res = await statusFetch(`/api/coordinator/valuations/timeline?id=${encodeURIComponent(String(rowId))}`)
     const body = await res.json()
     return (body.steps as TimelineStep[]) ?? []
   } catch {
@@ -68,7 +87,7 @@ export async function getTimeline(rowId: number): Promise<TimelineStep[]> {
 // The full lifecycle for a project (works even with no valuations yet).
 export async function getProjectTimeline(projectId: string): Promise<TimelineStep[]> {
   try {
-    const res = await fetch(`/api/coordinator/valuations/project-timeline?projectId=${encodeURIComponent(projectId)}`)
+    const res = await statusFetch(`/api/coordinator/valuations/project-timeline?projectId=${encodeURIComponent(projectId)}`)
     const body = await res.json()
     return (body.steps as TimelineStep[]) ?? []
   } catch {
@@ -88,7 +107,7 @@ export type ProjectDetails = {
 // All stored details + uploaded documents for a project.
 export async function getProjectDetails(projectId: string): Promise<ProjectDetails | null> {
   try {
-    const res = await fetch(`/api/coordinator/projects/details?projectId=${encodeURIComponent(projectId)}`)
+    const res = await statusFetch(`/api/coordinator/projects/details?projectId=${encodeURIComponent(projectId)}`)
     const body = await res.json()
     return body.error ? null : (body as ProjectDetails)
   } catch {

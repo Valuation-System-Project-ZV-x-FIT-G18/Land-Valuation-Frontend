@@ -1,139 +1,95 @@
+//02
 import { useEffect, useRef, useState } from 'react'
 import Button from '@/Common_Pages/components/ui/Button'
-import Spinner from '@/Common_Pages/components/ui/Spinner'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import SuccessModal from '@/Common_Pages/components/ui/SuccessModal'
-import { getBuildValues, getSavedReport, saveReport } from '@/Role_Pages/technical-officer/draft/api/draft'
 import { buildReportHtml } from '@/Role_Pages/technical-officer/draft/utils/buildReportHtml'
-import { downloadReportPdf } from '@/Common_Pages/utils/downloadReportPdf'
-import { downloadReportWord } from '@/Common_Pages/utils/downloadReportWord'
-import { getValuation, getEvidence } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
+import { downloadReportPdf, getBuildValues, getSavedReport, saveReport } from '@/Role_Pages/technical-officer/draft/api/draft'
+import { getEvidence, getValuation } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
 
-type Props = { projectId: string; onBack: () => void }
+type Props = { projectId: string; valuationId: number; onBack: () => void; correctionMode?: boolean; rejectReason?: string }
 
-const DraftEditor = ({ projectId, onBack }: Props) => {
+const DraftEditor = ({ projectId, valuationId, onBack, correctionMode = false, rejectReason = '' }: Props) => {
   const paperRef = useRef<HTMLDivElement>(null)
   const [html, setHtml] = useState('')
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [rebuilding, setRebuilding] = useState(false)
-  const [notice, setNotice] = useState('')
-  const [success, setSuccess] = useState('')
+  const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
+  const [submitted, setSubmitted] = useState(false)
 
-  // Assemble the styled report HTML from all the project data.
-  const assemble = async () => {
+  const loadFromData = async () => {
+    setLoading(true); setError('')
     const [values, valuation, evidence] = await Promise.all([
-      getBuildValues(projectId),
-      getValuation(projectId),
-      getEvidence(projectId),
+      getBuildValues(projectId), getValuation(projectId), getEvidence(projectId),
     ])
-    if (!values) return null
-    // Prefer the valuation/evidence tables the officer saved in Generate Descriptions.
-    const parse = (s?: string) => { try { return s ? JSON.parse(s) : null } catch { return null } }
-    const savedVal = parse(values.savedValuation)
-    const savedEvi = parse(values.savedEvidence)
-    return buildReportHtml(values, savedVal ?? valuation, evidence, projectId, savedEvi)
+    if (!values) setError('Could not collect the saved project information.')
+    else {
+      const parse = (value?: string) => { try { return value ? JSON.parse(value) : null } catch { return null } }
+      setHtml(buildReportHtml(values, parse(values.savedValuation) ?? valuation, evidence, projectId, parse(values.savedEvidence)))
+    }
+    setLoading(false)
   }
 
-  // On open: prefer the saved (edited) report; otherwise build a fresh one.
   useEffect(() => {
     ;(async () => {
       const saved = await getSavedReport(projectId)
-      if (saved) setHtml(saved)
-      else {
-        const built = await assemble()
-        built ? setHtml(built) : setError('Project not found.')
-      }
-      setLoading(false)
+      if (saved) { setHtml(saved); setLoading(false) }
+      else await loadFromData()
     })()
-  }, [projectId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [projectId])
 
-  const rebuild = async () => {
-    setRebuilding(true); setError(''); setNotice('')
-    const built = await assemble()
-    setRebuilding(false)
-    if (!built) return setError('Could not rebuild the report.')
-    setHtml(built)
-    setNotice('Report re-filled from the latest project data.')
+  const submit = async () => {
+    setBusy('submit'); setError('')
+    const reportHtml = paperRef.current?.innerHTML ?? html
+    const result = await saveReport(projectId, reportHtml)
+    setBusy('')
+    if (!result.ok) return setError(result.error || 'Could not submit the draft.')
+    setSubmitted(true)
   }
 
-  const save = async () => {
-    setSaving(true); setError('')
-    const current = paperRef.current?.innerHTML ?? html
-    const res = await saveReport(projectId, current)
-    setSaving(false)
-    res.ok
-      ? setSuccess('The draft was saved and submitted for the L3 check. The applicant has been notified.')
-      : setError(res.error ?? 'Could not save.')
+  const downloadPdf = async () => {
+    setBusy('pdf'); setError('')
+    const result = await downloadReportPdf(projectId, 'draft')
+    setBusy('')
+    if (!result.ok) setError(result.error || 'Could not generate the PDF.')
   }
 
-  const download = () => {
-    const current = paperRef.current?.innerHTML ?? html
-    downloadReportPdf(current, `Valuation-Report-${projectId}`)
-  }
-
-  const downloadWord = () => {
-    const current = paperRef.current?.innerHTML ?? html
-    downloadReportWord(current, `Valuation-Report-${projectId}`)
-  }
-
-  if (loading)
-    return (
-      <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
-        <Spinner size={8} />
-        <p className="text-sm text-emerald-200/60">Assembling the styled report…</p>
-      </div>
-    )
 
   return (
-    <div className="mx-auto max-w-4xl space-y-5">
-      <SuccessModal
-        open={!!success}
-        title="Draft Submitted"
-        message={success}
-        closeLabel="Done"
-        onClose={() => setSuccess('')}
-      />
-      <Button type="button" variant="ghost" size="sm" onClick={onBack}>← Back to projects</Button>
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-white sm:text-3xl">Valuation Report Draft — <GradientText>{projectId}</GradientText></h1>
-        <p className="mx-auto mt-2 max-w-xl text-emerald-100/70">
-          The full report with the CODEHUB letterhead, tables and photos — filled from the project data. Click into the page to edit, then save or download as PDF.
-        </p>
+    <div className="mx-auto max-w-5xl space-y-5">
+      <button type="button" onClick={onBack} className="inline-flex items-center gap-2 text-sm font-medium text-emerald-100/70 transition hover:text-white">
+        <span aria-hidden="true">←</span> Projects
+      </button>
+
+      <div className="flex flex-col gap-4 border-b border-white/10 pb-5 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-white">{correctionMode ? 'Draft ' : 'Create '}<GradientText>{correctionMode ? 'Corrections' : 'Draft'}</GradientText></h1>
+          <p className="mt-1 text-sm text-emerald-100/65">Project {projectId} · Valuation {valuationId}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="button" size="sm" variant="outline" loading={busy === 'pdf'} disabled={loading || (!!busy && busy !== 'pdf')} onClick={downloadPdf}>Download PDF</Button>
+          <Button type="button" size="sm" variant="success" loading={busy === 'submit'} disabled={loading || (!!busy && busy !== 'submit')} onClick={submit}>Submit for L3 review</Button>
+        </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <Button type="button" variant="outline" size="sm" loading={rebuilding} onClick={rebuild}>
-          {rebuilding ? 'Re-filling…' : '↻ Re-fill from data'}
-        </Button>
-        <Button type="button" variant="outline" size="sm" onClick={download}>⬇ Download PDF</Button>
-        <Button type="button" variant="outline" size="sm" onClick={downloadWord}>⬇ Download Word</Button>
-      </div>
-      {notice && (
-        <p className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-center text-sm text-emerald-200">{notice}</p>
+      {correctionMode && rejectReason && (
+        <div className="rounded-lg border border-amber-400/40 bg-amber-400/10 p-3 text-sm text-amber-200">
+          <b>Manager L3 correction request:</b> {rejectReason}
+        </div>
       )}
-      {error && (
-        <p className="rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-3 text-center text-sm text-amber-300">{error}</p>
+      {error && <p className="rounded-lg border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-200">{error}</p>}
+      {loading ? <p className="py-16 text-center text-emerald-100/65">Building the report from saved data...</p> : (
+        <div className="overflow-x-auto rounded-xl bg-slate-200 p-4 sm:p-8">
+          <div
+            ref={paperRef}
+            contentEditable
+            suppressContentEditableWarning
+            className="mx-auto min-h-[1120px] w-[794px] max-w-none bg-white p-[55px] text-black shadow-2xl outline-none"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        </div>
       )}
-
-      {/* White "paper" — editable in place. The gold ring + badge make it clear
-          this region is directly editable. */}
-      <div className="relative rounded-2xl bg-white p-2 shadow-card-hover ring-1 ring-gold-400/40">
-        <span className="pointer-events-none absolute -top-3 left-4 z-10 inline-flex items-center gap-1.5 rounded-full bg-gold-400 px-3 py-1 text-xs font-semibold text-emerald-950 shadow">
-          ✎ Editing — click anywhere to edit
-        </span>
-        <div
-          ref={paperRef}
-          contentEditable
-          suppressContentEditableWarning
-          className="min-h-[60vh] rounded-xl bg-white p-8 outline-none"
-          style={{ color: '#111' }}
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
-      </div>
-
-      <Button type="button" fullWidth variant="success" loading={saving} onClick={save}>{saving ? 'Saving…' : 'OK — Save & Submit for L3 Check'}</Button>
+      <SuccessModal open={submitted} title="Draft submitted" message="The valuation draft has been saved and submitted for the Manager L3 check." onClose={onBack} />
     </div>
   )
 }

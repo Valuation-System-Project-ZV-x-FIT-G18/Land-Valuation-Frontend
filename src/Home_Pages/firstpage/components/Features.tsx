@@ -5,7 +5,7 @@ import GradientText from '@/Common_Pages/components/ui/GradientText'
 const features = [
   { icon: '🤖', title: 'AI-Powered Descriptions', text: 'Generate professional land, locality and legal write-ups in seconds.' },
   { icon: '🗺️', title: 'Live Map & GPS', text: 'Pinpoint the exact property with satellite imagery and GPS coordinates.' },
-  { icon: '🔎', title: 'Market Comparables', text: 'AI researches the live web for real nearby sales and asking prices.' },
+  { icon: '🔎', title: 'Nearby Land Analysis', text: 'Identify and compare the closest suitable lands by distance, recency, land use and access.' },
   { icon: '🔒', title: 'Secure Document Vault', text: 'Applicants upload documents safely; officers review with one click.' },
   { icon: '✅', title: 'Multi-Level Review', text: 'Every report passes structured L1–L3 manager checks before release.' },
   { icon: '🔔', title: 'Instant Notifications', text: 'Email updates at every milestone keep everyone in the loop.' },

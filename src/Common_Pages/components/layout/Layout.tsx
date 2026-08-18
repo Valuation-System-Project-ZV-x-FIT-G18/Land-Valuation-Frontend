@@ -14,7 +14,7 @@ const Layout = () => {
   const location = useLocation()
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-hidden bg-gradient-to-br from-emerald-800 via-emerald-700 to-green-800">
+    <div className="relative flex min-h-screen w-full flex-col overflow-hidden bg-gradient-to-br from-emerald-800 via-emerald-800 to-green-700">
       {/* Decorative background: soft brand glow + two floating blobs.
           Green = land/nature, gold = value. Sizes grow with the screen. */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden bg-brand-radial">

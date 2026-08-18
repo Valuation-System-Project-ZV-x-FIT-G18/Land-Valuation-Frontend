@@ -5,9 +5,11 @@ import type { NearbyLocation } from '@/Role_Pages/technical-officer/nearby/api/n
 // Google satellite map. Uses the classic embed (t=k = satellite) — no API key.
 const LocationCard = ({ loc }: { loc: NearbyLocation }) => {
   const address = [loc.propertyNumber, loc.streetName, loc.villageTown].filter(Boolean).join(', ')
-  const hasGps = loc.latitude !== null && loc.longitude !== null
-  const mapSrc = hasGps ? `https://maps.google.com/maps?q=${loc.latitude},${loc.longitude}&t=k&z=17&output=embed` : ''
-  const mapsLink = hasGps ? `https://www.google.com/maps/@${loc.latitude},${loc.longitude},18z/data=!3m1!1e3` : '#'
+  const latitude = Number(loc.latitude)
+  const longitude = Number(loc.longitude)
+  const hasGps = loc.latitude != null && loc.longitude != null && Number.isFinite(latitude) && Number.isFinite(longitude)
+  const mapSrc = hasGps ? `https://maps.google.com/maps?q=${latitude},${longitude}&t=k&z=17&output=embed` : ''
+  const mapsLink = hasGps ? `https://www.google.com/maps/@${latitude},${longitude},18z/data=!3m1!1e3` : '#'
 
   const Row = ({ label, value }: { label: string; value: string }) => (
     <div>
@@ -25,7 +27,7 @@ const LocationCard = ({ loc }: { loc: NearbyLocation }) => {
         <Row label="Province" value={loc.province} />
         <Row label="Property Type" value={loc.propertyType} />
         <Row label="Extent" value={loc.extentPerches ? `${loc.extentPerches} perches` : ''} />
-        <Row label="GPS" value={hasGps ? `${loc.latitude?.toFixed(5)}, ${loc.longitude?.toFixed(5)}` : 'Not set'} />
+        <Row label="GPS" value={hasGps ? `${latitude.toFixed(5)}, ${longitude.toFixed(5)}` : 'Not set'} />
       </div>
 
       {hasGps ? (

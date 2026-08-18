@@ -1,3 +1,4 @@
+//02
 import { useEffect, useState } from 'react'
 import Card from '@/Common_Pages/components/ui/Card'
 import Button from '@/Common_Pages/components/ui/Button'
@@ -5,7 +6,6 @@ import GradientText from '@/Common_Pages/components/ui/GradientText'
 import SectionCard from './SectionCard'
 import ValuationSection from './ValuationSection'
 import EvidenceSection from './EvidenceSection'
-import NextStepModal from '@/Role_Pages/technical-officer/shared/NextStepModal'
 import {
   getSources,
   getDescriptions,
@@ -17,6 +17,15 @@ import {
 } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
 
 const empty: Descriptions = {
+  requestDescription: '',
+  limitations: '',
+  generalAssumptions: '',
+  situation: '',
+  extentDescription: '',
+  accessDescription: '',
+  ownershipDescription: '',
+  rentControlRegulation: '',
+  certification: '',
   landDescription: '',
   localityDescription: '',
   localityFacilities: '',
@@ -32,28 +41,33 @@ const empty: Descriptions = {
 
 // Section order + labels (image section has no editable text fields, only photos).
 const ORDER: { key: SectionKey; label: string }[] = [
-  { key: 'landDescription', label: 'Land Description' },
-  { key: 'localityDescription', label: 'Locality Description (Section 7)' },
-  { key: 'localityFacilities', label: 'Locality Facilities' },
-  { key: 'legalParagraph', label: 'Legal Paragraph' },
+  { key: 'requestDescription', label: 'Request Description' },
+  { key: 'limitations', label: 'Limitations' },
+  { key: 'generalAssumptions', label: 'General Assumptions' },
+  { key: 'situation', label: 'Situation' },
+  { key: 'extentDescription', label: 'Extent / Survey & Deed Particulars' },
+  { key: 'accessDescription', label: 'Access and Nature of the Accessibility' },
+  { key: 'landDescription', label: 'Description of the Land' },
+  { key: 'ownershipDescription', label: 'Ownership' },
   { key: 'localAuthorityTax', label: 'Local Authority Tax' },
   { key: 'streetLineBuildingLimits', label: 'Street Line & Building Limits' },
-  { key: 'mandatoryRequirements', label: 'Mandatory Requirements & Planning Regulations' },
-  { key: 'conclusion', label: 'Conclusion' },
-  { key: 'imageAnalysis', label: 'Image Analysis (site photos)' },
+  { key: 'mandatoryRequirements', label: 'Mandatory Requirements' },
+  { key: 'rentControlRegulation', label: 'Rent Control Regulation' },
+  { key: 'localityDescription', label: 'Locality' },
+  { key: 'certification', label: 'Certification' },
 ]
 
-type Props = { projectId: string; onBack: () => void }
+type Props = { projectId: string; onBack: () => void; onContinueToDraft?: () => void }
 
-const DescriptionsEditor = ({ projectId, onBack }: Props) => {
+const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft }: Props) => {
   const [texts, setTexts] = useState<Descriptions>(empty)
   const [sources, setSources] = useState<SourceSection[]>([])
   const [photos, setPhotos] = useState<string[]>([])
   const [busy, setBusy] = useState<SectionKey | 'all' | null>(null)
   const [saving, setSaving] = useState(false)
-  const [goNext, setGoNext] = useState(false)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
+  const [saved, setSaved] = useState(false)
 
   // On open: load the editable sources + photos, and any previously saved text.
   useEffect(() => {
@@ -62,7 +76,12 @@ const DescriptionsEditor = ({ projectId, onBack }: Props) => {
       setSources(s.sources)
       setPhotos(s.photos)
     })
-    getDescriptions(projectId).then((d) => d && setTexts(d))
+    getDescriptions(projectId).then((d) => {
+      if (!d) return
+      const current = { ...empty }
+      for (const { key } of ORDER) current[key] = d[key] ?? ''
+      setTexts(current)
+    })
   }, [projectId])
 
   // Build the { key: value } dict for a section from its (edited) source fields.
@@ -71,14 +90,17 @@ const DescriptionsEditor = ({ projectId, onBack }: Props) => {
     return Object.fromEntries((sec?.fields ?? []).map((f) => [f.key, f.value]))
   }
 
-  const setField = (section: SectionKey, key: string, value: string) =>
+  const setField = (section: SectionKey, key: string, value: string) => {
+    setSaved(false)
     setSources((prev) =>
       prev.map((s) =>
         s.section === section ? { ...s, fields: s.fields.map((f) => (f.key === key ? { ...f, value } : f)) } : s,
       ),
     )
+  }
 
   const regenerate = async (section: SectionKey) => {
+    setSaved(false)
     setBusy(section)
     setError('')
     setNotice('')
@@ -90,22 +112,26 @@ const DescriptionsEditor = ({ projectId, onBack }: Props) => {
   }
 
   const regenerateAll = async () => {
+    setSaved(false)
     setBusy('all')
     setError('')
     setNotice('')
     let aiUsed = false
     const next = { ...texts }
-    for (const { key } of ORDER) {
-      const res = await generateSection(projectId, key, fieldsOf(key))
-      if (res.error) {
-        setBusy(null)
-        return setError(res.error)
-      }
-      next[key] = res.text
-      aiUsed = aiUsed || res.aiUsed
+    const results = await Promise.all(
+      ORDER.map(async ({ key }) => ({ key, result: await generateSection(projectId, key, fieldsOf(key)) })),
+    )
+    const failures = results.filter(({ result }) => result.error)
+    for (const { key, result } of results) {
+      if (!result.error) next[key] = result.text
+      aiUsed = aiUsed || result.aiUsed
     }
     setTexts(next)
     setBusy(null)
+    if (failures.length) {
+      setError(`${failures.length} section(s) could not be generated. Completed sections were kept; retry the remaining sections.`)
+      return
+    }
     setNotice(aiUsed ? '✨ All sections generated with AI. Review, edit, then save.' : 'All sections generated from your data. Review, edit, then save.')
   }
 
@@ -116,7 +142,7 @@ const DescriptionsEditor = ({ projectId, onBack }: Props) => {
     setSaving(false)
     if (res.ok) {
       setNotice('✓ Descriptions saved to the database.')
-      setGoNext(true)
+      setSaved(true)
     } else {
       setError(res.error ?? 'Could not save.')
     }
@@ -138,7 +164,7 @@ const DescriptionsEditor = ({ projectId, onBack }: Props) => {
         </p>
       </div>
 
-      <Card className="p-6 text-center">
+      {ORDER.length > 0 && <Card className="p-6 text-center">
         <Button type="button" loading={busy === 'all'} disabled={busy !== null} onClick={regenerateAll}>
           {busy === 'all' ? 'Generating…' : '✨ Generate all sections'}
         </Button>
@@ -148,7 +174,7 @@ const DescriptionsEditor = ({ projectId, onBack }: Props) => {
         {error && (
           <p className="mt-3 rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-2.5 text-sm text-amber-300">{error}</p>
         )}
-      </Card>
+      </Card>}
 
       {ORDER.map(({ key, label }) => {
         const isImage = key === 'imageAnalysis'
@@ -157,7 +183,10 @@ const DescriptionsEditor = ({ projectId, onBack }: Props) => {
             key={key}
             label={label}
             text={texts[key] ?? ''}
-            onTextChange={(v) => setTexts((t) => ({ ...t, [key]: v }))}
+            onTextChange={(v) => {
+              setSaved(false)
+              setTexts((t) => ({ ...t, [key]: v }))
+            }}
             fields={isImage ? [] : (sources.find((s) => s.section === key)?.fields ?? [])}
             photos={isImage ? photos : undefined}
             onFieldChange={(fk, v) => setField(key, fk, v)}
@@ -168,29 +197,28 @@ const DescriptionsEditor = ({ projectId, onBack }: Props) => {
       })}
 
       {/* Section 9 — evidence (from nearby analysis) and Section 11 — valuation table */}
-      <EvidenceSection
+      {false && <EvidenceSection
         projectId={projectId}
         value={texts.evidence ?? ''}
         onChange={(v) => setTexts((t) => ({ ...t, evidence: v }))}
-      />
-      <ValuationSection
+      />}
+      {false && <ValuationSection
         projectId={projectId}
         value={texts.valuation ?? ''}
         onChange={(v) => setTexts((t) => ({ ...t, valuation: v }))}
-      />
+      />}
 
-      <Button type="button" fullWidth variant="success" loading={saving} disabled={busy !== null} onClick={handleSave}>
-        {saving ? 'Saving…' : 'OK — Save Descriptions'}
-      </Button>
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <Button type="button" fullWidth variant="success" loading={saving} disabled={busy !== null} onClick={handleSave}>
+          {saving ? 'Saving…' : 'Save Descriptions'}
+        </Button>
+        {saved && onContinueToDraft && (
+          <Button type="button" fullWidth onClick={onContinueToDraft}>
+            Continue to Create Draft →
+          </Button>
+        )}
+      </div>
 
-      <NextStepModal
-        open={goNext}
-        onClose={() => setGoNext(false)}
-        nextLabel="Create Draft"
-        nextTo="/technical-officer/draft"
-        projectId={projectId}
-        message="Descriptions saved."
-      />
     </div>
   )
 }

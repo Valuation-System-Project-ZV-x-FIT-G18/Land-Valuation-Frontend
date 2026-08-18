@@ -1,3 +1,4 @@
+//05
 import type { Valuation, Evidence } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
 
 // Builds the valuation report as a styled HTML string that mirrors the firm's
@@ -43,7 +44,7 @@ export function buildReportHtml(
   const dd = 0.0025 // ~250 m half-window for the zoomed satellite view
 
   return `<div style="font-family:Calibri,Arial,sans-serif;font-size:12px;color:#111;line-height:1.55">
-   ${coverPage(v, F, Fo)}
+   ${coverPage(F, Fo)}
    ${letterPage(v, F, money)}
    ${boilerplatePage(v, F)}
    ${pageHeader()}
@@ -76,34 +77,34 @@ export function buildReportHtml(
 
    ${H('5.2', 'DESCRIPTION OF THE PROPERTY')}
    ${H('5.2.1', 'EXTENT')}
+   ${v.extentDescription ? P(v.extentDescription, true) : ''}
    ${extentTbl(v, F)}
 
    ${H('5.2.2', 'VALIDITY OF THE SURVEY PLAN')}
    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:4px">
      <tr style="background:#f0f0f0"><th style="border:1px solid #bbb;padding:5px;text-align:left">Date of Survey Plan</th><th style="border:1px solid #bbb;padding:5px;text-align:left">Exceeding over 10 years</th><th style="border:1px solid #bbb;padding:5px;text-align:left">Endorsement / new survey plan</th></tr>
-     <tr><td style="border:1px solid #bbb;padding:5px">${F('surveyDate')}</td><td style="border:1px solid #bbb;padding:5px">${F('planOver10Years')}</td><td style="border:1px solid #bbb;padding:5px">${F('planEndorsementOrNew')}</td></tr>
+     <tr><td style="border:1px solid #bbb;padding:5px">${F('surveyDate')}</td><td style="border:1px solid #bbb;padding:5px">${F('planOver10Years')}</td><td style="border:1px solid #bbb;padding:5px">${F('surveyPlanRequiredAction')}</td></tr>
    </table>
 
    ${H('5.2.3', 'BOUNDARIES')}
-   ${boundaryTbl(v, F)}
+   ${boundaryTbl(F)}
    <p style="margin:6px 0">The main access to the property is from its ${F('accessFromBoundary')} boundary.</p>
 
    ${H('5.2.4', 'SURVEY PLAN')}
-   <div style="margin:8px 0">${surveyPlanImg(projectId)}</div>
+   <div style="margin:8px 0">${surveyPlanImg(v, projectId)}</div>
 
    ${H('5.3', 'ACCESS AND NATURE OF THE ACCESSIBILITY')}
    ${P(v.accessLocationDescription, true)}
    <p style="margin:6px 0">Coordinate of the Location : ${F('gpsCoordinates')} &nbsp;&nbsp; Location : ${F('propertyLocationCity')}</p>
    ${hasGps ? `<div style="display:flex;flex-wrap:wrap;gap:10px;margin:8px 0">
-     <figure style="margin:0;text-align:center;font-size:10px;color:#555">Satellite view<br>${satImg(lat, lng, dd)}</figure>
-     <figure style="margin:0;text-align:center;font-size:10px;color:#555">Location map<br>${mapImg(lat, lng)}</figure>
+     <figure style="margin:0;text-align:center;font-size:10px;color:#555">Satellite view<br>${satImg(lat, lng, dd, v.satelliteLocationImage)}</figure>
+     <figure style="margin:0;text-align:center;font-size:10px;color:#555">Location map<br>${mapImg(lat, lng, v.locationMapImage)}</figure>
    </div>` : ''}
 
    ${H('5.4', 'DESCRIPTION OF THE LAND')}${P(v.landDescription, true)}
 
    ${H('5.5', 'DETAIL DESCRIPTION OF THE LAND')}
    ${photosTbl(v, projectId)}
-   ${v.imageAnalysis ? P(v.imageAnalysis) : ''}
    <p style="margin:10px 0 4px;font-weight:600">Additional photographs of the property</p>
    ${additionalPhotos(projectId)}
 
@@ -114,11 +115,12 @@ export function buildReportHtml(
    ${H('6.1.3', 'STREET LINE & BUILDING LIMITS')}${P(v.streetLineBuildingLimits, true)}
    ${H('6.2', 'PLANNING REGULATIONS')}
    ${H('6.2.1', 'MANDATORY REQUIREMENTS')}${P(v.mandatoryRequirements, true)}
+   ${H('6.2.2', 'RENT CONTROL REGULATION')}${P(v.rentControlRegulation, true)}
 
    ${H('7.', 'LOCALITY')}${P(v.localityFacilities, true)}
 
    ${H('8.', 'APPROACH AND METHOD TO THE VALUATION')}
-   ${P('The valuation approaches include the cost approach, the market approach (comparison method), and the income approach. In assessing the subject property, I have applied the Contractor’s Test Method (DRC) of valuation under the Cost Approach.')}
+   ${P(v.valuationApproachStatement || 'In assessing the subject land, I have applied the Direct Comparison Method under the Market Approach. The available sales and asking-price evidence of comparable lands has been analysed with appropriate consideration of location, extent, access, shape, physical characteristics, planning restrictions and prevailing market conditions.')}
 
    ${H('9.', 'EVIDENCE OF LAND VALUES & RENTALS')}
    ${H('9.1', 'RICS EVIDENCE HIERARCHY')}
@@ -145,7 +147,7 @@ export function buildReportHtml(
    </table>
 
    ${H('14.', 'CERTIFICATION')}
-   ${P(`I certify that the property inspected and valued by me corresponds precisely to Lot No. ${F('lotNo')} in Survey Plan No. ${F('surveyPlanNo')} dated ${F('surveyDate')} made by ${F('surveyorName')} Licensed Surveyor. The property’s boundaries were verified on-site and confirmed to align with the boundaries indicated in the aforementioned plan. I recommend that the above estimated values are fair and reasonable.`)}
+   ${P(v.certification || `I certify that the property inspected and valued by me corresponds precisely to Lot No. ${F('lotNo')} in Survey Plan No. ${F('surveyPlanNo')} dated ${F('surveyDate')} made by ${F('surveyorName')} Licensed Surveyor. The property’s boundaries were verified on-site and confirmed to align with the boundaries indicated in the aforementioned plan. I recommend that the above estimated values are fair and reasonable.`)}
    ${P('The valuer has experience in the location and category of the property being valued and has made a personal inspection of the property. This valuation complies with the valuation standards used in Sri Lanka (IVSL), the International Valuation Standards, and the standards compiled by the Royal Institution of Chartered Surveyors (RICS).')}
    <p style="margin-top:24px">Vlr. H.M.R.R. Narampanawa (FRICS)<br>RICS Registered Chartered Valuation Surveyor<br>Panel Valuer of ${F('bankName')}</p>
    ${pageFooter()}
@@ -205,7 +207,7 @@ const infoRow = (label: string, value: string) =>
   `<tr><td style="padding:3px 14px 3px 0;vertical-align:top;font-weight:600">${esc(label)}</td><td style="padding:3px 0;vertical-align:top">: ${value}</td></tr>`
 
 // ── Page 1: cover ─────────────────────────────────────────────────────────
-const coverPage = (v: Record<string, string>, F: (k: string) => string, Fo: (k: string) => string) => {
+const coverPage = (F: (k: string) => string, Fo: (k: string) => string) => {
   const details = [
     F('landName'),
     `( ${F('ownerName')} )`,
@@ -269,7 +271,7 @@ const letterPage = (v: Record<string, string>, F: (k: string) => string, money: 
      <p style="margin:20px 0 0">The Manager,<br>${F('bankName')},<br>${F('branchName')}.</p>
      <p style="margin:16px 0">Dear Sir,</p>
      <p style="text-align:center;font-weight:700;text-decoration:underline;margin:0 16px">VALUATION REPORT OF PROPERTY DEPICTED AS LOT NO. ${F('lotNo')} IN SURVEY PLAN NO. ${F('surveyPlanNo')} DATED ${F('surveyDate')} MADE BY ${F('surveyorName')} LICENSED SURVEYOR</p>
-     <p style="margin:16px 0;text-align:justify">The Manager of ${F('bankName')} - ${F('branchName')} has requested by his letter dated ${F('valuationRequestDate')} to inspect the property depicted as Lot No. ${F('lotNo')} in Survey Plan No. ${F('surveyPlanNo')} dated ${F('surveyDate')} made by ${F('surveyorName')} Licensed Surveyor, situated at ${F('propertyLocationCity')} within the administrative limits of ${F('urbanCouncil')} Urban Council and furnish a valuation report for the estimation of both market value and forced sale value for the purpose of secured lending.</p>
+     <p style="margin:16px 0;text-align:justify">${v.requestDescription ? esc(v.requestDescription) : `The Manager of ${F('bankName')} - ${F('branchName')} has requested by letter dated ${F('valuationRequestDate')} a valuation of the subject property.`}</p>
      <p style="margin:14px 0 6px;font-weight:700">The valuation details are as follows;</p>
      <p style="margin:6px 0 2px;font-weight:700;text-decoration:underline">Land Only</p>
      <table style="width:100%;font-size:12px">
@@ -289,7 +291,8 @@ const boilerplatePage = (v: Record<string, string>, F: (k: string) => string) =>
    ${pageHeader()}
    <div style="margin-top:18px;font-size:12px">
     <h3 style="font-size:13px;font-weight:700;color:#0f766e;margin:14px 0 6px">LIMITATIONS</h3>
-    <ul style="margin:0 0 0 18px;padding:0">
+    ${v.limitations ? P(v.limitations, true) : ''}
+    <ul style="${v.limitations ? 'display:none;' : ''}margin:0 0 0 18px;padding:0">
      ${li('This valuation is valid only for the estimate of market value and forced sale value for the purpose of mortgage and should not be used for any other purpose or in any manner other than as stated herein.')}
      ${li('I am not liable for any damages incurred by the client of the report if it is used for a purpose other than the “Intended Purpose” of the report.')}
      ${li(`This valuation has been prepared for the Directors of ${F('bankName')} and is not intended for any other person. No responsibility is accepted to third parties for the whole or any part of the contents.`)}
@@ -298,7 +301,8 @@ const boilerplatePage = (v: Record<string, string>, F: (k: string) => string) =>
      ${li('The analysis and conclusions are limited by the assumptions and conditions reported.')}
     </ul>
     <h3 style="font-size:13px;font-weight:700;color:#0f766e;margin:14px 0 6px">GENERAL ASSUMPTIONS</h3>
-    <ul style="margin:0 0 0 18px;padding:0">
+    ${v.generalAssumptions ? P(v.generalAssumptions, true) : ''}
+    <ul style="${v.generalAssumptions ? 'display:none;' : ''}margin:0 0 0 18px;padding:0">
      ${li('I have valued the property based on the assumption that the owner holds an unencumbered freehold interest in the property.')}
      ${li('The property has been valued as if wholly owned, with no account taken of any outstanding debts, including mortgage bonds, loans, or other charges.')}
     </ul>
@@ -321,12 +325,12 @@ const extentTbl = (v: Record<string, string>, F: (k: string) => string) => `
   <table style="width:100%;border-collapse:collapse;font-size:12px">
    <tr>
     ${cell(`<b>Survey Plan</b> — Lot No. ${F('lotNo')} in Survey Plan No. ${F('surveyPlanNo')} dated ${F('surveyDate')} made by ${F('surveyorName')} Licensed Surveyor.<br>Extent: ${F('extentAcres')} A - ${F('extentRoods')} R - ${F('extentPerches')} P &nbsp;(Hectares: ${F('extentHectares')})`, 'width:50%')}
-    ${cell(`<b>Deed</b> — Deed of Transfer No. ${F('deedNo')} dated ${F('deedDate')} attested by ${F('attorney')} Attorney-at-Law${v.notary ? ` &amp; ${esc(v.notary)}` : ''}.<br>Extent: ${F('deedAcres')} A - ${F('deedRoods')} R - ${F('deedPerches')} P &nbsp;(Hectares: ${F('deedHectares')})`)}
+    ${cell(`<b>Deed</b> — ${F('deedType')} No. ${F('deedNo')} dated ${F('deedDate')} attested by ${F('attorney')} Attorney-at-Law${v.notary ? ` &amp; ${esc(v.notary)}` : ''}.<br>Extent: ${F('deedAcres')} A - ${F('deedRoods')} R - ${F('deedPerches')} P &nbsp;(Hectares: ${F('deedHectares')})`)}
    </tr>
   </table>
-  <p style="margin:6px 0;font-style:italic">The extent mentioned in the above survey plan tallies with the above deed.</p>`
+  <p style="margin:6px 0;font-style:italic">${F('extentVerificationStatement')}</p>`
 
-const boundaryTbl = (v: Record<string, string>, F: (k: string) => string) => `
+const boundaryTbl = (F: (k: string) => string) => `
   <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:4px">
    <tr style="background:#f0f0f0"><th style="border:1px solid #bbb;padding:5px"></th><th style="border:1px solid #bbb;padding:5px">On Plan</th><th style="border:1px solid #bbb;padding:5px">On Site</th></tr>
    <tr><td style="border:1px solid #bbb;padding:5px">North by</td>${cell(F('boundaryNorth'))}${cell(F('siteBoundaryNorth'))}</tr>
@@ -335,37 +339,39 @@ const boundaryTbl = (v: Record<string, string>, F: (k: string) => string) => `
    <tr><td style="border:1px solid #bbb;padding:5px">West by</td>${cell(F('boundaryWest'))}${cell(F('siteBoundaryWest'))}</tr>
   </table>`
 
-const surveyPlanImg = (projectId: string) =>
-  `<img src="/api/coordinator/projects/file?projectId=${encodeURIComponent(projectId)}&type=surveyPlan" style="max-width:100%;border:1px solid #bbb" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=color:#999>[ Survey plan not available as an image ]</span>')"/>`
+const surveyPlanImg = (v: Record<string, string>, projectId: string) => {
+  const src = v.surveyPlanImage || `/api/coordinator/projects/file?projectId=${encodeURIComponent(projectId)}&type=surveyPlan`
+  return `<img src="${esc(src)}" alt="Survey plan" style="display:block;max-width:100%;max-height:720px;margin:0 auto;border:1px solid #bbb;object-fit:contain" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=color:#999>[ Survey plan not available as an image ]</span>')"/>`
+}
 
-const mapImg = (lat: number, lng: number) =>
-  `<img src="https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=16&size=360x260&markers=${lat},${lng},red" style="max-width:100%;border:1px solid #bbb"/>`
+const mapImg = (lat: number, lng: number, mappedSrc?: string) =>
+  `<img src="${esc(mappedSrc || `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=16&size=360x260&markers=${lat},${lng},red`)}" alt="Location map" style="max-width:100%;border:1px solid #bbb"/>`
 
-const satImg = (lat: number, lng: number, d: number) =>
-  `<img src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${lng - d},${lat - d},${lng + d},${lat + d}&bboxSR=4326&size=360,260&format=png&f=image" style="max-width:100%;border:1px solid #bbb" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=color:#999>[ Satellite view unavailable ]</span>')"/>`
+const satImg = (lat: number, lng: number, d: number, mappedSrc?: string) =>
+  `<img src="${esc(mappedSrc || `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${lng - d},${lat - d},${lng + d},${lat + d}&bboxSR=4326&size=360,260&format=png&f=image`)}" alt="Satellite location" style="max-width:100%;border:1px solid #bbb" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=color:#999>[ Satellite view unavailable ]</span>')"/>`
 
-// The 10 required site photographs (label · image · caption), matching 5.5.
-const photosTbl = (v: Record<string, string>, projectId: string) => {
-  const rows: [string, string, string][] = [
-    ['accessRoad', 'Access road', v.photoAccessRoad || ''],
-    ['routeFromMainRoad', 'Route from main road', v.photoRouteFromMainRoad || ''],
-    ['frontView', 'Front view of the land', v.photoFrontView || ''],
-    ['rearView', 'Rear view of the land', v.photoRearView || ''],
-    ['leftSideView', 'Left side view of land', v.photoLeftSide || ''],
-    ['rightSideView', 'Right side view of the land', v.photoRightSide || ''],
-    ['eastBoundary', 'East boundary of the land', v.photoEastBoundary || ''],
-    ['southBoundary', 'South boundary of the land', v.photoSouthBoundary || ''],
-    ['westBoundary', 'West boundary of the land', v.photoWestBoundary || ''],
-    ['northBoundary', 'North boundary of the land', v.photoNorthBoundary || ''],
+// Land photographs only. AI captions are excluded because they describe what
+// is visible, rather than providing a professional valuation description.
+const photosTbl = (_v: Record<string, string>, projectId: string) => {
+  const rows: [string, string][] = [
+    ['accessRoad', 'Access road'],
+    ['routeFromMainRoad', 'Route from main road'],
+    ['frontView', 'Front view of the land'],
+    ['rearView', 'Rear view of the land'],
+    ['leftSideView', 'Left side view of land'],
+    ['rightSideView', 'Right side view of the land'],
+    ['eastBoundary', 'East boundary of the land'],
+    ['southBoundary', 'South boundary of the land'],
+    ['westBoundary', 'West boundary of the land'],
+    ['northBoundary', 'North boundary of the land'],
   ]
   return `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:6px">
-   <tr style="background:#f0f0f0"><th style="border:1px solid #bbb;padding:5px;text-align:left;width:26%">Component</th><th style="border:1px solid #bbb;padding:5px;width:30%">Image</th><th style="border:1px solid #bbb;padding:5px;text-align:left">Description</th></tr>
+   <tr style="background:#f0f0f0"><th style="border:1px solid #bbb;padding:5px;text-align:left;width:35%">Land photograph</th><th style="border:1px solid #bbb;padding:5px">Image</th></tr>
    ${rows
      .map(
-       ([t, label, caption]) => `<tr>
+       ([t, label]) => `<tr>
      <td style="border:1px solid #bbb;padding:6px;font-weight:600">${esc(label)}</td>
-     <td style="border:1px solid #bbb;padding:6px;text-align:center"><img src="${photoUrl(projectId, t)}" style="max-width:170px;max-height:120px" onerror="this.style.display='none';this.parentNode.innerHTML='<span style=color:#999>no photo</span>'"/></td>
-     <td style="border:1px solid #bbb;padding:6px">${caption ? esc(caption) : `Photograph of the ${esc(label.toLowerCase())} on file.`}</td>
+     <td style="border:1px solid #bbb;padding:6px;text-align:center"><img src="${photoUrl(projectId, t)}" alt="${esc(label)}" style="max-width:260px;max-height:170px" onerror="this.style.display='none';this.parentNode.innerHTML='<span style=color:#999>no photo</span>'"/></td>
     </tr>`,
      )
      .join('')}
@@ -402,15 +408,38 @@ const valuationTbl = (valuation: Valuation | null, v: Record<string, string>) =>
 type SavedEvidence = { rows?: { refNo: string; remarks: string; pricePerPerch: number }[]; rangeStatement?: string }
 
 const evidenceTbl = (evidence: Evidence | null, savedEvidence?: SavedEvidence | null) => {
+  const extentArp = (total: number) => {
+    const acres = Math.floor(total / 160)
+    const balance = total - acres * 160
+    const roods = Math.floor(balance / 40)
+    return `${acres}A-${roods}R-${Number((balance - roods * 40).toFixed(2))}P`
+  }
+  const evidenceLabel = (_type: string, index: number) => `Nearby Land ${String(index + 1).padStart(2, '0')}`
   const rows = savedEvidence?.rows?.length
     ? savedEvidence.rows
         .map((r) => `<tr><td style="border:1px solid #bbb;padding:5px">${esc(r.refNo)}</td><td style="border:1px solid #bbb;padding:5px;white-space:pre-line">${esc(r.remarks)}</td><td style="border:1px solid #bbb;padding:5px;text-align:right">${rs(r.pricePerPerch)}</td></tr>`)
         .join('')
     : (evidence?.comparables ?? [])
-        .map((c) => `<tr><td style="border:1px solid #bbb;padding:5px">${esc(c.refNo || c.evidenceType)}</td><td style="border:1px solid #bbb;padding:5px">${esc(c.date)} · ${esc(c.extentPerches)}P · ${esc(c.distanceKm)} km · ${esc(c.source)}</td><td style="border:1px solid #bbb;padding:5px;text-align:right">${rs(c.pricePerPerch)}</td></tr>`)
+        .map((c, i) => {
+          const distance = c.distanceKm > 0 && c.distanceKm < 1
+            ? `${Math.round(c.distanceKm * 1000)} meters`
+            : c.distanceKm > 0 ? `${Number(c.distanceKm.toFixed(2))} km` : ''
+          const remarks = [
+            c.refNo && `Ref. No. ${c.refNo}`,
+            c.date && `Date ${c.date}`,
+            c.extentPerches > 0 && `Extent ${extentArp(c.extentPerches)}`,
+            distance && `located about ${distance} away from the subject property`,
+            c.area && `Location: ${c.area}`,
+            c.propertyType && `Property type: ${c.propertyType}`,
+            c.roadAccess && `Road access: ${c.roadAccess}`,
+            c.note,
+            c.source && `Source: ${c.source}`,
+          ].filter(Boolean).join('; ')
+          return `<tr><td style="border:1px solid #777;padding:7px;vertical-align:top">${esc(evidenceLabel(c.evidenceType, i))}</td><td style="border:1px solid #777;padding:7px;vertical-align:top">${esc(remarks)}.</td><td style="border:1px solid #777;padding:7px;vertical-align:top">${rs(c.pricePerPerch)}/- per perch</td></tr>`
+        })
         .join('')
   if (!rows) return ''
-  return `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:6px">
-     <tr style="background:#f0f0f0"><th style="border:1px solid #bbb;padding:5px;text-align:left">Ref. No</th><th style="border:1px solid #bbb;padding:5px;text-align:left">Details</th><th style="border:1px solid #bbb;padding:5px;text-align:right">Per perch</th></tr>${rows}
+  return `<p style="margin:9px 0 4px;font-weight:700">Nearby Comparable Land Evidence</p><table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:4px;table-layout:fixed">
+     <tr style="background:#e7ecef"><th style="width:22%;border:1px solid #777;padding:7px;text-align:left">Ref No.</th><th style="width:54%;border:1px solid #777;padding:7px;text-align:left">Remarks</th><th style="width:24%;border:1px solid #777;padding:7px;text-align:left">Per perch price (Rs)</th></tr>${rows}
     </table>${savedEvidence?.rangeStatement ? P(savedEvidence.rangeStatement) : ''}`
 }

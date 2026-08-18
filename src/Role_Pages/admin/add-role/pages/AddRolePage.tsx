@@ -127,7 +127,15 @@ const AddRolePage = () => {
     const res = await addRole(full)
     setSubmitting(false)
     if (res.ok) { setCreatedId(res.userId ?? ''); setForm(empty); setPassword('') }
-    else setServerError(res.error ?? 'Could not create the account.')
+    else {
+      const message = res.error ?? 'Could not create the account. Please check the entered details.'
+      const lower = message.toLowerCase()
+      if (lower.includes('email')) setErrors((current) => ({ ...current, email: message }))
+      else if (lower.includes('nic')) setErrors((current) => ({ ...current, nic: message }))
+      else if (lower.includes('branch code')) {
+        setErrors((current) => ({ ...current, branchCode: message }))
+      } else setServerError(message)
+    }
   }
 
   return (
@@ -137,7 +145,7 @@ const AddRolePage = () => {
           Add <GradientText>User</GradientText>
         </h1>
         <p className="mx-auto mt-2 max-w-md text-emerald-100/70">
-          Create a staff account. Their login ID is generated automatically and emailed to them with the password.
+          Create a staff account. Their email address and temporary password are sent to them.
         </p>
       </div>
 
@@ -150,11 +158,11 @@ const AddRolePage = () => {
               <SelectField label="Bank Name *" name="bankName" value={form.bankName} onChange={(e) => set('bankName', e.target.value)} options={bankOptions} error={errors.bankName} />
               <div className="grid gap-5 sm:grid-cols-2">
                 <FormField label="Branch Name" name="branchName" value={form.branchName} onChange={(e) => set('branchName', e.target.value)} onBlur={handleBlur} error={errors.branchName} placeholder="e.g. Nugegoda" />
-                <FormField label="Branch Code * (login ID)" name="branchCode" value={form.branchCode} onChange={(e) => set('branchCode', e.target.value)} onBlur={handleBlur} error={errors.branchCode} placeholder="e.g. SMPNGD045" />
+                <FormField label="Branch Code *" name="branchCode" value={form.branchCode} onChange={(e) => set('branchCode', e.target.value)} onBlur={handleBlur} error={errors.branchCode} placeholder="e.g. SMPNGD045" />
                 <FormField label="Designation" name="designation" value={form.designation} onChange={(e) => set('designation', e.target.value)} onBlur={handleBlur} error={errors.designation} placeholder="e.g. Branch Manager" />
               </div>
               <p className="-mt-2 text-xs text-emerald-200/60">
-                The bank signs in on the External Login page as "Bank" using this Branch Code.
+                The branch code identifies the bank account internally. The bank signs in with its email address.
               </p>
             </>
           )}
@@ -220,8 +228,8 @@ const AddRolePage = () => {
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-400/15 text-2xl">✓</div>
           <h3 className="mt-4 text-2xl"><GradientText>Account Created</GradientText></h3>
           <p className="mx-auto mt-2 max-w-xs text-sm text-emerald-100/70">
-            The new login ID is{' '}
-            <span className="font-semibold text-gold-300">{createdId}</span>. An email with the ID and password has been sent, asking them to change it on first login.
+            The new account ID is{' '}
+            <span className="font-semibold text-gold-300">{createdId}</span>. An email with the sign-in email address and temporary password has been sent.
           </p>
           <div className="mt-5 flex gap-3">
             <Button type="button" fullWidth onClick={() => setCreatedId('')}>Add Another</Button>

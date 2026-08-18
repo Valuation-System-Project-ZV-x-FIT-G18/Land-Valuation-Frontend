@@ -1,4 +1,5 @@
 // API call for the admin "Add Role" page.
+import { getApiError } from '@/Common_Pages/api/getApiError'
 
 export type NewRole = {
   role: string
@@ -14,7 +15,7 @@ export type NewRole = {
   postalCode: string
   address: string
   dateOfBirth: string
-  branchCode: string // Bank only — becomes the login ID
+  branchCode: string // Bank-only internal account and branch identifier
   branchName: string // Bank only
   bankName: string // Bank only
   designation: string // Bank only — the contact person's designation
@@ -33,10 +34,7 @@ export async function addRole(
     })
     const body = await res.json().catch(() => ({}) as Record<string, unknown>)
     if (res.ok && body.ok) return { ok: true, userId: body.userId as string }
-    const message = Array.isArray(body.message)
-      ? body.message.join(' ')
-      : (body.message as string)
-    return { ok: false, error: message || 'Could not create the account.' }
+    return { ok: false, error: getApiError(body, 'Could not create the account. Please check the entered details.') }
   } catch {
     return { ok: false, error: 'Could not reach the server. Please try again.' }
   }

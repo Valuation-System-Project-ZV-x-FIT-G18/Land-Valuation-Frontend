@@ -13,16 +13,16 @@ import {
 
 const COPY = {
   approved: {
-    heading: <>Approved <GradientText>Drafts</GradientText></>,
-    description: 'Drafts you have approved and passed further up the review chain.',
-    countLabel: 'approved draft',
-    emptyText: 'No approved drafts yet.',
+    heading: <>Approved <GradientText>Reports</GradientText></>,
+    description: 'Complete history of reports approved at your manager level.',
+    countLabel: 'approved report',
+    emptyText: 'No approved reports yet.',
   },
   rejected: {
-    heading: <>Rejected <GradientText>Drafts</GradientText></>,
-    description: 'Drafts you have rejected and sent back down the review chain.',
-    countLabel: 'rejected draft',
-    emptyText: 'No rejected drafts yet.',
+    heading: <>Rejected <GradientText>Reports</GradientText></>,
+    description: 'Reports rejected at your manager level that have not yet been approved after correction.',
+    countLabel: 'rejected report',
+    emptyText: 'No reports are currently awaiting approval after rejection.',
   },
 }
 
@@ -31,7 +31,8 @@ type Row = { project: ManagerProject; valuationId: number; status: string; techn
 const LEVEL: Record<string, 'L1' | 'L2' | 'L3'> = { 'Manager L1': 'L1', 'Manager L2': 'L2', 'Manager L3': 'L3' }
 
 // Manager L1 / L2 / L3 > Approved Drafts / Rejected Drafts.
-// Every draft this level has approved (passed up) or rejected (sent back down).
+// Approved is historical. Rejected shows only reports not subsequently
+// approved by the same manager level after correction.
 const ApprovedDraftsPage = ({ view = 'approved' }: { view?: 'approved' | 'rejected' }) => {
   const { user } = useAuth()
   const level = LEVEL[user?.role ?? ''] ?? 'L3'
@@ -82,10 +83,15 @@ const ApprovedDraftsPage = ({ view = 'approved' }: { view?: 'approved' | 'reject
     r.project.ownerName || '—',
     r.project.location || '—',
     `#${r.valuationId}`,
+    r.project.workflowActionAt
+      ? new Date(r.project.workflowActionAt).toLocaleString('en-GB')
+      : '—',
     <Badge key="status" tone={STATUS_TONE[r.project.reviewStatus] ?? 'neutral'}>
-      {STATUS_LABEL[r.project.reviewStatus] ?? r.project.reviewStatus}
+      {r.project.reviewStatus === 'locked' ? 'Finalized' : STATUS_LABEL[r.project.reviewStatus] ?? r.project.reviewStatus}
     </Badge>,
-    <Button key="view" type="button" size="sm" variant="outline" onClick={() => setViewing(r)}>View Draft</Button>,
+    r.project.reviewStatus === 'locked' && level !== 'L1'
+      ? <span key="restricted" className="text-xs text-emerald-100/45">Finalized — L1 only</span>
+      : <Button key="view" type="button" size="sm" variant="outline" onClick={() => setViewing(r)}>View Draft</Button>,
   ])
 
   return (
@@ -101,16 +107,16 @@ const ApprovedDraftsPage = ({ view = 'approved' }: { view?: 'approved' | 'reject
         <div className="h-1 w-full bg-gradient-to-r from-amber-200 via-gold-300 to-amber-400" />
         <div className="p-6 sm:p-8">
           <p className="mb-4 text-sm text-emerald-100/70">
-            <span className="font-semibold text-white">{rows.length}</span> {copy.countLabel}{rows.length === 1 ? '' : 's'}
+            <span className="font-semibold text-white">{projects.length}</span> {copy.countLabel}{projects.length === 1 ? '' : 's'}
           </p>
           {loading ? (
             <p className="text-center text-sm text-emerald-200/60">Loading…</p>
           ) : (
             <Table
-              columns={['Project ID', 'Owner', 'Location', 'Valuation', 'Status', 'Action']}
+              columns={['Project ID', 'Owner', 'Location', 'Valuation', view === 'approved' ? 'Approved On' : 'Rejected On', 'Current Status', 'Action']}
               rows={tableRows}
               emptyText={copy.emptyText}
-              minWidth={760}
+              minWidth={940}
             />
           )}
         </div>

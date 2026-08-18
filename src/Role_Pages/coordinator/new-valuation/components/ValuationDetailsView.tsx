@@ -13,6 +13,7 @@ type Props = { rowId: number; onBack: () => void }
 const bankFields: { name: string; label: string }[] = [
   { name: 'bankName', label: 'Bank' },
   { name: 'branchName', label: 'Branch' },
+  { name: 'bankBranchCity', label: 'Bank Branch City / Address' },
   { name: 'bankContactPerson', label: 'Contact Person' },
   { name: 'bankContactNo', label: 'Contact Number' },
 ]

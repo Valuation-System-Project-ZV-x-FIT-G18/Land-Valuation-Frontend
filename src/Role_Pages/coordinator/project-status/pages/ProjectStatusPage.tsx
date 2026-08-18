@@ -29,6 +29,8 @@ const ProjectStatusPage = () => {
   // A loan applicant only ever sees their own projects (their user_id is their NIC),
   // so no search bar is shown for them.
   const isApplicant = user?.role === 'Loan Applicant'
+  const isBank = user?.role === 'Bank'
+  const canViewFullDetails = user?.role === 'Coordinator'
   const [mode, setMode] = useState<SearchMode>('nic')
   const [query, setQuery] = useState('')
   const [projects, setProjects] = useState<ProjectRow[]>([])
@@ -101,6 +103,8 @@ const ProjectStatusPage = () => {
         <p className="mx-auto mt-2 max-w-md text-emerald-100/70">
           {isApplicant
             ? 'Your projects — open one to see its valuations and status.'
+            : isBank
+              ? 'Valuation requests associated with your bank branch.'
             : 'Search by NIC or Project ID, open a project to see its valuations, then view the status.'}
         </p>
       </div>
@@ -120,11 +124,11 @@ const ProjectStatusPage = () => {
       ) : project ? (
         // Level 2: valuations for the selected project (+ view full details).
         <>
-          <div className="text-center">
+          {canViewFullDetails && <div className="text-center">
             <Button type="button" variant="outline" onClick={() => setShowDetails(true)} className="!px-5 !py-2 text-sm">
               📄 View full project details &amp; documents
             </Button>
-          </div>
+          </div>}
           <ValuationList
             project={project}
             valuations={valuations}

@@ -44,6 +44,16 @@ const NameSection = ({ values, errors, onChange, onBlur }: SectionProps) => {
           placeholder="e.g. C.P. Senarathne"
         />
       </div>
+
+      <FormField
+        label="Business / Company Name (optional)"
+        name="applicantBusinessName"
+        value={values.applicantBusinessName}
+        onChange={onChange}
+        onBlur={onBlur}
+        error={errors.applicantBusinessName}
+        placeholder="e.g. M/S Kumudu Fashion Garment"
+      />
     </FormSection>
   )
 }

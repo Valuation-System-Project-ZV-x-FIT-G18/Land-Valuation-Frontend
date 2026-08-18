@@ -1,4 +1,5 @@
 import type { RegisterApplicantPayload } from '@/Role_Pages/coordinator/register-applicant/types/register-applicant'
+import { getApiError } from '@/Common_Pages/api/getApiError'
 
 // Registers a new loan applicant (POST /api/coordinator/applicants/register).
 export async function registerApplicant(
@@ -12,10 +13,7 @@ export async function registerApplicant(
     })
     const body = await res.json().catch(() => ({}) as Record<string, unknown>)
     if (res.ok) return { ok: true }
-    const message = Array.isArray(body.message)
-      ? body.message.join(' ')
-      : (body.error as string)
-    return { ok: false, error: message || 'Could not register the applicant.' }
+    return { ok: false, error: getApiError(body, 'Could not register the applicant. Please check the entered details.') }
   } catch {
     return { ok: false, error: 'Could not reach the server. Please try again.' }
   }

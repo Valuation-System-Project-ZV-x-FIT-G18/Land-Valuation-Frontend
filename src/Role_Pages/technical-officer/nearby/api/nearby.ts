@@ -21,6 +21,8 @@ export type Comparable = {
   distanceKm: number
   pricePerPerch: number
   evidenceType: string
+  propertyType: string
+  roadAccess: string
   source: string
   note: string
 }
@@ -56,8 +58,9 @@ const base = '/api/technical-officer/nearby'
 export async function getLocation(projectId: string): Promise<NearbyLocation | null> {
   try {
     const res = await fetch(`${base}/location?projectId=${encodeURIComponent(projectId)}`)
-    const body = await res.json()
-    return body.error ? null : (body as NearbyLocation)
+    const body = await res.json().catch(() => null)
+    if (!res.ok || !body || body.error || !body.projectId) return null
+    return body as NearbyLocation
   } catch {
     return null
   }
@@ -65,17 +68,38 @@ export async function getLocation(projectId: string): Promise<NearbyLocation | n
 
 export async function getComparables(
   projectId: string,
-): Promise<{ comparables: Comparable[]; aiUsed: boolean; marketTrend: string }> {
+): Promise<{ comparables: Comparable[]; aiUsed: boolean; marketTrend: string; error?: string }> {
+  const controller = new AbortController()
+  const timeout = window.setTimeout(() => controller.abort(), 45_000)
   try {
-    const res = await fetch(`${base}/comparables?projectId=${encodeURIComponent(projectId)}`)
-    const body = await res.json()
+    const res = await fetch(`${base}/comparables?projectId=${encodeURIComponent(projectId)}`, {
+      signal: controller.signal,
+    })
+    const body = await res.json().catch(() => ({}))
+    if (!res.ok || body.error) {
+      return {
+        comparables: [],
+        aiUsed: false,
+        marketTrend: '',
+        error: body.error || 'Could not search for nearby land listings.',
+      }
+    }
     return {
       comparables: body.comparables ?? [],
       aiUsed: !!body.aiUsed,
       marketTrend: body.marketTrend ?? '',
     }
-  } catch {
-    return { comparables: [], aiUsed: false, marketTrend: '' }
+  } catch (error) {
+    return {
+      comparables: [],
+      aiUsed: false,
+      marketTrend: '',
+      error: error instanceof DOMException && error.name === 'AbortError'
+        ? 'The nearby-land search took too long. Please try again or add a verified nearby land manually.'
+        : 'Could not reach the nearby-land search service.',
+    }
+  } finally {
+    window.clearTimeout(timeout)
   }
 }
 

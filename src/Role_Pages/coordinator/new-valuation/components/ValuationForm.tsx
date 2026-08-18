@@ -62,22 +62,6 @@ const ValuationForm = ({ onDone }: ValuationFormProps) => {
 
   const locked = !projectId
 
-  // Fill the Project/Reference Info fields with sample data (testing helper).
-  // Bank & branch are still chosen from the dropdowns above.
-  const autoFill = () => {
-    setValues((v) => {
-      const next = { ...v }
-      valuationSections.forEach((s) =>
-        s.fields.forEach((f) => {
-          if (f.type === 'select') next[f.name] = f.options?.[0] ?? ''
-          else if (f.type === 'date') next[f.name] = '2026-07-01'
-          else next[f.name] = `Sample ${f.label}`
-        }),
-      )
-      return next
-    })
-  }
-
   // Whenever we have a NIC, load any existing valuations for that applicant.
   useEffect(() => {
     if (!nic) {
@@ -312,18 +296,6 @@ const ValuationForm = ({ onDone }: ValuationFormProps) => {
         <p className="text-center text-sm text-emerald-200/60">
           Find a project above to fill in the valuation details.
         </p>
-      )}
-
-      {!locked && (
-        <div className="text-center">
-          <button
-            type="button"
-            onClick={autoFill}
-            className="rounded-lg border border-gold-400/40 bg-gold-400/10 px-4 py-2 text-xs font-medium text-gold-200 transition hover:bg-gold-400/20"
-          >
-            ⚡ Auto-fill form
-          </button>
-        </div>
       )}
 
       <fieldset disabled={locked} className="space-y-8 transition disabled:pointer-events-none disabled:opacity-50">
