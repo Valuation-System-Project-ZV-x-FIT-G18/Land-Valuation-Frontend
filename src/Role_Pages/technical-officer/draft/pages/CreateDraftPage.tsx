@@ -7,6 +7,7 @@ import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/c
 import TOWorkflowStepper from '@/Role_Pages/technical-officer/shared/TOWorkflowStepper'
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 import DraftEditor from '@/Role_Pages/technical-officer/draft/components/DraftEditor'
+import LiveDraftBuilder from '@/Role_Pages/technical-officer/draft/components/LiveDraftBuilder'
 
 const isReadyForDraft = (assignment: Assignment) =>
   (assignment.status === 'Assignment Accepted' && assignment.reviewStatus !== 'rejected_to_to') ||
@@ -20,18 +21,28 @@ const isSubmittedDraft = (assignment: Assignment) =>
 const CreateDraftPage = () => {
   const location = useLocation()
   const { user } = useAuth()
+  const routeState = location.state as { assignment?: Assignment; initialHtml?: string } | null
   const [selected, setSelected] = useState<Assignment | null>(
-    () => (location.state as { assignment?: Assignment } | null)?.assignment ?? null,
+    () => routeState?.assignment ?? null,
   )
-  if (selected) return (
-    <DraftEditor
-      projectId={selected.projectId}
-      valuationId={selected.valuationId}
-      readOnly={isSubmittedDraft(selected)}
-      reviewStatus={selected.reviewStatus}
-      onBack={() => setSelected(null)}
-    />
-  )
+  const [handoffHtml] = useState(() => routeState?.initialHtml ?? '')
+  if (selected) {
+    if (handoffHtml) {
+      return <DraftEditor projectId={selected.projectId} valuationId={selected.valuationId} initialHtml={handoffHtml} onBack={() => setSelected(null)} />
+    }
+    if (!isSubmittedDraft(selected)) {
+      return <LiveDraftBuilder assignment={selected} toId={user?.userId ?? ''} onBack={() => setSelected(null)} />
+    }
+    return (
+      <DraftEditor
+        projectId={selected.projectId}
+        valuationId={selected.valuationId}
+        readOnly
+        reviewStatus={selected.reviewStatus}
+        onBack={() => setSelected(null)}
+      />
+    )
+  }
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <TOWorkflowStepper current="draft" />

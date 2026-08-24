@@ -13,8 +13,8 @@ type Props = {
   onDelete: (index: number) => void
 }
 
-const Field = ({ label, children, wide = false }: { label: string; children: React.ReactNode; wide?: boolean }) => (
-  <label className={wide ? 'block sm:col-span-2' : 'block'}>
+const Field = ({ label, children }: { label: string; children: React.ReactNode; wide?: boolean }) => (
+  <label className="block">
     <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-emerald-200/55">{label}</span>
     {children}
   </label>
@@ -121,7 +121,7 @@ const ComparablesTable = ({ comparables, aiUsed, loading, onChange, onRefresh, o
                 <button type="button" onClick={() => onDelete(i)} className="rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-emerald-100/55 hover:border-red-400/40 hover:text-red-300">Remove</button>
               </div>
 
-              <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-3 p-4">
                 <Field label="Location / area"><Input sizeVariant="sm" value={c.area} onChange={(e) => onChange(i, 'area', e.target.value)} placeholder="Village, road or locality" /></Field>
                 <Field label="Distance from subject"><Input sizeVariant="sm" type="number" value={c.distanceKm || ''} onChange={(e) => onChange(i, 'distanceKm', Number(e.target.value))} placeholder="Distance in km" /></Field>
                 <Field label="Land type">

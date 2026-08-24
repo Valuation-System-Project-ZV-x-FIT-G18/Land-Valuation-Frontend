@@ -7,6 +7,7 @@ import SitePhotoUpload from '@/Role_Pages/technical-officer/site-photos/componen
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
 import TOWorkflowStepper from '@/Role_Pages/technical-officer/shared/TOWorkflowStepper'
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
+import WorkflowPreviewLayout from '@/Role_Pages/technical-officer/shared/WorkflowPreviewLayout'
 
 const SITE_PHOTO_STORAGE_KEY = 'technical-officer-site-photo-project'
 
@@ -17,6 +18,7 @@ const SitePhotoPage = () => {
   const location = useLocation()
   const toId = user?.userId ?? ''
   const [searchTerm, setSearchTerm] = useState('')
+  const [previewVersion, setPreviewVersion] = useState(0)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(() => {
     const stateProjectId = (location.state as { projectId?: string } | null)?.projectId
     if (stateProjectId) return stateProjectId
@@ -51,7 +53,9 @@ const SitePhotoPage = () => {
   }
 
   if (selectedProjectId) {
-    return <SitePhotoUpload projectId={selectedProjectId} toId={toId} onBack={() => persistProject(null)} />
+    return <WorkflowPreviewLayout projectId={selectedProjectId} refreshToken={previewVersion}>
+      <SitePhotoUpload projectId={selectedProjectId} toId={toId} onBack={() => persistProject(null)} onDataSaved={() => setPreviewVersion((value) => value + 1)} />
+    </WorkflowPreviewLayout>
   }
 
   return (

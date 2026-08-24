@@ -19,7 +19,7 @@ const Step = ({ n, title, children }: { n: number; title: string; children: Reac
   </Card>
 )
 
-const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => void }) => {
+const MapWorkspace = ({ projectId, onBack, onDataSaved, onPreviewChange }: { projectId: string; onBack: () => void; onDataSaved?: () => void; onPreviewChange?: (values: Record<string, string>) => void }) => {
   const [loc, setLoc] = useState<MapLocation | null>(null)
   // Working data is kept in sessionStorage (scoped per project) so a page
   // refresh mid-edit does NOT lose the picked location or generated text.
@@ -37,6 +37,18 @@ const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => 
   const [goNext, setGoNext] = useState(false)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    onPreviewChange?.({
+      gpsCoordinates: lat !== null && lng !== null ? `${lat}, ${lng}` : '',
+      latitude: lat !== null ? String(lat) : '',
+      longitude: lng !== null ? String(lng) : '',
+      accessLocationDescription: access,
+      localityDescription: locality,
+    })
+    // The callback is intentionally omitted: only working map values trigger a preview update.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [access, lat, lng, locality])
 
   useEffect(() => {
     getLocation(projectId).then((l) => {
@@ -85,6 +97,7 @@ const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => 
     setSaving(false)
     if (res.ok) {
       setSaved(true)
+      onDataSaved?.()
       setGoNext(true)
       setNotice('✓ Saved. You can return to this page anytime to view or update it.')
     } else {
@@ -137,7 +150,7 @@ const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => 
         </div>
       </Card>
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_330px]">
+      <div className="grid items-start gap-4">
         <Step n={1} title="Pin the property location">
           <p className="mb-4 text-sm leading-6 text-emerald-100/60">Search by address or landmark, then click the exact property position on the map.</p>
           <LocationPicker lat={lat} lng={lng} onPick={(la, ln) => setPoint(la, ln)} />
@@ -210,12 +223,12 @@ const MapWorkspace = ({ projectId, onBack }: { projectId: string; onBack: () => 
       {error && <p className="text-center text-sm text-amber-300">{error}</p>}
 
       <Card className="p-4 sm:p-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4">
           <div>
             <p className="font-semibold text-white">Save this mapping workspace</p>
             <p className="mt-1 text-sm text-emerald-100/55">{has ? 'Coordinates are ready. Generated descriptions can be added or updated later.' : 'Select a valid property location before saving.'}</p>
           </div>
-          <Button type="button" variant="success" loading={saving} disabled={!has} onClick={save} className="shrink-0 sm:min-w-64">
+          <Button type="button" variant="success" loading={saving} disabled={!has} onClick={save} className="w-full">
             {saving ? 'Saving…' : saved ? 'Update map details' : 'Save map details'}
           </Button>
         </div>

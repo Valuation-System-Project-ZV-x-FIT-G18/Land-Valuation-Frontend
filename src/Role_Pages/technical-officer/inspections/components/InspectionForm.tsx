@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import Card from '@/Common_Pages/components/ui/Card'
@@ -14,7 +14,17 @@ import {
 } from '@/Role_Pages/technical-officer/inspections/api/inspections'
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 
-type InspectionFormProps = { projectId: string; toId: string; assignment?: Assignment; onBack: () => void }
+type InspectionFormProps = {
+  projectId: string
+  toId: string
+  assignment?: Assignment
+  onBack: () => void
+  compact?: boolean
+  promptAfterSave?: boolean
+  value?: InspectionData
+  onChange?: Dispatch<SetStateAction<InspectionData>>
+  onSaved?: () => void
+}
 
 const printableInspectionSections = [
   {
@@ -70,9 +80,11 @@ const fieldHints: Record<string, string> = {
   signature: 'Enter signer name or signature reference',
 }
 
-const InspectionForm = ({ projectId, toId, assignment, onBack }: InspectionFormProps) => {
+const InspectionForm = ({ projectId, toId, assignment, onBack, compact = false, promptAfterSave = false, value, onChange, onSaved }: InspectionFormProps) => {
   const navigate = useNavigate()
-  const [data, setData] = useState<InspectionData>({})
+  const [internalData, setInternalData] = useState<InspectionData>({})
+  const data = value ?? internalData
+  const setData = onChange ?? setInternalData
   const [savedPrompt, setSavedPrompt] = useState(false) // "go to site photos?" popup
   const [ocrBusy, setOcrBusy] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -80,6 +92,7 @@ const InspectionForm = ({ projectId, toId, assignment, onBack }: InspectionFormP
   const [saveMsg, setSaveMsg] = useState('')
   const [error, setError] = useState('')
   const [rawText, setRawText] = useState('')
+  const [openSection, setOpenSection] = useState(0)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const totalFields = useMemo(
@@ -115,12 +128,12 @@ const InspectionForm = ({ projectId, toId, assignment, onBack }: InspectionFormP
     const count = Object.keys(res.fields).length
     if (count > 0) {
       setData((d) => ({ ...d, ...res.fields }))
-      setNotice(`OCR filled ${count} field(s). Please review and correct below.`)
+      setNotice(`OCR extraction completed. ${count} field(s) were populated — please verify the extracted values.`)
     } else {
       setError(
         res.ocrError
-          ? `OCR could not read the form (${res.ocrError}). Please fill it in manually.`
-          : 'OCR found no matching fields. Please fill it in manually.',
+          ? `OCR extraction failed (${res.ocrError}). You can continue by entering the information manually.`
+          : 'OCR extraction failed to find matching fields. You can continue by entering the information manually.',
       )
     }
   }
@@ -133,7 +146,8 @@ const InspectionForm = ({ projectId, toId, assignment, onBack }: InspectionFormP
     setSaving(false)
     if (res.ok) {
       setSaveMsg('✓ Inspection saved to the database.')
-      setSavedPrompt(true) // ask whether to move on to Site Photos
+      onSaved?.()
+      if (!compact || promptAfterSave) setSavedPrompt(true) // ask whether to move on to Site Photos
     } else {
       setError(res.error ?? 'Could not save. Is the server running?')
     }
@@ -141,8 +155,8 @@ const InspectionForm = ({ projectId, toId, assignment, onBack }: InspectionFormP
 
   return (
     <>
-    <div className="mx-auto max-w-6xl space-y-6 pb-10">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className={compact ? 'space-y-4' : 'mx-auto max-w-6xl space-y-6 pb-10'}>
+      {!compact && <div className="flex flex-wrap items-center justify-between gap-3">
         <Button type="button" variant="ghost" onClick={onBack} className="!px-3 !py-2 text-sm">
           <span aria-hidden="true">←</span> Assigned projects
         </Button>
@@ -154,7 +168,7 @@ const InspectionForm = ({ projectId, toId, assignment, onBack }: InspectionFormP
             Project {projectId}
           </span>
         </div>
-      </div>
+      </div>}
 
       <Card className="border-dashed p-4 sm:p-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -162,23 +176,35 @@ const InspectionForm = ({ projectId, toId, assignment, onBack }: InspectionFormP
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-400/10 text-lg" aria-hidden="true">⌁</span>
             <div>
               <p className="font-semibold text-white">Upload the filled document</p>
-              <p className="mt-0.5 text-sm text-emerald-100/55">Optionally extract a PDF or image, then review every populated field.</p>
+              <p className="mt-0.5 text-sm text-emerald-100/55">Upload an inspection form to extract data, then verify every populated field.</p>
             </div>
           </div>
           <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold text-emerald-50 transition hover:border-gold-400/50 hover:bg-gold-400/10 hover:text-gold-200">
-            {ocrBusy ? 'Reading document…' : 'Upload & extract'}
+            {ocrBusy ? 'Extracting inspection data…' : 'Upload & extract'}
             <input ref={fileRef} type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" disabled={ocrBusy} onChange={onFile} />
           </label>
         </div>
         {notice && <p className="mt-3 rounded-lg bg-emerald-400/10 px-3 py-2 text-sm text-emerald-200">{notice}</p>}
       </Card>
 
+      {compact && (
+        <div className="rounded-xl border border-white/10 bg-black/10 px-4 py-3">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold uppercase tracking-[0.14em] text-emerald-100/60">Inspection progress</span>
+            <span className="font-bold text-gold-200">{completedFields} / {totalFields}</span>
+          </div>
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+            <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-gold-400 transition-[width] duration-300" style={{ width: `${completion}%` }} />
+          </div>
+        </div>
+      )}
+
       {/* Editable draft */}
       {inspectionSections.map((section, sectionIndex) => {
         const sectionComplete = section.fields.filter((field) => data[field.key]?.trim()).length
         return (
         <Card key={section.title} className="overflow-hidden">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-white/[0.025] px-5 py-4 sm:px-7">
+          <button type="button" disabled={!compact} aria-expanded={!compact || openSection === sectionIndex} onClick={() => compact && setOpenSection((current) => current === sectionIndex ? -1 : sectionIndex)} className={`flex w-full flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-white/[0.025] px-5 py-4 text-left sm:px-7 ${compact ? 'cursor-pointer transition hover:bg-white/[0.055]' : 'cursor-default'}`}>
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-xl">{section.icon}</span>
               <div>
@@ -186,6 +212,7 @@ const InspectionForm = ({ projectId, toId, assignment, onBack }: InspectionFormP
                 <h2 className="mt-0.5 text-lg font-bold text-white">{section.title}</h2>
               </div>
             </div>
+            <span className="flex items-center gap-2">
             <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${
               sectionComplete === section.fields.length
                 ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200'
@@ -193,14 +220,16 @@ const InspectionForm = ({ projectId, toId, assignment, onBack }: InspectionFormP
             }`}>
               {sectionComplete === section.fields.length ? '✓ Complete' : `${sectionComplete} of ${section.fields.length}`}
             </span>
-          </div>
-          <div className="grid gap-x-5 gap-y-6 p-5 sm:grid-cols-2 sm:p-7">
+              {compact && <span className={`text-emerald-100/60 transition-transform ${openSection === sectionIndex ? 'rotate-180' : ''}`} aria-hidden="true">⌄</span>}
+            </span>
+          </button>
+          {(!compact || openSection === sectionIndex) && <div className={`grid gap-x-5 gap-y-5 p-5 ${compact ? 'bg-black/[0.06]' : 'sm:grid-cols-2 sm:p-7'}`}>
             {section.fields.map((f, fieldIndex) => (
               <Fragment key={f.key}>
                 {f.group && (fieldIndex === 0 || section.fields[fieldIndex - 1]?.group !== f.group) && (
-                  <h3 className="border-b border-white/10 pb-2 text-sm font-bold uppercase tracking-[0.12em] text-gold-300 sm:col-span-2">{f.group}</h3>
+                  <h3 className={`border-b border-white/10 pb-2 text-sm font-bold uppercase tracking-[0.12em] text-gold-300 ${compact ? '' : 'sm:col-span-2'}`}>{f.group}</h3>
                 )}
-              <div className={f.textarea ? 'sm:col-span-2' : ''}>
+              <div className={f.textarea && !compact ? 'sm:col-span-2' : ''}>
                 <label htmlFor={`inspection-${f.key}`} className="mb-2 block text-sm font-semibold text-emerald-50">{f.label}</label>
                 {f.textarea ? (
                   <textarea
@@ -234,7 +263,7 @@ const InspectionForm = ({ projectId, toId, assignment, onBack }: InspectionFormP
               </div>
               </Fragment>
             ))}
-          </div>
+          </div>}
         </Card>
       )})}
 
@@ -256,7 +285,7 @@ const InspectionForm = ({ projectId, toId, assignment, onBack }: InspectionFormP
           {saveMsg}
         </div>
       )}
-      <Card className="sticky bottom-4 z-10 p-4 shadow-2xl shadow-black/30 sm:p-5">
+      <Card className={`${compact ? '' : 'sticky bottom-4 z-10 shadow-2xl shadow-black/30'} p-4 sm:p-5`}>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="font-semibold text-white">Ready to save your inspection?</p>
@@ -301,7 +330,7 @@ const InspectionForm = ({ projectId, toId, assignment, onBack }: InspectionFormP
       </Modal>
     </div>
 
-    {createPortal(<article className="inspection-print-sheet" aria-hidden="true">
+    {!compact && createPortal(<article className="inspection-print-sheet" aria-hidden="true">
       <header className="inspection-print-header">
         <div>
           <p className="inspection-print-kicker">CODEHUB · Land Valuation System</p>

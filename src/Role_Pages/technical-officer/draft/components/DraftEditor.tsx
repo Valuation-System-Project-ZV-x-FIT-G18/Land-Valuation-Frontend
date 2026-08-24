@@ -15,9 +15,10 @@ type Props = {
   rejectReason?: string
   readOnly?: boolean
   reviewStatus?: string
+  initialHtml?: string
 }
 
-const DraftEditor = ({ projectId, valuationId, onBack, correctionMode = false, rejectReason = '', readOnly = false, reviewStatus = '' }: Props) => {
+const DraftEditor = ({ projectId, valuationId, onBack, correctionMode = false, rejectReason = '', readOnly = false, reviewStatus = '', initialHtml }: Props) => {
   const paperRef = useRef<HTMLDivElement>(null)
   const [html, setHtml] = useState('')
   const [loading, setLoading] = useState(true)
@@ -39,12 +40,17 @@ const DraftEditor = ({ projectId, valuationId, onBack, correctionMode = false, r
   }
 
   useEffect(() => {
+    if (initialHtml) {
+      setHtml(initialHtml)
+      setLoading(false)
+      return
+    }
     ;(async () => {
       const saved = await getSavedReport(projectId)
       if (saved) { setHtml(saved); setLoading(false) }
       else await loadFromData()
     })()
-  }, [projectId])
+  }, [initialHtml, projectId])
 
   const submit = async () => {
     setBusy('submit'); setError('')

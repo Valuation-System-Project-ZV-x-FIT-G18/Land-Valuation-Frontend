@@ -9,10 +9,13 @@ import {
   getLocation, getComparables, analyse, getAnalysis, saveAnalysis,
   type NearbyLocation, type Comparable, type Report,
 } from '@/Role_Pages/technical-officer/nearby/api/nearby'
+import type { Evidence, Valuation } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
 
 const TRENDS = ['going up steadily', 'staying the same', 'slowing down']
 
-const NearbyAnalyser = ({ projectId, onBack, onContinue }: { projectId: string; onBack: () => void; onContinue: () => void }) => {
+type PreviewData = { values: Record<string, string>; evidence: Evidence; valuation: Valuation | null }
+
+const NearbyAnalyser = ({ projectId, onBack, onContinue, onDataSaved, onPreviewChange }: { projectId: string; onBack: () => void; onContinue: () => void; onDataSaved?: () => void; onPreviewChange?: (preview: PreviewData) => void }) => {
   const [loc, setLoc] = useState<NearbyLocation | null>(null)
   const [comps, setComps] = useState<Comparable[]>([])
   const [aiComps, setAiComps] = useState(false)
@@ -25,6 +28,51 @@ const NearbyAnalyser = ({ projectId, onBack, onContinue }: { projectId: string; 
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
   const [searchMessage, setSearchMessage] = useState<{ kind: 'error' | 'notice'; text: string } | null>(null)
+
+  useEffect(() => {
+    const evidence: Evidence = {
+      comparables: comps.map((item) => ({
+        refNo: item.refNo,
+        date: item.saleDate,
+        area: item.area,
+        note: item.note,
+        propertyType: item.propertyType,
+        roadAccess: item.roadAccess,
+        extentPerches: item.extentPerches,
+        distanceKm: item.distanceKm,
+        pricePerPerch: item.pricePerPerch,
+        evidenceType: item.evidenceType,
+        source: item.source,
+      })),
+      rangeLow: report?.evidence.rangeLow ?? 0,
+      rangeHigh: report?.evidence.rangeHigh ?? 0,
+      hasAnalysis: comps.length > 0,
+    }
+    const valuation: Valuation | null = report ? {
+      extentText: `${report.calculation.totalExtentPerches} perches`,
+      totalPerches: report.calculation.totalExtentPerches,
+      ratePerPerch: report.calculation.ratePerPerch,
+      landValue: report.calculation.bareLandValue,
+      buildingValue: 0,
+      marketValue: report.calculation.marketValue,
+      say: report.summary.marketValue,
+      notes: report.calculation.notes,
+    } : null
+    onPreviewChange?.({
+      evidence,
+      valuation,
+      values: {
+        marketValue: report ? String(report.summary.marketValue) : '',
+        marketValueWords: report?.summary.marketValueWords ?? '',
+        forcedSaleValue: report ? String(report.summary.forcedSaleValue) : '',
+        forcedSaleValueWords: report?.summary.forcedSaleValueWords ?? '',
+        valuationDate: report?.summary.valuationDate ?? inp.date,
+        conclusion: report?.conclusion.text ?? '',
+        nearbyPropertyDetails: report?.evidence.marketSurveyStatement ?? '',
+      },
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [comps, inp.date, report])
 
   const applyRate = (cs: Comparable[]) => {
     const prices = cs.map((c) => c.pricePerPerch).filter((n) => n > 0)
@@ -106,6 +154,7 @@ const NearbyAnalyser = ({ projectId, onBack, onContinue }: { projectId: string; 
     setSaving(false)
     if (res.ok) {
       setSavedToDatabase(true)
+      onDataSaved?.()
       setNotice('✓ Analysis saved to the database.')
     } else {
       setError(res.error ?? 'Could not save.')
@@ -152,7 +201,7 @@ const NearbyAnalyser = ({ projectId, onBack, onContinue }: { projectId: string; 
           Confirm the adopted base rate from the comparable evidence. This summary records the nearby-market
           evidence and the rate selected by the valuer.
         </p>
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <div className="mt-4 grid gap-4">
           <Field label="Adopted base rate per perch (Rs.)">
             <input className={ic} type="number" min="0" step="1000" value={inp.rate}
               onChange={(e) => setInp((current) => ({ ...current, rate: e.target.value }))} />
@@ -186,7 +235,7 @@ const NearbyAnalyser = ({ projectId, onBack, onContinue }: { projectId: string; 
               {report.evidence.comparables.length} comparables
             </span>
           </div>
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <div className="rounded-xl border border-white/10 bg-white/5 p-3"><p className="text-[10px] uppercase text-emerald-100/45">Land extent</p><p className="mt-1 font-bold text-white">{report.calculation.totalExtentPerches} perches</p></div>
             <div className="rounded-xl border border-white/10 bg-white/5 p-3"><p className="text-[10px] uppercase text-emerald-100/45">Lowest evidence</p><p className="mt-1 font-bold text-white">Rs. {report.evidence.rangeLow.toLocaleString('en-LK')}</p></div>
             <div className="rounded-xl border border-white/10 bg-white/5 p-3"><p className="text-[10px] uppercase text-emerald-100/45">Highest evidence</p><p className="mt-1 font-bold text-white">Rs. {report.evidence.rangeHigh.toLocaleString('en-LK')}</p></div>

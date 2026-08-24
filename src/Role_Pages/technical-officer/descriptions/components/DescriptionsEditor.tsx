@@ -57,9 +57,9 @@ const ORDER: { key: SectionKey; label: string }[] = [
   { key: 'certification', label: 'Certification' },
 ]
 
-type Props = { projectId: string; onBack: () => void; onContinueToDraft?: () => void }
+type Props = { projectId: string; onBack: () => void; onContinueToDraft?: () => void; onDataSaved?: () => void; onPreviewChange?: (values: Record<string, string>) => void }
 
-const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft }: Props) => {
+const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft, onDataSaved, onPreviewChange }: Props) => {
   const [texts, setTexts] = useState<Descriptions>(empty)
   const [sources, setSources] = useState<SourceSection[]>([])
   const [photos, setPhotos] = useState<string[]>([])
@@ -68,6 +68,29 @@ const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft }: Props) => 
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    onPreviewChange?.({
+      requestDescription: texts.requestDescription,
+      limitations: texts.limitations,
+      generalAssumptions: texts.generalAssumptions,
+      localityDescription: texts.situation || texts.localityDescription,
+      extentDescription: texts.extentDescription,
+      accessLocationDescription: texts.accessDescription,
+      legalDescription: texts.legalParagraph || texts.ownershipDescription,
+      localAuthorityTax: texts.localAuthorityTax,
+      streetLineBuildingLimits: texts.streetLineBuildingLimits,
+      mandatoryRequirements: texts.mandatoryRequirements,
+      rentControlRegulation: texts.rentControlRegulation,
+      localityFacilities: texts.localityFacilities,
+      certification: texts.certification,
+      landDescription: texts.landDescription,
+      conclusion: texts.conclusion,
+      savedValuation: texts.valuation,
+      savedEvidence: texts.evidence,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [texts])
 
   // On open: load the editable sources + photos, and any previously saved text.
   useEffect(() => {
@@ -143,6 +166,7 @@ const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft }: Props) => 
     if (res.ok) {
       setNotice('✓ Descriptions saved to the database.')
       setSaved(true)
+      onDataSaved?.()
     } else {
       setError(res.error ?? 'Could not save.')
     }
@@ -208,7 +232,7 @@ const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft }: Props) => 
         onChange={(v) => setTexts((t) => ({ ...t, valuation: v }))}
       />}
 
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="flex flex-col gap-3">
         <Button type="button" fullWidth variant="success" loading={saving} disabled={busy !== null} onClick={handleSave}>
           {saving ? 'Saving…' : 'Save Descriptions'}
         </Button>

@@ -102,6 +102,7 @@ export function buildReportHtml(
    </div>` : ''}
 
    ${H('5.4', 'DESCRIPTION OF THE LAND')}${P(v.landDescription, true)}
+   ${inspectionObservationsTbl(F)}
 
    ${H('5.5', 'DETAIL DESCRIPTION OF THE LAND')}
    ${photosTbl(v, projectId)}
@@ -338,6 +339,55 @@ const boundaryTbl = (F: (k: string) => string) => `
    <tr><td style="border:1px solid #bbb;padding:5px">South by</td>${cell(F('boundarySouth'))}${cell(F('siteBoundarySouth'))}</tr>
    <tr><td style="border:1px solid #bbb;padding:5px">West by</td>${cell(F('boundaryWest'))}${cell(F('siteBoundaryWest'))}</tr>
   </table>`
+
+const inspectionObservationsTbl = (F: (k: string) => string) => {
+  const sections: [string, [string, string][]][] = [
+    ['Access & Location', [
+      ['Access route', 'accessRoute'], ['Access road width', 'accessRoadWidth'],
+      ['Road type', 'accessRoadSurface'], ['Road-facing boundary', 'roadFacing'],
+      ['Distance from nearest city', 'distanceFromNearestCity'], ['Right of way', 'legalRightOfWay'],
+    ]],
+    ['Land Description', [
+      ['Shape of land', 'landShape'], ['Position relative to road', 'landPosition'],
+      ['Frontage', 'frontage'], ['Flood-prone status', 'floodProne'],
+      ['Boundaries marked', 'boundariesMarked'], ['Soil type', 'soilType'],
+      ['Drainage', 'drainage'], ['Garbage disposal', 'garbage'],
+      ['Gate / entry', 'gateType'], ['Unauthorized structures', 'unauthorizedStructures'],
+    ]],
+    ['Boundary Verification', [
+      ['North boundary', 'siteBoundaryNorth'], ['East boundary', 'siteBoundaryEast'],
+      ['South boundary', 'siteBoundarySouth'], ['West boundary', 'siteBoundaryWest'],
+      ['Boundaries match plan', 'boundariesMatchPlan'],
+    ]],
+    ['Locality', [
+      ['Locality name', 'localityName'], ['Nearest town', 'nearestTown'],
+      ['Distance to nearest town', 'distanceToNearestTown'], ['Vicinity character', 'vicinityCharacter'],
+      ['Surrounding properties', 'surroundingPropertyTypes'], ['Development level', 'developmentLevel'],
+      ['Market demand', 'marketDemand'], ['High-demand properties', 'highDemandPropertyTypes'],
+      ['Reason for demand', 'demandReason'], ['Utilities', 'availableUtilities'],
+      ['Nearby facilities', 'nearbyFacilities'], ['Facilities radius', 'facilitiesRadius'],
+      ['Transport frequency', 'transportFrequency'], ['Transport road', 'transportRoad'],
+      ['Distance to transport', 'distanceToTransport'], ['Daily needs available', 'dayToDayNeeds'],
+      ['Daily needs location', 'dayToDayNeedsLocation'],
+    ]],
+    ['Inspection Details', [
+      ['Inspection date', 'inspectionDate'], ['Party present', 'presentedParty'],
+      ['Technical officer', 'technicalOfficer'], ['Signature reference', 'signature'],
+    ]],
+  ]
+  const valueCell = (label: string, key: string) =>
+    `<td style="border:1px solid #bbb;padding:5px;font-weight:600;width:22%">${label}</td><td style="border:1px solid #bbb;padding:5px;width:28%">${F(key)}</td>`
+  const sectionHtml = sections.map(([title, fields]) => {
+    const rows: string[] = []
+    for (let index = 0; index < fields.length; index += 2) {
+      const first = fields[index]
+      const second = fields[index + 1]
+      rows.push(`<tr>${valueCell(first[0], first[1])}${second ? valueCell(second[0], second[1]) : '<td colspan="2" style="border:1px solid #bbb"></td>'}</tr>`)
+    }
+    return `<tr style="background:#f0f0f0"><th colspan="4" style="border:1px solid #bbb;padding:5px;text-align:left">${title}</th></tr>${rows.join('')}`
+  }).join('')
+  return `<table style="width:100%;border-collapse:collapse;font-size:12px;margin:8px 0 12px">${sectionHtml}</table>`
+}
 
 const surveyPlanImg = (v: Record<string, string>, projectId: string) => {
   const src = v.surveyPlanImage || `/api/coordinator/projects/file?projectId=${encodeURIComponent(projectId)}&type=surveyPlan`

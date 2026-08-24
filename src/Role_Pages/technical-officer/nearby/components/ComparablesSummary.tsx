@@ -19,10 +19,10 @@ const median = (sorted: number[]) => {
   return n % 2 ? sorted[(n - 1) / 2] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2
 }
 
-const Stat = ({ label, value, accent }: { label: string; value: string; accent?: boolean }) => (
-  <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-center">
-    <p className="text-[10px] uppercase tracking-wide text-emerald-200/50">{label}</p>
-    <p className={`mt-1 text-sm font-bold ${accent ? 'text-gold-200' : 'text-white'}`}>{value}</p>
+const Stat = ({ label, value, accent, wide }: { label: string; value: string; accent?: boolean; wide?: boolean }) => (
+  <div className={`rounded-xl border border-white/10 bg-white/5 p-3 text-center ${wide ? 'col-span-2' : ''}`}>
+    <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-200/50">{label}</p>
+    <p className={`mt-1 break-words text-[13px] font-bold leading-5 ${accent ? 'text-gold-200' : 'text-white'}`}>{value}</p>
   </div>
 )
 
@@ -63,12 +63,12 @@ const ComparablesSummary = ({ comparables, adoptedRate, onApplyRate }: Props) =>
     <Card className="p-5 sm:p-6">
       <h3 className="mb-3 text-sm font-semibold text-gold-300">📈 Price Evidence Summary</h3>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+      <div className="grid grid-cols-2 gap-2">
         <Stat label="Comparables" value={String(n)} />
         <Stat label="Lowest / P" value={rs(min)} />
         <Stat label="Highest / P" value={rs(max)} />
         <Stat label="Average / P" value={rs(avg)} />
-        <Stat label="Median / P" value={rs(med)} accent />
+        <Stat label="Median / P" value={rs(med)} accent wide />
       </div>
 
       <p className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3 text-xs leading-relaxed text-emerald-100/80">
@@ -87,11 +87,11 @@ const ComparablesSummary = ({ comparables, adoptedRate, onApplyRate }: Props) =>
         )}
       </p>
 
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Button type="button" variant="outline" className="!px-4 !py-2 text-xs" onClick={() => onApplyRate(Math.round(med))}>
+      <div className="mt-3 grid gap-2">
+        <Button type="button" variant="outline" className="w-full !justify-start !px-4 !py-2 text-xs" onClick={() => onApplyRate(Math.round(med))}>
           Adopt median ({rs(med)})
         </Button>
-        <Button type="button" variant="outline" className="!px-4 !py-2 text-xs" onClick={() => onApplyRate(Math.round(avg))}>
+        <Button type="button" variant="outline" className="w-full !justify-start !px-4 !py-2 text-xs" onClick={() => onApplyRate(Math.round(avg))}>
           Adopt average ({rs(avg)})
         </Button>
       </div>

@@ -9,6 +9,7 @@ import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/c
 import TOWorkflowStepper from '@/Role_Pages/technical-officer/shared/TOWorkflowStepper'
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 import { loadWorkflowSelection, saveWorkflowSelection } from '@/Role_Pages/technical-officer/assignments/utils/workflowSelection'
+import WorkflowPreviewLayout from '@/Role_Pages/technical-officer/shared/WorkflowPreviewLayout'
 
 // Technical Officer > Generate Descriptions.
 // Projects → valuations → generate/edit that project's report descriptions.
@@ -22,6 +23,8 @@ const GenerateDescriptionsPage = () => {
   const [completed, setCompleted] = useState<string[]>([])
   const [selected, setSelected] = useState<Assignment | null>(() => routedSelection?.assignment ?? storedSelection?.assignment ?? null)
   const [directProjectId, setDirectProjectId] = useState(() => routedSelection?.projectId ?? storedSelection?.projectId ?? '')
+  const [previewVersion, setPreviewVersion] = useState(0)
+  const [previewValues, setPreviewValues] = useState<Record<string, string>>({})
 
   const loadCompleted = () => getCompletedProjects().then(setCompleted)
   useEffect(() => {
@@ -34,9 +37,11 @@ const GenerateDescriptionsPage = () => {
   }, [directProjectId, selected, toId])
 
   if (selected || directProjectId) {
+    const projectId = selected?.projectId ?? directProjectId
     return (
+      <WorkflowPreviewLayout projectId={projectId} refreshToken={previewVersion} valueOverrides={previewValues}>
       <DescriptionsEditor
-        projectId={selected?.projectId ?? directProjectId}
+        projectId={projectId}
         onContinueToDraft={selected
           ? () => navigate('/technical-officer/draft', { state: { assignment: selected } })
           : undefined}
@@ -45,7 +50,10 @@ const GenerateDescriptionsPage = () => {
           setDirectProjectId('')
           loadCompleted() // refresh the "✓ Saved" badge
         }}
+        onDataSaved={() => setPreviewVersion((value) => value + 1)}
+        onPreviewChange={setPreviewValues}
       />
+      </WorkflowPreviewLayout>
     )
   }
 

@@ -11,9 +11,9 @@ import {
   type UploadedPhoto,
 } from '@/Role_Pages/technical-officer/site-photos/api/site-photos'
 
-type SitePhotoUploadProps = { projectId: string; toId: string; onBack: () => void }
+type SitePhotoUploadProps = { projectId: string; toId: string; onBack: () => void; onDataSaved?: () => void }
 
-const SitePhotoUpload = ({ projectId, toId, onBack }: SitePhotoUploadProps) => {
+const SitePhotoUpload = ({ projectId, toId, onBack, onDataSaved }: SitePhotoUploadProps) => {
   const navigate = useNavigate()
   const [uploaded, setUploaded] = useState<Record<string, UploadedPhoto>>({})
 
@@ -30,7 +30,10 @@ const SitePhotoUpload = ({ projectId, toId, onBack }: SitePhotoUploadProps) => {
 
   const handleUpload = async (photoType: string, file: File, describe: boolean, photoLabel: string) => {
     const res = await uploadPhoto(projectId, toId, photoType, file, describe, photoLabel)
-    if (res.ok) await load()
+    if (res.ok) {
+      await load()
+      onDataSaved?.()
+    }
     return res
   }
 

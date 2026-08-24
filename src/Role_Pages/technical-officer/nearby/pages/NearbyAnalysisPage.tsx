@@ -7,6 +7,8 @@ import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/c
 import TOWorkflowStepper from '@/Role_Pages/technical-officer/shared/TOWorkflowStepper'
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 import { loadWorkflowSelection, saveWorkflowSelection } from '@/Role_Pages/technical-officer/assignments/utils/workflowSelection'
+import WorkflowPreviewLayout from '@/Role_Pages/technical-officer/shared/WorkflowPreviewLayout'
+import type { Evidence, Valuation } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
 
 const NearbyAnalysisPage = () => {
   const location = useLocation()
@@ -21,6 +23,10 @@ const NearbyAnalysisPage = () => {
   const [directProjectId, setDirectProjectId] = useState(() =>
     routedSelection?.projectId ?? storedSelection?.projectId ?? '',
   )
+  const [previewVersion, setPreviewVersion] = useState(0)
+  const [previewValues, setPreviewValues] = useState<Record<string, string>>({})
+  const [previewEvidence, setPreviewEvidence] = useState<Evidence | null>(null)
+  const [previewValuation, setPreviewValuation] = useState<Valuation | null>(null)
 
   useEffect(() => {
     const projectId = selected?.projectId ?? directProjectId
@@ -28,14 +34,23 @@ const NearbyAnalysisPage = () => {
   }, [directProjectId, selected, toId])
 
   if (selected || directProjectId) {
+    const projectId = selected?.projectId ?? directProjectId
     return (
+      <WorkflowPreviewLayout projectId={projectId} refreshToken={previewVersion} valueOverrides={previewValues} evidenceOverride={previewEvidence} valuationOverride={previewValuation}>
       <NearbyAnalyser
-        projectId={selected?.projectId ?? directProjectId}
+        projectId={projectId}
         onContinue={() => navigate('/technical-officer/descriptions', {
           state: selected ? { assignment: selected } : { projectId: directProjectId },
         })}
         onBack={() => { setSelected(null); setDirectProjectId('') }}
+        onDataSaved={() => setPreviewVersion((value) => value + 1)}
+        onPreviewChange={(preview) => {
+          setPreviewValues(preview.values)
+          setPreviewEvidence(preview.evidence)
+          setPreviewValuation(preview.valuation)
+        }}
       />
+      </WorkflowPreviewLayout>
     )
   }
 

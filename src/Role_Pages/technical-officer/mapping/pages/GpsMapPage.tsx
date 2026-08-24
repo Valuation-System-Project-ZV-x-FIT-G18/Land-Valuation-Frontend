@@ -7,6 +7,7 @@ import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/c
 import TOWorkflowStepper from '@/Role_Pages/technical-officer/shared/TOWorkflowStepper'
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 import { loadWorkflowSelection, saveWorkflowSelection } from '@/Role_Pages/technical-officer/assignments/utils/workflowSelection'
+import WorkflowPreviewLayout from '@/Role_Pages/technical-officer/shared/WorkflowPreviewLayout'
 
 // Technical Officer > GPS & Map Integration.
 // Projects → valuations → pin the location & build map/access info.
@@ -18,6 +19,8 @@ const GpsMapPage = () => {
   const storedSelection = loadWorkflowSelection(toId)
   const [selected, setSelected] = useState<Assignment | null>(() => routedSelection?.assignment ?? storedSelection?.assignment ?? null)
   const [directProjectId, setDirectProjectId] = useState(() => routedSelection?.projectId ?? storedSelection?.projectId ?? '')
+  const [previewVersion, setPreviewVersion] = useState(0)
+  const [previewValues, setPreviewValues] = useState<Record<string, string>>({})
 
   useEffect(() => {
     const projectId = selected?.projectId ?? directProjectId
@@ -25,7 +28,10 @@ const GpsMapPage = () => {
   }, [directProjectId, selected, toId])
 
   if (selected || directProjectId) {
-    return <MapWorkspace projectId={selected?.projectId ?? directProjectId} onBack={() => { setSelected(null); setDirectProjectId('') }} />
+    const projectId = selected?.projectId ?? directProjectId
+    return <WorkflowPreviewLayout projectId={projectId} refreshToken={previewVersion} valueOverrides={previewValues}>
+      <MapWorkspace projectId={projectId} onBack={() => { setSelected(null); setDirectProjectId('') }} onDataSaved={() => setPreviewVersion((value) => value + 1)} onPreviewChange={setPreviewValues} />
+    </WorkflowPreviewLayout>
   }
 
   return (

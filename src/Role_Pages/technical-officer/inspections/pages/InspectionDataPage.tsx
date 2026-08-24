@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
-import InspectionForm from '@/Role_Pages/technical-officer/inspections/components/InspectionForm'
+import LiveDraftBuilder from '@/Role_Pages/technical-officer/draft/components/LiveDraftBuilder'
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
 import { getAssignments, type Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 import TOWorkflowStepper from '@/Role_Pages/technical-officer/shared/TOWorkflowStepper'
@@ -59,8 +59,13 @@ const InspectionDataPage = () => {
 
   if (selected) {
     return (
-      <div className="mx-auto max-w-3xl">
-        <InspectionForm projectId={selected.projectId} toId={toId} assignment={selected} onBack={() => setSelected(null)} />
+      <div className="w-full">
+        <LiveDraftBuilder
+          assignment={selected}
+          toId={toId}
+          inspectionMode
+          onBack={() => setSelected(null)}
+        />
       </div>
     )
   }
