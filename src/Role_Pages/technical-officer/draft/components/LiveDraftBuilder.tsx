@@ -4,10 +4,11 @@ import InspectionForm from '@/Role_Pages/technical-officer/inspections/component
 import type { InspectionData } from '@/Role_Pages/technical-officer/inspections/api/inspections'
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 import { getBuildValues, getSavedReport } from '@/Role_Pages/technical-officer/draft/api/draft'
-import { getEvidence, getValuation, type Evidence, type Valuation } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
-import { getPhotos } from '@/Role_Pages/technical-officer/site-photos/api/site-photos'
+import { getDescriptions, getEvidence, getValuation, type Descriptions, type Evidence, type Valuation } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
+import { getPhotos, getReportPhotoSources } from '@/Role_Pages/technical-officer/site-photos/api/site-photos'
 import { buildReportHtml } from '@/Role_Pages/technical-officer/draft/utils/buildReportHtml'
 import { mapInspectionToReportValues } from '@/Role_Pages/technical-officer/draft/utils/mapInspectionToReportValues'
+import { mapDescriptionsToReportValues } from '@/Role_Pages/technical-officer/draft/utils/mapDescriptionsToReportValues'
 import LiveReportPreview from '@/Role_Pages/technical-officer/draft/components/LiveReportPreview'
 import DraftEditor from '@/Role_Pages/technical-officer/draft/components/DraftEditor'
 
@@ -28,43 +29,57 @@ const LiveDraftBuilder = ({ assignment, toId, onBack, inspectionMode = false }: 
   const [baseValues, setBaseValues] = useState<Record<string, string> | null>(null)
   const [valuation, setValuation] = useState<Valuation | null>(null)
   const [evidence, setEvidence] = useState<Evidence | null>(null)
+  const [descriptions, setDescriptions] = useState<Descriptions | null>(null)
   const [photoCount, setPhotoCount] = useState(0)
+  const [photoSources, setPhotoSources] = useState<Record<string, string>>({})
   const [savedHtml, setSavedHtml] = useState<string | null>(null)
   const [useSavedDraft, setUseSavedDraft] = useState(false)
   const [previewHtml, setPreviewHtml] = useState('')
   const [editingHtml, setEditingHtml] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [navigationTarget, setNavigationTarget] = useState<{ section: string; requestId: number } | null>(null)
+
+  const fieldReportKeyMap: Record<string, string> = {
+    roadWidth: 'accessRoadWidth', roadType: 'accessRoadSurface', rightOfWay: 'legalRightOfWay',
+    northBoundary: 'siteBoundaryNorth', eastBoundary: 'siteBoundaryEast',
+    southBoundary: 'siteBoundarySouth', westBoundary: 'siteBoundaryWest',
+  }
+
+  const navigateToField = (fieldName: string) => {
+    const reportKey = fieldReportKeyMap[fieldName] ?? fieldName
+    setNavigationTarget({ section: `field:${reportKey}`, requestId: Date.now() })
+  }
 
   useEffect(() => {
     setLoading(true)
-    Promise.all([getBuildValues(projectId), getValuation(projectId), getEvidence(projectId), getSavedReport(projectId), getPhotos(projectId)])
-      .then(([values, valuationData, evidenceData, saved, photos]) => {
+    Promise.all([getBuildValues(projectId), getValuation(projectId), getEvidence(projectId), getDescriptions(projectId), getSavedReport(projectId), getPhotos(projectId)])
+      .then(async ([values, valuationData, evidenceData, descriptionsData, saved, photos]) => {
         if (!values) setError('Could not collect the saved project information.')
         setBaseValues(values)
         setValuation(valuationData)
         setEvidence(evidenceData)
+        setDescriptions(descriptionsData)
         setSavedHtml(saved)
-        // During inspection we always show a non-destructive live projection;
-        // an existing manually edited draft remains saved and untouched.
-        setUseSavedDraft(!inspectionMode && !!saved)
+        // Active drafts must open from the latest workflow data. A previously
+        // saved HTML draft is static and may predate photos/descriptions.
+        setUseSavedDraft(false)
         setPhotoCount(photos.photos.length)
+        setPhotoSources(await getReportPhotoSources(projectId, photos.photos))
       })
       .finally(() => setLoading(false))
   }, [inspectionMode, projectId])
 
   const liveValues = useMemo(
-    () => ({ ...(baseValues ?? {}), ...mapInspectionToReportValues(inspectionData) }),
-    [baseValues, inspectionData],
+    () => ({ ...(baseValues ?? {}), ...mapDescriptionsToReportValues(descriptions), ...photoSources, ...mapInspectionToReportValues(inspectionData) }),
+    [baseValues, descriptions, inspectionData, photoSources],
   )
 
-  // A short debounce keeps the large report responsive without any API calls.
+  // Report generation is local and synchronous, so every controlled-input
+  // change is reflected in the preview on the next React render.
   useEffect(() => {
     if (!baseValues || useSavedDraft) return
-    const timer = window.setTimeout(() => {
-      setPreviewHtml(buildReportHtml(liveValues, parse(baseValues.savedValuation) ?? valuation, evidence, projectId, parse(baseValues.savedEvidence)))
-    }, 200)
-    return () => window.clearTimeout(timer)
+    setPreviewHtml(buildReportHtml(liveValues, parse(baseValues.savedValuation) ?? valuation, evidence, projectId, parse(baseValues.savedEvidence)))
   }, [baseValues, evidence, liveValues, projectId, useSavedDraft, valuation])
 
   useEffect(() => {
@@ -87,6 +102,11 @@ const LiveDraftBuilder = ({ assignment, toId, onBack, inspectionMode = false }: 
     setUseSavedDraft(false)
   }
 
+  const showSavedDraft = () => {
+    if (!savedHtml) return
+    setUseSavedDraft(true)
+  }
+
   const startEditing = () => {
     if (!previewHtml) return
     if (!useSavedDraft && !window.confirm('Start editing this generated draft? Live automatic updates will stop so your manual edits are preserved.')) return
@@ -102,7 +122,9 @@ const LiveDraftBuilder = ({ assignment, toId, onBack, inspectionMode = false }: 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Button type="button" variant="ghost" size="sm" onClick={onBack}>← Projects</Button>
         {!inspectionMode && <div className="flex flex-wrap gap-2">
-          {savedHtml && <Button type="button" variant="outline" size="sm" onClick={regenerate}>Regenerate from Latest Data</Button>}
+          {savedHtml && (useSavedDraft
+            ? <Button type="button" variant="outline" size="sm" onClick={regenerate}>Regenerate from Latest Data</Button>
+            : <Button type="button" variant="outline" size="sm" onClick={showSavedDraft}>View Previous Saved Draft</Button>)}
           <Button type="button" size="sm" disabled={loading || !previewHtml} onClick={startEditing}>
             {useSavedDraft ? 'Continue Editing Saved Draft' : 'Start Editing Draft'}
           </Button>
@@ -122,12 +144,14 @@ const LiveDraftBuilder = ({ assignment, toId, onBack, inspectionMode = false }: 
             assignment={assignment}
             onBack={onBack}
             compact
+            autoSave
             promptAfterSave={inspectionMode}
             value={inspectionData}
             onChange={setInspectionData}
+            onFieldFocus={navigateToField}
           />
         </section>
-        <LiveReportPreview html={previewHtml} loading={loading} savedDraft={useSavedDraft} readiness={readiness} />
+        <LiveReportPreview html={previewHtml} loading={loading} savedDraft={useSavedDraft} readiness={readiness} navigationTarget={navigationTarget} />
       </div>
     </div>
   )

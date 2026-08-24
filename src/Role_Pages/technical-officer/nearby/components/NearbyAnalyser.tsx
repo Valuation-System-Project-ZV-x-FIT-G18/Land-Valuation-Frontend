@@ -15,7 +15,7 @@ const TRENDS = ['going up steadily', 'staying the same', 'slowing down']
 
 type PreviewData = { values: Record<string, string>; evidence: Evidence; valuation: Valuation | null }
 
-const NearbyAnalyser = ({ projectId, onBack, onContinue, onDataSaved, onPreviewChange }: { projectId: string; onBack: () => void; onContinue: () => void; onDataSaved?: () => void; onPreviewChange?: (preview: PreviewData) => void }) => {
+const NearbyAnalyser = ({ projectId, onBack, onContinue, onDataSaved, onPreviewChange, onReportNavigate }: { projectId: string; onBack: () => void; onContinue: () => void; onDataSaved?: () => void; onPreviewChange?: (preview: PreviewData) => void; onReportNavigate?: (section: string) => void }) => {
   const [loc, setLoc] = useState<NearbyLocation | null>(null)
   const [comps, setComps] = useState<Comparable[]>([])
   const [aiComps, setAiComps] = useState(false)
@@ -179,7 +179,9 @@ const NearbyAnalyser = ({ projectId, onBack, onContinue, onDataSaved, onPreviewC
 
       {loc && <LocationCard loc={loc} />}
 
-      <ComparablesTable comparables={comps} aiUsed={aiComps} loading={fetching} onChange={editComp} onRefresh={fetchComps} onAdd={addComp} onDelete={deleteComp} />
+      <div onFocusCapture={() => onReportNavigate?.('comparables')} onMouseDown={() => onReportNavigate?.('comparables')}>
+        <ComparablesTable comparables={comps} aiUsed={aiComps} loading={fetching} onChange={editComp} onRefresh={fetchComps} onAdd={addComp} onDelete={deleteComp} />
+      </div>
 
       {searchMessage && (
         <p className={`rounded-xl border px-4 py-3 text-sm ${searchMessage.kind === 'error'
@@ -189,12 +191,15 @@ const NearbyAnalyser = ({ projectId, onBack, onContinue, onDataSaved, onPreviewC
         </p>
       )}
 
-      <ComparablesSummary
-        comparables={comps}
-        adoptedRate={Number(inp.rate) || 0}
-        onApplyRate={(rate) => setInp((current) => ({ ...current, rate: String(rate) }))}
-      />
+      <div onFocusCapture={() => onReportNavigate?.('comparables')} onMouseDown={() => onReportNavigate?.('comparables')}>
+        <ComparablesSummary
+          comparables={comps}
+          adoptedRate={Number(inp.rate) || 0}
+          onApplyRate={(rate) => setInp((current) => ({ ...current, rate: String(rate) }))}
+        />
+      </div>
 
+      <div onFocusCapture={() => onReportNavigate?.('valuation')} onMouseDown={() => onReportNavigate?.('valuation')}>
       <Card className="p-5 sm:p-6">
         <h2 className="text-lg font-semibold text-gold-300">Prepare comparison summary</h2>
         <p className="mt-1 text-sm leading-6 text-emerald-100/60">
@@ -222,6 +227,7 @@ const NearbyAnalyser = ({ projectId, onBack, onContinue, onDataSaved, onPreviewC
         </Button>
         {error && !report && <p className="mt-3 text-sm text-red-300">{error}</p>}
       </Card>
+      </div>
 
       {report && (
         <Card className="border border-gold-400/25 p-5 sm:p-6">

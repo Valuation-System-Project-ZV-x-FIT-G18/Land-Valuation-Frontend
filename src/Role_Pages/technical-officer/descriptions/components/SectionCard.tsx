@@ -14,14 +14,16 @@ type Props = {
   onFieldChange: (key: string, value: string) => void
   onRegenerate: () => void
   busy: boolean
+  onNavigate?: () => void
 }
 
 // One report section: its generated text, the sources that feed it, and a
 // per-section Regenerate button. Sources can be edited before regenerating.
-const SectionCard = ({ label, text, onTextChange, fields, photos, onFieldChange, onRegenerate, busy }: Props) => {
+const SectionCard = ({ label, text, onTextChange, fields, photos, onFieldChange, onRegenerate, busy, onNavigate }: Props) => {
   const [showSources, setShowSources] = useState(false)
 
   return (
+    <div onFocusCapture={onNavigate} onMouseDown={onNavigate}>
     <Card className="p-5 sm:p-6">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h3 className="text-sm font-semibold text-white">{label}</h3>
@@ -81,6 +83,7 @@ const SectionCard = ({ label, text, onTextChange, fields, photos, onFieldChange,
         </div>
       )}
     </Card>
+    </div>
   )
 }
 

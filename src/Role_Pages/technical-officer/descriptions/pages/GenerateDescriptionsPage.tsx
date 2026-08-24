@@ -10,6 +10,7 @@ import TOWorkflowStepper from '@/Role_Pages/technical-officer/shared/TOWorkflowS
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 import { loadWorkflowSelection, saveWorkflowSelection } from '@/Role_Pages/technical-officer/assignments/utils/workflowSelection'
 import WorkflowPreviewLayout from '@/Role_Pages/technical-officer/shared/WorkflowPreviewLayout'
+import type { ReportNavigationTarget } from '@/Role_Pages/technical-officer/draft/components/LiveReportPreview'
 
 // Technical Officer > Generate Descriptions.
 // Projects → valuations → generate/edit that project's report descriptions.
@@ -25,6 +26,8 @@ const GenerateDescriptionsPage = () => {
   const [directProjectId, setDirectProjectId] = useState(() => routedSelection?.projectId ?? storedSelection?.projectId ?? '')
   const [previewVersion, setPreviewVersion] = useState(0)
   const [previewValues, setPreviewValues] = useState<Record<string, string>>({})
+  const [previewHtml, setPreviewHtml] = useState('')
+  const [navigationTarget, setNavigationTarget] = useState<ReportNavigationTarget | null>(null)
 
   const loadCompleted = () => getCompletedProjects().then(setCompleted)
   useEffect(() => {
@@ -39,11 +42,11 @@ const GenerateDescriptionsPage = () => {
   if (selected || directProjectId) {
     const projectId = selected?.projectId ?? directProjectId
     return (
-      <WorkflowPreviewLayout projectId={projectId} refreshToken={previewVersion} valueOverrides={previewValues}>
+      <WorkflowPreviewLayout projectId={projectId} refreshToken={previewVersion} valueOverrides={previewValues} navigationTarget={navigationTarget} onPreviewHtmlChange={setPreviewHtml}>
       <DescriptionsEditor
         projectId={projectId}
         onContinueToDraft={selected
-          ? () => navigate('/technical-officer/draft', { state: { assignment: selected } })
+          ? () => navigate('/technical-officer/draft', { state: { assignment: selected, initialHtml: previewHtml } })
           : undefined}
         onBack={() => {
           setSelected(null)
@@ -52,6 +55,7 @@ const GenerateDescriptionsPage = () => {
         }}
         onDataSaved={() => setPreviewVersion((value) => value + 1)}
         onPreviewChange={setPreviewValues}
+        onReportNavigate={(section) => setNavigationTarget({ section, requestId: Date.now() })}
       />
       </WorkflowPreviewLayout>
     )

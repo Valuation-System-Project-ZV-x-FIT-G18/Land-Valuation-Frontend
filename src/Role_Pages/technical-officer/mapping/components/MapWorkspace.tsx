@@ -19,7 +19,7 @@ const Step = ({ n, title, children }: { n: number; title: string; children: Reac
   </Card>
 )
 
-const MapWorkspace = ({ projectId, onBack, onDataSaved, onPreviewChange }: { projectId: string; onBack: () => void; onDataSaved?: () => void; onPreviewChange?: (values: Record<string, string>) => void }) => {
+const MapWorkspace = ({ projectId, onBack, onDataSaved, onPreviewChange, onReportNavigate }: { projectId: string; onBack: () => void; onDataSaved?: () => void; onPreviewChange?: (values: Record<string, string>) => void; onReportNavigate?: (section: string) => void }) => {
   const [loc, setLoc] = useState<MapLocation | null>(null)
   // Working data is kept in sessionStorage (scoped per project) so a page
   // refresh mid-edit does NOT lose the picked location or generated text.
@@ -108,7 +108,7 @@ const MapWorkspace = ({ projectId, onBack, onDataSaved, onPreviewChange }: { pro
   const gmaps = has ? `https://www.google.com/maps/@${lat},${lng},19z/data=!3m1!1e3` : '#'
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 pb-10">
+    <div className="mx-auto max-w-6xl space-y-6 pb-10" onFocusCapture={() => onReportNavigate?.('access')} onMouseDown={() => onReportNavigate?.('access')}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Button type="button" variant="ghost" size="sm" onClick={onBack}>← Assigned projects</Button>
         <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold ${has ? 'border-emerald-400/25 bg-emerald-400/10 text-emerald-200' : 'border-amber-300/25 bg-amber-300/10 text-amber-200'}`}>

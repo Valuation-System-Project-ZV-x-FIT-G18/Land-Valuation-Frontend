@@ -11,9 +11,9 @@ import {
   type UploadedPhoto,
 } from '@/Role_Pages/technical-officer/site-photos/api/site-photos'
 
-type SitePhotoUploadProps = { projectId: string; toId: string; onBack: () => void; onDataSaved?: () => void }
+type SitePhotoUploadProps = { projectId: string; toId: string; onBack: () => void; onDataSaved?: () => void; onReportNavigate?: (section: string) => void }
 
-const SitePhotoUpload = ({ projectId, toId, onBack, onDataSaved }: SitePhotoUploadProps) => {
+const SitePhotoUpload = ({ projectId, toId, onBack, onDataSaved, onReportNavigate }: SitePhotoUploadProps) => {
   const navigate = useNavigate()
   const [uploaded, setUploaded] = useState<Record<string, UploadedPhoto>>({})
 
@@ -33,6 +33,7 @@ const SitePhotoUpload = ({ projectId, toId, onBack, onDataSaved }: SitePhotoUplo
     if (res.ok) {
       await load()
       onDataSaved?.()
+      onReportNavigate?.('photos')
     }
     return res
   }
@@ -53,7 +54,8 @@ const SitePhotoUpload = ({ projectId, toId, onBack, onDataSaved }: SitePhotoUplo
       </div>
 
       {photoSections.map((section) => (
-        <Card key={section.title} className="p-5 sm:p-6">
+        <div key={section.title} onFocusCapture={() => onReportNavigate?.('photos')} onMouseDown={() => onReportNavigate?.('photos')}>
+        <Card className="p-5 sm:p-6">
           <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
             <span>{section.icon}</span> {section.title}
           </h2>
@@ -70,6 +72,7 @@ const SitePhotoUpload = ({ projectId, toId, onBack, onDataSaved }: SitePhotoUplo
             ))}
           </div>
         </Card>
+        </div>
       ))}
 
       {/* Photos save on upload — continue to the next step in the flow. */}

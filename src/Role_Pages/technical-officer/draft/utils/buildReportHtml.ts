@@ -42,6 +42,15 @@ export function buildReportHtml(
   const lat = hasGps ? Number(gps[0]) : 0
   const lng = hasGps ? Number(gps[1]) : 0
   const dd = 0.0025 // ~250 m half-window for the zoomed satellite view
+  const localityText = v.localityFacilities || v.localityDescription || [
+    v.vicinityCharacter && `The subject property is situated in a ${v.vicinityCharacter.toLowerCase()} locality.`,
+    v.nearbyFacilities && `Nearby facilities include ${v.nearbyFacilities.replace(/[.]+$/, '')}.`,
+    v.availableUtilities && `Available utilities include ${v.availableUtilities.replace(/[.]+$/, '')}.`,
+    v.transportFrequency && `Public transport availability is ${v.transportFrequency.toLowerCase()}.`,
+  ].filter(Boolean).join(' ')
+  const conclusionText = v.conclusion || (valuation?.marketValue
+    ? `Having considered the location, physical characteristics, available comparable evidence and prevailing market conditions, and applying the Direct Comparison Method, the current Market Value of the subject property is concluded at ${rs(valuation.marketValue)}.`
+    : '')
 
   return `<div style="font-family:Calibri,Arial,sans-serif;font-size:12px;color:#111;line-height:1.55">
    ${coverPage(F, Fo)}
@@ -61,6 +70,7 @@ export function buildReportHtml(
    ${H('3.', 'BASIS OF THE VALUATION')}
    ${P('The basis of this valuation is Market Value and Forced Sale Value.')}
 
+   <section data-report-section="property" style="border-radius:4px;transition:background-color .25s ease,outline-color .25s ease">
    ${H('4.', 'CLIENT INFORMATION')}
    <table style="font-size:12px;border-collapse:collapse">
      ${infoRow('4.1 Name and address of the Mortgagor', [F('nameWithInitials'), Fo('addressLine1'), Fo('addressLine2'), Fo('ownerCity'), Fo('district')].filter(Boolean).join('<br>'))}
@@ -71,6 +81,7 @@ export function buildReportHtml(
      ${infoRow('4.6 Date of inspection', F('inspectionDate'))}
      ${infoRow('4.7 Date of valuation', F('valuationDate'))}
    </table>
+   </section>
 
    ${H('5.', 'PROPERTY DETAILS')}
    ${H('5.1', 'SITUATION')}${P(v.localityDescription, true)}
@@ -93,6 +104,7 @@ export function buildReportHtml(
    ${H('5.2.4', 'SURVEY PLAN')}
    <div style="margin:8px 0">${surveyPlanImg(v, projectId)}</div>
 
+   <section data-report-section="access" style="border-radius:4px;transition:background-color .25s ease,outline-color .25s ease">
    ${H('5.3', 'ACCESS AND NATURE OF THE ACCESSIBILITY')}
    ${P(v.accessLocationDescription, true)}
    <p style="margin:6px 0">Coordinate of the Location : ${F('gpsCoordinates')} &nbsp;&nbsp; Location : ${F('propertyLocationCity')}</p>
@@ -100,15 +112,21 @@ export function buildReportHtml(
      <figure style="margin:0;text-align:center;font-size:10px;color:#555">Satellite view<br>${satImg(lat, lng, dd, v.satelliteLocationImage)}</figure>
      <figure style="margin:0;text-align:center;font-size:10px;color:#555">Location map<br>${mapImg(lat, lng, v.locationMapImage)}</figure>
    </div>` : ''}
+   </section>
 
+   <section data-report-section="land" style="border-radius:4px;transition:background-color .25s ease,outline-color .25s ease">
    ${H('5.4', 'DESCRIPTION OF THE LAND')}${P(v.landDescription, true)}
    ${inspectionObservationsTbl(F)}
+   </section>
 
+   <section data-report-section="photos" style="border-radius:4px;transition:background-color .25s ease,outline-color .25s ease">
    ${H('5.5', 'DETAIL DESCRIPTION OF THE LAND')}
    ${photosTbl(v, projectId)}
    <p style="margin:10px 0 4px;font-weight:600">Additional photographs of the property</p>
-   ${additionalPhotos(projectId)}
+   ${additionalPhotos(v, projectId)}
+   </section>
 
+   <section data-report-section="legal" style="border-radius:4px;transition:background-color .25s ease,outline-color .25s ease">
    ${H('6.', 'LEGAL & PLANNING CLEARANCE')}
    ${H('6.1', 'LEGAL ASPECT')}
    ${H('6.1.1', 'OWNERSHIP')}${P(v.legalDescription, true)}
@@ -117,15 +135,18 @@ export function buildReportHtml(
    ${H('6.2', 'PLANNING REGULATIONS')}
    ${H('6.2.1', 'MANDATORY REQUIREMENTS')}${P(v.mandatoryRequirements, true)}
    ${H('6.2.2', 'RENT CONTROL REGULATION')}${P(v.rentControlRegulation, true)}
+   </section>
 
-   ${H('7.', 'LOCALITY')}${P(v.localityFacilities, true)}
+   <section data-report-section="locality" style="border-radius:4px;transition:background-color .25s ease,outline-color .25s ease">${H('7.', 'LOCALITY')}${P(localityText, true)}</section>
 
    ${H('8.', 'APPROACH AND METHOD TO THE VALUATION')}
    ${P(v.valuationApproachStatement || 'In assessing the subject land, I have applied the Direct Comparison Method under the Market Approach. The available sales and asking-price evidence of comparable lands has been analysed with appropriate consideration of location, extent, access, shape, physical characteristics, planning restrictions and prevailing market conditions.')}
 
+   <section data-report-section="comparables" style="border-radius:4px;transition:background-color .25s ease,outline-color .25s ease">
    ${H('9.', 'EVIDENCE OF LAND VALUES & RENTALS')}
    ${H('9.1', 'RICS EVIDENCE HIERARCHY')}
    ${P(v.nearbyPropertyDetails, true)}${evidenceTbl(evidence, savedEvidence)}
+   </section>
 
    ${H('10.0', 'BASE OF VALUATION & RATIONAL')}
    <ol style="margin:6px 0 6px 18px;text-align:justify">
@@ -134,10 +155,12 @@ export function buildReportHtml(
      <li>I have ${v.previouslyValued && v.previouslyValued.trim() ? esc(v.previouslyValued) : '<u>not valued</u>'} this property previously.</li>
    </ol>
 
+   <section data-report-section="valuation" style="border-radius:4px;transition:background-color .25s ease,outline-color .25s ease">
    ${H('11.0', 'VALUATION')}
    ${valuationTbl(valuation, v)}
+   </section>
 
-   ${H('12.', 'CONCLUSION')}${P(v.conclusion, true)}
+   <section data-report-section="conclusion" style="border-radius:4px;transition:background-color .25s ease,outline-color .25s ease">${H('12.', 'CONCLUSION')}${P(conclusionText, true)}</section>
 
    ${H('13.', 'SUMMARY')}
    <p style="margin:4px 0">The valuation details are as follows.</p>
@@ -376,7 +399,7 @@ const inspectionObservationsTbl = (F: (k: string) => string) => {
     ]],
   ]
   const valueCell = (label: string, key: string) =>
-    `<td style="border:1px solid #bbb;padding:5px;font-weight:600;width:22%">${label}</td><td style="border:1px solid #bbb;padding:5px;width:28%">${F(key)}</td>`
+    `<td style="border:1px solid #bbb;padding:5px;font-weight:600;width:22%">${label}</td><td data-report-field="${key}" style="border:1px solid #bbb;padding:5px;width:28%;border-radius:3px;transition:background-color .25s ease,outline-color .25s ease">${F(key)}</td>`
   const sectionHtml = sections.map(([title, fields]) => {
     const rows: string[] = []
     for (let index = 0; index < fields.length; index += 2) {
@@ -402,41 +425,41 @@ const satImg = (lat: number, lng: number, d: number, mappedSrc?: string) =>
 
 // Land photographs only. AI captions are excluded because they describe what
 // is visible, rather than providing a professional valuation description.
-const photosTbl = (_v: Record<string, string>, projectId: string) => {
-  const rows: [string, string][] = [
-    ['accessRoad', 'Access road'],
-    ['routeFromMainRoad', 'Route from main road'],
-    ['frontView', 'Front view of the land'],
-    ['rearView', 'Rear view of the land'],
-    ['leftSideView', 'Left side view of land'],
-    ['rightSideView', 'Right side view of the land'],
-    ['eastBoundary', 'East boundary of the land'],
-    ['southBoundary', 'South boundary of the land'],
-    ['westBoundary', 'West boundary of the land'],
-    ['northBoundary', 'North boundary of the land'],
+const photosTbl = (v: Record<string, string>, projectId: string) => {
+  const rows: [string, string, string][] = [
+    ['accessRoad', 'photoAccessRoad', 'Access road'],
+    ['routeFromMainRoad', 'photoRouteFromMainRoad', 'Route from main road'],
+    ['frontView', 'photoFrontView', 'Front view of the land'],
+    ['rearView', 'photoRearView', 'Rear view of the land'],
+    ['leftSideView', 'photoLeftSide', 'Left side view of land'],
+    ['rightSideView', 'photoRightSide', 'Right side view of the land'],
+    ['eastBoundary', 'photoEastBoundary', 'East boundary of the land'],
+    ['southBoundary', 'photoSouthBoundary', 'South boundary of the land'],
+    ['westBoundary', 'photoWestBoundary', 'West boundary of the land'],
+    ['northBoundary', 'photoNorthBoundary', 'North boundary of the land'],
   ]
   return `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:6px">
    <tr style="background:#f0f0f0"><th style="border:1px solid #bbb;padding:5px;text-align:left;width:35%">Land photograph</th><th style="border:1px solid #bbb;padding:5px">Image</th></tr>
    ${rows
      .map(
-       ([t, label]) => `<tr>
+       ([t, key, label]) => `<tr>
      <td style="border:1px solid #bbb;padding:6px;font-weight:600">${esc(label)}</td>
-     <td style="border:1px solid #bbb;padding:6px;text-align:center"><img src="${photoUrl(projectId, t)}" alt="${esc(label)}" style="max-width:260px;max-height:170px" onerror="this.style.display='none';this.parentNode.innerHTML='<span style=color:#999>no photo</span>'"/></td>
+     <td style="border:1px solid #bbb;padding:6px;text-align:center"><img src="${esc(v[key] || photoUrl(projectId, t))}" alt="${esc(label)}" style="max-width:260px;max-height:170px" onerror="this.style.display='none';this.parentNode.innerHTML='<span style=color:#999>no photo</span>'"/></td>
     </tr>`,
      )
      .join('')}
   </table>`
 }
 
-const additionalPhotos = (projectId: string) => {
-  const types: [string, string][] = [
-    ['gateEntrance', 'Gate / Entrance'], ['drainage', 'Drainage'], ['roadFrontage', 'Road Frontage'],
-    ['soilCondition', 'Soil Condition'], ['unauthorizedStructures', 'Unauthorized Structures'],
-    ['floodEvidence', 'Flood Evidence'], ['notableFeatures', 'Notable Features'],
-    ['surroundingArea', 'Surrounding Area'], ['nearbyFacilities', 'Nearby Facilities'],
+const additionalPhotos = (v: Record<string, string>, projectId: string) => {
+  const types: [string, string, string][] = [
+    ['gateEntrance', 'photoGateEntrance', 'Gate / Entrance'], ['drainage', 'photoDrainage', 'Drainage'], ['roadFrontage', 'photoRoadFrontage', 'Road Frontage'],
+    ['soilCondition', 'photoSoilCondition', 'Soil Condition'], ['unauthorizedStructures', 'photoUnauthorizedStructures', 'Unauthorized Structures'],
+    ['floodEvidence', 'photoFloodEvidence', 'Flood Evidence'], ['notableFeatures', 'photoNotableFeatures', 'Notable Features'],
+    ['surroundingArea', 'photoSurroundingArea', 'Surrounding Area'], ['nearbyFacilities', 'photoNearbyFacilities', 'Nearby Facilities'],
   ]
   return `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">${types
-    .map(([t, label]) => `<figure style="margin:0;text-align:center;font-size:10px"><img src="${photoUrl(projectId, t)}" style="max-width:150px;max-height:110px;display:block" onerror="this.parentNode.style.display='none'"/>${esc(label)}</figure>`)
+    .map(([t, key, label]) => `<figure style="margin:0;text-align:center;font-size:10px"><img src="${esc(v[key] || photoUrl(projectId, t))}" style="max-width:150px;max-height:110px;display:block" onerror="this.parentNode.style.display='none'"/>${esc(label)}</figure>`)
     .join('')}</div>`
 }
 

@@ -20,10 +20,12 @@ type InspectionFormProps = {
   assignment?: Assignment
   onBack: () => void
   compact?: boolean
+  autoSave?: boolean
   promptAfterSave?: boolean
   value?: InspectionData
   onChange?: Dispatch<SetStateAction<InspectionData>>
   onSaved?: () => void
+  onFieldFocus?: (fieldName: string) => void
 }
 
 const printableInspectionSections = [
@@ -80,7 +82,9 @@ const fieldHints: Record<string, string> = {
   signature: 'Enter signer name or signature reference',
 }
 
-const InspectionForm = ({ projectId, toId, assignment, onBack, compact = false, promptAfterSave = false, value, onChange, onSaved }: InspectionFormProps) => {
+type AutoSaveStatus = 'idle' | 'saving' | 'saved' | 'failed'
+
+const InspectionForm = ({ projectId, toId, assignment, onBack, compact = false, autoSave = false, promptAfterSave = false, value, onChange, onSaved, onFieldFocus }: InspectionFormProps) => {
   const navigate = useNavigate()
   const [internalData, setInternalData] = useState<InspectionData>({})
   const data = value ?? internalData
@@ -93,7 +97,10 @@ const InspectionForm = ({ projectId, toId, assignment, onBack, compact = false, 
   const [error, setError] = useState('')
   const [rawText, setRawText] = useState('')
   const [openSection, setOpenSection] = useState(0)
+  const [autoSaveStatus, setAutoSaveStatus] = useState<AutoSaveStatus>('idle')
   const fileRef = useRef<HTMLInputElement>(null)
+  const hydratedRef = useRef(false)
+  const lastSavedRef = useRef('')
 
   const totalFields = useMemo(
     () => inspectionSections.reduce((total, section) => total + section.fields.length, 0),
@@ -110,8 +117,38 @@ const InspectionForm = ({ projectId, toId, assignment, onBack, compact = false, 
 
   // Pre-fill with any previously saved inspection.
   useEffect(() => {
-    getInspection(projectId).then((d) => d && setData(d))
+    hydratedRef.current = false
+    setAutoSaveStatus('idle')
+    getInspection(projectId).then((saved) => {
+      const initial = saved ?? {}
+      if (saved) setData(saved)
+      lastSavedRef.current = JSON.stringify(initial)
+      hydratedRef.current = true
+    })
   }, [projectId])
+
+  // The preview reads from React state immediately. Persistence is deliberately
+  // separate and debounced so typing never creates one request per character.
+  useEffect(() => {
+    if (!autoSave || !hydratedRef.current) return
+    const serialized = JSON.stringify(data)
+    if (serialized === lastSavedRef.current) return
+
+    setAutoSaveStatus('idle')
+    const timer = window.setTimeout(async () => {
+      setAutoSaveStatus('saving')
+      const result = await saveInspection(projectId, toId, data)
+      if (result.ok) {
+        lastSavedRef.current = serialized
+        setAutoSaveStatus('saved')
+        onSaved?.()
+      } else {
+        setAutoSaveStatus('failed')
+      }
+    }, 1500)
+
+    return () => window.clearTimeout(timer)
+  }, [autoSave, data, onSaved, projectId, toId])
 
   const set = (key: string, value: string) => setData((d) => ({ ...d, [key]: value }))
 
@@ -191,7 +228,16 @@ const InspectionForm = ({ projectId, toId, assignment, onBack, compact = false, 
         <div className="rounded-xl border border-white/10 bg-black/10 px-4 py-3">
           <div className="flex items-center justify-between text-xs">
             <span className="font-semibold uppercase tracking-[0.14em] text-emerald-100/60">Inspection progress</span>
-            <span className="font-bold text-gold-200">{completedFields} / {totalFields}</span>
+            <div className="flex items-center gap-3">
+              {autoSave && <span className={`font-semibold ${
+                autoSaveStatus === 'failed' ? 'text-red-300' :
+                autoSaveStatus === 'saving' ? 'text-gold-200' :
+                autoSaveStatus === 'saved' ? 'text-emerald-300' : 'text-emerald-100/45'
+              }`} aria-live="polite">
+                {autoSaveStatus === 'saving' ? 'Saving…' : autoSaveStatus === 'saved' ? 'Saved' : autoSaveStatus === 'failed' ? 'Save failed' : 'Autosave ready'}
+              </span>}
+              <span className="font-bold text-gold-200">{completedFields} / {totalFields}</span>
+            </div>
           </div>
           <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
             <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-gold-400 transition-[width] duration-300" style={{ width: `${completion}%` }} />
@@ -236,6 +282,7 @@ const InspectionForm = ({ projectId, toId, assignment, onBack, compact = false, 
                     id={`inspection-${f.key}`}
                     value={data[f.key] ?? ''}
                     onChange={(e) => set(f.key, e.target.value)}
+                    onFocus={() => onFieldFocus?.(f.key)}
                     placeholder={fieldHints[f.key] ?? `Enter ${f.label.toLowerCase()}`}
                     rows={4}
                     className="w-full resize-y rounded-xl border border-white/15 bg-black/15 px-4 py-3 text-sm leading-6 text-white outline-none transition placeholder:text-emerald-100/25 hover:border-white/25 focus:border-gold-400/60 focus:bg-black/25 focus:ring-4 focus:ring-gold-400/10"
@@ -245,6 +292,7 @@ const InspectionForm = ({ projectId, toId, assignment, onBack, compact = false, 
                     id={`inspection-${f.key}`}
                     value={data[f.key] ?? ''}
                     onChange={(e) => set(f.key, e.target.value)}
+                    onFocus={() => onFieldFocus?.(f.key)}
                     className="w-full rounded-xl border border-white/15 bg-emerald-950 px-4 py-3 text-sm text-white outline-none transition hover:border-white/25 focus:border-gold-400/60 focus:ring-4 focus:ring-gold-400/10"
                   >
                     <option value="">Select…</option>
@@ -256,6 +304,7 @@ const InspectionForm = ({ projectId, toId, assignment, onBack, compact = false, 
                     type={f.key === 'inspectionDate' ? 'date' : 'text'}
                     value={data[f.key] ?? ''}
                     onChange={(e) => set(f.key, e.target.value)}
+                    onFocus={() => onFieldFocus?.(f.key)}
                     placeholder={fieldHints[f.key] ?? `Enter ${f.label.toLowerCase()}`}
                     className="w-full rounded-xl border border-white/15 bg-black/15 px-4 py-3 text-sm text-white outline-none transition placeholder:text-emerald-100/25 hover:border-white/25 focus:border-gold-400/60 focus:bg-black/25 focus:ring-4 focus:ring-gold-400/10"
                   />

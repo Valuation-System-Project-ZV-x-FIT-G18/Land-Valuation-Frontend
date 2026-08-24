@@ -5,7 +5,9 @@ import GradientText from '@/Common_Pages/components/ui/GradientText'
 import SuccessModal from '@/Common_Pages/components/ui/SuccessModal'
 import { buildReportHtml } from '@/Role_Pages/technical-officer/draft/utils/buildReportHtml'
 import { downloadReportPdf, getBuildValues, getSavedReport, saveReport } from '@/Role_Pages/technical-officer/draft/api/draft'
-import { getEvidence, getValuation } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
+import { getDescriptions, getEvidence, getValuation } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
+import { getPhotos, getReportPhotoSources } from '@/Role_Pages/technical-officer/site-photos/api/site-photos'
+import { mapDescriptionsToReportValues } from '@/Role_Pages/technical-officer/draft/utils/mapDescriptionsToReportValues'
 
 type Props = {
   projectId: string
@@ -28,13 +30,15 @@ const DraftEditor = ({ projectId, valuationId, onBack, correctionMode = false, r
 
   const loadFromData = async () => {
     setLoading(true); setError('')
-    const [values, valuation, evidence] = await Promise.all([
-      getBuildValues(projectId), getValuation(projectId), getEvidence(projectId),
+    const [values, valuation, evidence, descriptions, photos] = await Promise.all([
+      getBuildValues(projectId), getValuation(projectId), getEvidence(projectId), getDescriptions(projectId), getPhotos(projectId),
     ])
     if (!values) setError('Could not collect the saved project information.')
     else {
       const parse = (value?: string) => { try { return value ? JSON.parse(value) : null } catch { return null } }
-      setHtml(buildReportHtml(values, parse(values.savedValuation) ?? valuation, evidence, projectId, parse(values.savedEvidence)))
+      const photoSources = await getReportPhotoSources(projectId, photos.photos)
+      const reportValues = { ...values, ...mapDescriptionsToReportValues(descriptions), ...photoSources }
+      setHtml(buildReportHtml(reportValues, parse(reportValues.savedValuation) ?? valuation, evidence, projectId, parse(reportValues.savedEvidence)))
     }
     setLoading(false)
   }

@@ -9,6 +9,7 @@ import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/
 import { loadWorkflowSelection, saveWorkflowSelection } from '@/Role_Pages/technical-officer/assignments/utils/workflowSelection'
 import WorkflowPreviewLayout from '@/Role_Pages/technical-officer/shared/WorkflowPreviewLayout'
 import type { Evidence, Valuation } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
+import type { ReportNavigationTarget } from '@/Role_Pages/technical-officer/draft/components/LiveReportPreview'
 
 const NearbyAnalysisPage = () => {
   const location = useLocation()
@@ -27,6 +28,7 @@ const NearbyAnalysisPage = () => {
   const [previewValues, setPreviewValues] = useState<Record<string, string>>({})
   const [previewEvidence, setPreviewEvidence] = useState<Evidence | null>(null)
   const [previewValuation, setPreviewValuation] = useState<Valuation | null>(null)
+  const [navigationTarget, setNavigationTarget] = useState<ReportNavigationTarget | null>(null)
 
   useEffect(() => {
     const projectId = selected?.projectId ?? directProjectId
@@ -36,7 +38,7 @@ const NearbyAnalysisPage = () => {
   if (selected || directProjectId) {
     const projectId = selected?.projectId ?? directProjectId
     return (
-      <WorkflowPreviewLayout projectId={projectId} refreshToken={previewVersion} valueOverrides={previewValues} evidenceOverride={previewEvidence} valuationOverride={previewValuation}>
+      <WorkflowPreviewLayout projectId={projectId} refreshToken={previewVersion} valueOverrides={previewValues} evidenceOverride={previewEvidence} valuationOverride={previewValuation} navigationTarget={navigationTarget}>
       <NearbyAnalyser
         projectId={projectId}
         onContinue={() => navigate('/technical-officer/descriptions', {
@@ -49,6 +51,7 @@ const NearbyAnalysisPage = () => {
           setPreviewEvidence(preview.evidence)
           setPreviewValuation(preview.valuation)
         }}
+        onReportNavigate={(section) => setNavigationTarget({ section, requestId: Date.now() })}
       />
       </WorkflowPreviewLayout>
     )

@@ -8,6 +8,7 @@ import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/c
 import TOWorkflowStepper from '@/Role_Pages/technical-officer/shared/TOWorkflowStepper'
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 import WorkflowPreviewLayout from '@/Role_Pages/technical-officer/shared/WorkflowPreviewLayout'
+import type { ReportNavigationTarget } from '@/Role_Pages/technical-officer/draft/components/LiveReportPreview'
 
 const SITE_PHOTO_STORAGE_KEY = 'technical-officer-site-photo-project'
 
@@ -19,6 +20,7 @@ const SitePhotoPage = () => {
   const toId = user?.userId ?? ''
   const [searchTerm, setSearchTerm] = useState('')
   const [previewVersion, setPreviewVersion] = useState(0)
+  const [navigationTarget, setNavigationTarget] = useState<ReportNavigationTarget | null>(null)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(() => {
     const stateProjectId = (location.state as { projectId?: string } | null)?.projectId
     if (stateProjectId) return stateProjectId
@@ -53,8 +55,8 @@ const SitePhotoPage = () => {
   }
 
   if (selectedProjectId) {
-    return <WorkflowPreviewLayout projectId={selectedProjectId} refreshToken={previewVersion}>
-      <SitePhotoUpload projectId={selectedProjectId} toId={toId} onBack={() => persistProject(null)} onDataSaved={() => setPreviewVersion((value) => value + 1)} />
+    return <WorkflowPreviewLayout projectId={selectedProjectId} refreshToken={previewVersion} navigationTarget={navigationTarget}>
+      <SitePhotoUpload projectId={selectedProjectId} toId={toId} onBack={() => persistProject(null)} onDataSaved={() => setPreviewVersion((value) => value + 1)} onReportNavigate={(section) => setNavigationTarget({ section, requestId: Date.now() })} />
     </WorkflowPreviewLayout>
   }
 

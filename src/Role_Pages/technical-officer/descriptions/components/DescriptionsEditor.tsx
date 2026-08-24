@@ -54,12 +54,22 @@ const ORDER: { key: SectionKey; label: string }[] = [
   { key: 'mandatoryRequirements', label: 'Mandatory Requirements' },
   { key: 'rentControlRegulation', label: 'Rent Control Regulation' },
   { key: 'localityDescription', label: 'Locality' },
+  { key: 'localityFacilities', label: 'Locality Facilities (Section 7)' },
+  { key: 'conclusion', label: 'Valuation Conclusion (Section 12)' },
   { key: 'certification', label: 'Certification' },
 ]
 
-type Props = { projectId: string; onBack: () => void; onContinueToDraft?: () => void; onDataSaved?: () => void; onPreviewChange?: (values: Record<string, string>) => void }
+const reportSection: Partial<Record<SectionKey, string>> = {
+  requestDescription: 'property', limitations: 'property', generalAssumptions: 'property',
+  situation: 'property', extentDescription: 'land', accessDescription: 'access', landDescription: 'land',
+  ownershipDescription: 'legal', legalParagraph: 'legal', localAuthorityTax: 'legal',
+  streetLineBuildingLimits: 'legal', mandatoryRequirements: 'legal', rentControlRegulation: 'legal',
+  localityDescription: 'locality', localityFacilities: 'locality', conclusion: 'conclusion', certification: 'conclusion',
+}
 
-const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft, onDataSaved, onPreviewChange }: Props) => {
+type Props = { projectId: string; onBack: () => void; onContinueToDraft?: () => void; onDataSaved?: () => void; onPreviewChange?: (values: Record<string, string>) => void; onReportNavigate?: (section: string) => void }
+
+const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft, onDataSaved, onPreviewChange, onReportNavigate }: Props) => {
   const [texts, setTexts] = useState<Descriptions>(empty)
   const [sources, setSources] = useState<SourceSection[]>([])
   const [photos, setPhotos] = useState<string[]>([])
@@ -82,7 +92,7 @@ const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft, onDataSaved,
       streetLineBuildingLimits: texts.streetLineBuildingLimits,
       mandatoryRequirements: texts.mandatoryRequirements,
       rentControlRegulation: texts.rentControlRegulation,
-      localityFacilities: texts.localityFacilities,
+      localityFacilities: texts.localityFacilities || texts.localityDescription,
       certification: texts.certification,
       landDescription: texts.landDescription,
       conclusion: texts.conclusion,
@@ -216,6 +226,7 @@ const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft, onDataSaved,
             onFieldChange={(fk, v) => setField(key, fk, v)}
             onRegenerate={() => regenerate(key)}
             busy={busy === key || busy === 'all'}
+            onNavigate={() => onReportNavigate?.(reportSection[key] ?? 'property')}
           />
         )
       })}

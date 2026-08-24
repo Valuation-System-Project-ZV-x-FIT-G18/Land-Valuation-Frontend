@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import ReportReadiness from '@/Role_Pages/technical-officer/draft/components/ReportReadiness'
 
+export type ReportNavigationTarget = { section: string; requestId: number }
+
 type Props = {
   html: string
   loading: boolean
   savedDraft: boolean
   readiness: { label: string; ready: boolean }[]
+  navigationTarget?: ReportNavigationTarget | null
 }
 
-const LiveReportPreview = ({ html, loading, savedDraft, readiness }: Props) => {
+const LiveReportPreview = ({ html, loading, savedDraft, readiness, navigationTarget }: Props) => {
   const viewportRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(1)
 
@@ -21,6 +24,29 @@ const LiveReportPreview = ({ html, loading, savedDraft, readiness }: Props) => {
     observer.observe(viewport)
     return () => observer.disconnect()
   }, [])
+
+  useEffect(() => {
+    const viewport = viewportRef.current
+    if (!viewport || !navigationTarget || loading) return
+    const [kind, name] = navigationTarget.section.split(':', 2)
+    const selector = kind === 'field'
+      ? `[data-report-field="${name}"]`
+      : `[data-report-section="${navigationTarget.section}"]`
+    const target = viewport.querySelector<HTMLElement>(selector)
+    if (!target) return
+
+    const viewportRect = viewport.getBoundingClientRect()
+    const targetRect = target.getBoundingClientRect()
+    const nextTop = viewport.scrollTop + targetRect.top - viewportRect.top - Math.max(24, viewport.clientHeight * 0.2)
+    viewport.scrollTo({ top: Math.max(0, nextTop), behavior: 'smooth' })
+    target.style.outline = '2px solid rgba(16, 185, 129, 0.55)'
+    target.style.backgroundColor = 'rgba(209, 250, 229, 0.35)'
+    const timer = window.setTimeout(() => {
+      target.style.outline = ''
+      target.style.backgroundColor = ''
+    }, 1600)
+    return () => window.clearTimeout(timer)
+  }, [loading, navigationTarget])
 
   return (
   <section className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-slate-200 shadow-2xl">

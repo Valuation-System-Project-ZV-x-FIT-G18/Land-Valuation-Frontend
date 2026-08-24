@@ -46,3 +46,39 @@ export function photoUrl(projectId: string, photoType: string, bust = ''): strin
   const b = bust ? `&t=${encodeURIComponent(bust)}` : ''
   return `/api/technical-officer/site-photos/file?projectId=${encodeURIComponent(projectId)}&photoType=${encodeURIComponent(photoType)}${b}`
 }
+
+const reportPhotoKeys: Record<string, string> = {
+  accessRoad: 'photoAccessRoad', routeFromMainRoad: 'photoRouteFromMainRoad',
+  frontView: 'photoFrontView', rearView: 'photoRearView', leftSideView: 'photoLeftSide',
+  rightSideView: 'photoRightSide', northBoundary: 'photoNorthBoundary',
+  eastBoundary: 'photoEastBoundary', southBoundary: 'photoSouthBoundary',
+  westBoundary: 'photoWestBoundary', gateEntrance: 'photoGateEntrance',
+  drainage: 'photoDrainage', roadFrontage: 'photoRoadFrontage',
+  soilCondition: 'photoSoilCondition', unauthorizedStructures: 'photoUnauthorizedStructures',
+  floodEvidence: 'photoFloodEvidence', notableFeatures: 'photoNotableFeatures',
+  surroundingArea: 'photoSurroundingArea', nearbyFacilities: 'photoNearbyFacilities',
+}
+
+const blobToDataUrl = (blob: Blob) => new Promise<string>((resolve, reject) => {
+  const reader = new FileReader()
+  reader.onload = () => resolve(String(reader.result ?? ''))
+  reader.onerror = () => reject(reader.error)
+  reader.readAsDataURL(blob)
+})
+
+// HTML image elements cannot attach the JWT header. Fetch through the app's
+// authenticated fetch wrapper, then give the report an embeddable data URL.
+export async function getReportPhotoSources(projectId: string, photos: UploadedPhoto[]) {
+  const entries = await Promise.all(photos.map(async (photo) => {
+    const key = reportPhotoKeys[photo.photoType]
+    if (!key) return null
+    try {
+      const response = await fetch(photoUrl(projectId, photo.photoType, photo.createdAt))
+      if (!response.ok) return null
+      return [key, await blobToDataUrl(await response.blob())] as const
+    } catch {
+      return null
+    }
+  }))
+  return Object.fromEntries(entries.filter((entry): entry is readonly [string, string] => entry !== null))
+}
