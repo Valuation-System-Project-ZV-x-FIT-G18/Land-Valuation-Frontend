@@ -1,7 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { AuthUser } from '@/Common_Pages/components/auth/useAuth'
+import Badge from '@/Common_Pages/components/ui/Badge'
 import Card from '@/Common_Pages/components/ui/Card'
+import WelcomeCard from './WelcomeCard'
+import { EmptyState, LoadingRows, SectionCard, SummaryCards } from './RoleDashboardParts'
 import { getAssignments, type Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 
 const isCorrection = (assignment: Assignment) => assignment.reviewStatus.toLowerCase().includes('reject')
@@ -11,95 +14,79 @@ const isCompleted = (assignment: Assignment) =>
 const TechnicalOfficerDashboard = ({ user }: { user: AuthUser }) => {
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  useEffect(() => {
-    let cancelled = false
-    getAssignments(user.userId).then((result) => {
-      if (!cancelled) {
-        setAssignments(result.assignments)
-        setLoading(false)
-      }
-    })
-    return () => { cancelled = true }
+  const load = useCallback(async () => {
+    setLoading(true)
+    setError('')
+    const result = await getAssignments(user.userId)
+    setAssignments(result.assignments)
+    setError(result.error ?? '')
+    setLoading(false)
   }, [user.userId])
 
-  const active = useMemo(() => assignments.filter((item) => !isCompleted(item)), [assignments])
-  const awaiting = active.filter((item) => item.status === 'Technical Officer Assigned')
-  const corrections = active.filter(isCorrection)
-  const priority = corrections[0] ?? awaiting[0] ?? active[0]
-  const count = (value: number) => loading ? '—' : value
+  useEffect(() => { load() }, [load])
 
-  const summaries = [
-    { label: 'Assigned projects', value: count(active.length), hint: 'Total workload', icon: '🗂️' },
-    { label: 'Needs response', value: count(awaiting.length), hint: 'Awaiting acceptance', icon: '⌛' },
-    { label: 'Corrections', value: count(corrections.length), hint: 'Drafts returned to you', icon: '↩️' },
-  ]
+  const active = useMemo(() => assignments.filter((item) => !isCompleted(item)), [assignments])
+  const awaiting = active.filter((item) => item.status === 'Technical Officer Assigned' && !isCorrection(item))
+  const corrections = active.filter(isCorrection)
+  const completed = assignments.filter(isCompleted)
+  const priority = [...corrections, ...awaiting, ...active.filter((item) => !corrections.includes(item) && !awaiting.includes(item))]
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-white sm:text-3xl">Today&apos;s work overview</h1>
-          <p className="mt-1 text-sm text-emerald-100/60 sm:text-base">Prioritise assignments, complete inspections, and progress reports.</p>
-        </div>
-        <Link to="/technical-officer/assignments" className="font-semibold text-gold-300 transition hover:text-gold-200">
-          View all projects →
-        </Link>
-      </div>
+      <WelcomeCard name={user.name} role={user.role} userId={user.userId} photoPath={user.photoPath} />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {summaries.map((item) => (
-          <Card key={item.label} className="p-5">
-            <div className="flex items-start justify-between gap-4">
-              <p className="font-semibold text-emerald-100/65">{item.label}</p>
-              <span aria-hidden="true" className="text-lg">{item.icon}</span>
-            </div>
-            <p className="mt-4 text-4xl font-bold text-gold-300">{item.value}</p>
-            <p className="mt-1 text-sm text-emerald-100/45">{item.hint}</p>
-          </Card>
-        ))}
-      </div>
+      {error && (
+        <Card className="border-red-400/30 p-4 text-sm text-red-200">
+          {error} <button type="button" className="ml-2 text-gold-200 underline" onClick={load}>Try again</button>
+        </Card>
+      )}
 
-      <Card className="p-6">
-        <div className="flex items-center justify-between gap-4">
-          <h2 className="text-xl font-semibold text-white">Priority projects</h2>
-          <span className="text-sm text-emerald-100/45">Next assignments</span>
-        </div>
-        {loading ? (
-          <div className="mt-7 h-12 animate-pulse rounded-xl bg-white/5" />
-        ) : priority ? (
-          <div className="mt-7 flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="font-semibold text-white">{priority.projectId}</p>
-              <p className="mt-1 text-sm text-emerald-100/55">
-                {[priority.location.district, priority.location.address].filter(Boolean).join(' · ') || 'Location not recorded'}
-              </p>
-            </div>
-            <Link to="/technical-officer/assignments" className="text-sm font-medium text-gold-300 hover:text-gold-200">Continue →</Link>
+      <SummaryCards loading={loading} items={[
+        { label: 'Active Projects', value: active.length, hint: 'Current Technical Officer workload', tone: 'bg-sky-300' },
+        { label: 'Awaiting Response', value: awaiting.length, hint: 'Assignments awaiting acceptance', tone: 'bg-amber-300' },
+        { label: 'Corrections', value: corrections.length, hint: 'Drafts returned for correction', tone: 'bg-red-300' },
+        { label: 'Completed', value: completed.length, hint: 'Completed and locked valuations', tone: 'bg-emerald-300' },
+      ]} />
+
+      <SectionCard title="Projects Requiring Attention" subtitle="Assignments and corrections currently waiting for Technical Officer action.">
+        {loading ? <LoadingRows /> : priority.length === 0 ? <EmptyState>No active assignments currently require your attention.</EmptyState> : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead className="border-b border-white/10 text-xs uppercase text-emerald-100/45">
+                <tr><th className="p-3">Project</th><th className="p-3">Applicant</th><th className="p-3">Location</th><th className="p-3">Current Stage</th><th className="p-3">Action</th></tr>
+              </thead>
+              <tbody className="divide-y divide-white/10">
+                {priority.slice(0, 6).map((item) => (
+                  <tr key={item.valuationRowId}>
+                    <td className="p-3 font-semibold text-gold-200">{item.projectId}</td>
+                    <td className="p-3 text-emerald-50">{item.owner.name || item.owner.nic || '—'}</td>
+                    <td className="p-3 text-emerald-100/70">{item.location.district || item.location.address || '—'}</td>
+                    <td className="p-3"><Badge status={isCorrection(item) ? 'Correction required' : item.status}>{isCorrection(item) ? 'Correction required' : item.status}</Badge></td>
+                    <td className="p-3"><Link to={isCorrection(item) ? '/technical-officer/corrections' : '/technical-officer/assignments'} className="text-gold-200 hover:underline">Open project →</Link></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        ) : (
-          <p className="mt-7 text-sm text-emerald-100/55">No active assignments need your attention.</p>
         )}
-      </Card>
+      </SectionCard>
 
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold text-white">Continue workflow</h2>
-        <div className="mt-5 space-y-3">
+      <SectionCard title="Technical Officer Workflow" subtitle="Continue the next stage of field work and valuation preparation.">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {[
-            ['Review assignments', '/technical-officer/assignments'],
-            ['Record inspection data', '/technical-officer/inspections'],
-            ['Create valuation draft', '/technical-officer/draft'],
-          ].map(([label, to], index) => (
-            <Link
-              key={to}
-              to={to}
-              className={`block rounded-xl border px-4 py-3 font-medium transition hover:border-gold-400/50 hover:bg-gold-400/5 ${index === 1 ? 'border-gold-400/45 text-gold-200' : 'border-white/10 bg-white/[0.035] text-emerald-50'}`}
-            >
-              {label}
+            ['Assigned Projects', '/technical-officer/assignments'],
+            ['Inspection Data', '/technical-officer/inspections'],
+            ['Site Photos', '/technical-officer/site-photos'],
+            ['Create Draft', '/technical-officer/draft'],
+          ].map(([label, to]) => (
+            <Link key={to} to={to} className="rounded-xl border border-white/10 bg-white/[0.025] px-4 py-4 font-medium text-emerald-50 transition hover:border-gold-400/45 hover:bg-gold-400/5 hover:text-gold-200">
+              {label} <span className="float-right text-emerald-100/40">→</span>
             </Link>
           ))}
         </div>
-      </Card>
+      </SectionCard>
     </div>
   )
 }
