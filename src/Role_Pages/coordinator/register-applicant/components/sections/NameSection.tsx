@@ -5,7 +5,7 @@ import type { SectionProps } from '@/Role_Pages/coordinator/register-applicant/t
 // Personal information. Name parts required by the database are derived from
 // the full name on submit, so the user only needs to enter the full name once.
 const NameSection = ({ values, errors, onChange, onBlur }: SectionProps) => (
-    <FormSection icon="👤" title="Personal information">
+    <FormSection title="Personal information">
       <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-200/40">
         Name
       </p>

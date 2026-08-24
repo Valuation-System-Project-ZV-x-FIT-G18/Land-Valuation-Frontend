@@ -326,7 +326,7 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
                     </p>
                     <p className="truncate text-xs text-emerald-200/60">
                       {summarizeDraft(d.data) || 'No details filled in'}
-                      {d.files?.length ? ` · 📎 ${d.files.length} document(s)` : ''}
+                      {d.files?.length ? ` · ${d.files.length} document(s)` : ''}
                     </p>
                   </div>
                   <Button
@@ -393,7 +393,7 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
         {projectSections.map((section, i) => (
           <Card key={section.title} className="p-6 sm:p-8">
             <h2 className="mb-5 flex items-center gap-2 text-lg font-bold text-white">
-              <span>{section.icon}</span> {i + 5}. {section.title}
+              {i + 5}. {section.title}
             </h2>
             <div className="grid gap-5 sm:grid-cols-2">
               {section.fields
@@ -434,7 +434,7 @@ const ProjectForm = ({ onDone }: ProjectFormProps) => {
         {/* Section 13 — Document uploads */}
         <Card className="p-6 sm:p-8">
           <h2 className="mb-5 flex items-center gap-2 text-lg font-bold text-white">
-            <span>📎</span> 13. Document Uploads
+            13. Document Uploads
           </h2>
           <div className="grid gap-5 sm:grid-cols-2">
             {projectUploads.map((u) => (

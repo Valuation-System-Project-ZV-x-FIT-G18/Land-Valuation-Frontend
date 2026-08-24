@@ -20,7 +20,7 @@ const LocationCard = ({ loc }: { loc: NearbyLocation }) => {
 
   return (
     <Card className="p-5 sm:p-6">
-      <h3 className="mb-4 text-sm font-semibold text-gold-300">📍 Subject Property Location</h3>
+      <h3 className="mb-4 text-sm font-semibold text-gold-300">Subject Property Location</h3>
       <div className="grid gap-4 sm:grid-cols-3">
         <Row label="Address" value={address} />
         <Row label="District" value={loc.district} />

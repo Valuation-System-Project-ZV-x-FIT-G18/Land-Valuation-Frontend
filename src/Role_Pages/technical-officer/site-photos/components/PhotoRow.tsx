@@ -81,9 +81,7 @@ const PhotoRow = ({ projectId, photo, uploaded, describe = false, onUpload }: Ph
       ) : has ? (
         <span className="h-14 w-14 shrink-0 animate-pulse rounded-lg border border-white/10 bg-white/5" aria-label="Loading photo preview" />
       ) : (
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-dashed border-white/20 text-lg text-emerald-200/40">
-          🖼️
-        </span>
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-dashed border-white/20 px-1 text-center text-[10px] text-emerald-200/40">No image</span>
       )}
 
       <div className="min-w-0 flex-1">
@@ -95,7 +93,7 @@ const PhotoRow = ({ projectId, photo, uploaded, describe = false, onUpload }: Ph
         {busy && describe && <p className="text-xs text-emerald-200/50 italic">Describing image…</p>}
         {shownCaption && (
           <p className="mt-1 rounded-md bg-gold-400/10 px-2 py-1 text-xs italic text-gold-100/90">
-            🤖 {shownCaption}
+            {shownCaption}
           </p>
         )}
         {error && <p className="text-xs text-red-300">{error}</p>}

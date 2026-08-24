@@ -210,7 +210,6 @@ const InspectionForm = ({ projectId, toId, assignment, onBack, compact = false, 
       <Card className="border-dashed p-4 sm:p-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-400/10 text-lg" aria-hidden="true">⌁</span>
             <div>
               <p className="font-semibold text-white">Upload the filled document</p>
               <p className="mt-0.5 text-sm text-emerald-100/55">Upload an inspection form to extract data, then verify every populated field.</p>
@@ -252,7 +251,6 @@ const InspectionForm = ({ projectId, toId, assignment, onBack, compact = false, 
         <Card key={section.title} className="overflow-hidden">
           <button type="button" disabled={!compact} aria-expanded={!compact || openSection === sectionIndex} onClick={() => compact && setOpenSection((current) => current === sectionIndex ? -1 : sectionIndex)} className={`flex w-full flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-white/[0.025] px-5 py-4 text-left sm:px-7 ${compact ? 'cursor-pointer transition hover:bg-white/[0.055]' : 'cursor-default'}`}>
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-xl">{section.icon}</span>
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gold-300/70">Section {String(sectionIndex + 1).padStart(2, '0')}</p>
                 <h2 className="mt-0.5 text-lg font-bold text-white">{section.title}</h2>

@@ -169,7 +169,7 @@ const DraftEditor = ({ draft, nic, onSubmit, onSaved, onCancel }: DraftEditorPro
         {projectSections.map((section, i) => (
           <Card key={section.title} className="p-6 sm:p-8">
             <h2 className="mb-5 flex items-center gap-2 text-lg font-bold text-white">
-              <span>{section.icon}</span> {i + 5}. {section.title}
+              {i + 5}. {section.title}
             </h2>
             <div className="grid gap-5 sm:grid-cols-2">
               {section.fields
@@ -211,7 +211,7 @@ const DraftEditor = ({ draft, nic, onSubmit, onSaved, onCancel }: DraftEditorPro
             form. All optional here: attach whatever you already have. */}
         <Card className="p-6 sm:p-8">
           <h2 className="mb-1 flex items-center gap-2 text-lg font-bold text-white">
-            <span>📎</span> 13. Documents
+            13. Documents
           </h2>
           <p className="mb-5 text-sm text-emerald-100/70">
             Attach any of these you already have (PDF or image). You can add the rest later.
@@ -229,7 +229,7 @@ const DraftEditor = ({ draft, nic, onSubmit, onSaved, onCancel }: DraftEditorPro
                     <p className="text-sm font-medium text-white">{u.label}</p>
                     {chosen ? (
                       <div className="mt-0.5 flex min-w-0 items-center gap-2 text-xs text-gold-200">
-                        <span className="truncate">📎 {chosen.name}</span>
+                        <span className="truncate">{chosen.name}</span>
                         <button
                           type="button"
                           className="shrink-0 font-medium underline hover:text-gold-100"
@@ -249,7 +249,7 @@ const DraftEditor = ({ draft, nic, onSubmit, onSaved, onCancel }: DraftEditorPro
                         rel="noreferrer"
                         className="mt-0.5 inline-flex items-center gap-1 text-xs text-gold-200 underline"
                       >
-                        📎 {existing} · View
+                        {existing} · View
                       </a>
                     ) : null}
                   </div>

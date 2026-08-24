@@ -34,7 +34,7 @@ const ComparablesSummary = ({ comparables, adoptedRate, onApplyRate }: Props) =>
   if (n === 0) {
     return (
       <Card className="p-5 sm:p-6">
-        <h3 className="mb-1 text-sm font-semibold text-gold-300">📈 Price Evidence Summary</h3>
+        <h3 className="mb-1 text-sm font-semibold text-gold-300">Price Evidence Summary</h3>
         <p className="text-xs text-emerald-100/60">
           Add at least one comparable with a per-perch price to see the price analysis.
         </p>
@@ -61,7 +61,7 @@ const ComparablesSummary = ({ comparables, adoptedRate, onApplyRate }: Props) =>
 
   return (
     <Card className="p-5 sm:p-6">
-      <h3 className="mb-3 text-sm font-semibold text-gold-300">📈 Price Evidence Summary</h3>
+      <h3 className="mb-3 text-sm font-semibold text-gold-300">Price Evidence Summary</h3>
 
       <div className="grid grid-cols-2 gap-2">
         <Stat label="Comparables" value={String(n)} />

@@ -83,13 +83,12 @@ const FileField = ({
             htmlFor={`${name}-upload`}
             className="flex w-full cursor-pointer items-center gap-2 transition hover:text-gold-200"
           >
-            <span>📎 Choose file{multiple ? 's' : ''}</span>
+            <span>Choose file{multiple ? 's' : ''}</span>
             <span className="ml-auto text-xs text-emerald-200/40">{accept} · max 5MB</span>
           </label>
         ) : files.length === 0 && existingFileName ? (
           <div className="min-w-0 text-center">
             <div className="flex min-w-0 items-center justify-center gap-2">
-              <span aria-hidden className="shrink-0 text-gold-300">📄</span>
               <span className="max-w-56 truncate text-xs font-medium text-gold-100" title={existingFileName}>
                 {existingFileName}
               </span>
@@ -126,7 +125,6 @@ const FileField = ({
           <ul className="w-full space-y-2">
             {files.map((f, i) => (
               <li key={`${f.name}-${i}`} className="flex min-w-0 items-center justify-center gap-3">
-                <span aria-hidden className="shrink-0 text-gold-300">📄</span>
                 <span className="max-w-48 truncate text-center text-xs" title={f.name}>
                   {f.name}{' '}
                   <span className="text-emerald-200/40">({(f.size / 1024).toFixed(0)} KB)</span>

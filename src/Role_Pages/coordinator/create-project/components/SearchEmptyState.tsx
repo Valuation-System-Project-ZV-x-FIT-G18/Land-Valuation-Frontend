@@ -1,11 +1,7 @@
 // Empty state shown before any search is run on the Create Project page.
 // A house + magnifier illustration, a prompt, and a few feature chips.
 
-const chips = [
-  { icon: '🪪', label: 'NIC Lookup' },
-  { icon: '📁', label: 'Linked Projects' },
-  { icon: '⚡', label: 'Instant Results' },
-]
+const chips = ['NIC Lookup', 'Linked Projects', 'Instant Results']
 
 const SearchEmptyState = () => (
   <div className="mx-auto mt-6 max-w-md rounded-2xl border border-white/10 bg-white/5 p-8 text-center backdrop-blur-sm">
@@ -33,12 +29,12 @@ const SearchEmptyState = () => (
     </p>
 
     <div className="mt-5 flex flex-wrap justify-center gap-2">
-      {chips.map((c) => (
+      {chips.map((label) => (
         <span
-          key={c.label}
+          key={label}
           className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-emerald-100/80"
         >
-          <span>{c.icon}</span> {c.label}
+          {label}
         </span>
       ))}
     </div>

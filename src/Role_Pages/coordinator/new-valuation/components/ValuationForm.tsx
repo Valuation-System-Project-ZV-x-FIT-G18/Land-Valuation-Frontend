@@ -313,7 +313,7 @@ const ValuationForm = ({ onDone }: ValuationFormProps) => {
         {valuationSections.map((section, i) => (
           <Card key={section.title} className="p-6 sm:p-8">
             <h2 className="mb-1 flex items-center gap-2 text-lg font-bold text-white">
-              <span>{section.icon}</span> {i + 1}. {section.title}
+              {i + 1}. {section.title}
             </h2>
             {i === 0 && (
               <p className="mb-5 text-sm text-emerald-100/70">

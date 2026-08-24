@@ -56,9 +56,7 @@ const SitePhotoUpload = ({ projectId, toId, onBack, onDataSaved, onReportNavigat
       {photoSections.map((section) => (
         <div key={section.title} onFocusCapture={() => onReportNavigate?.('photos')} onMouseDown={() => onReportNavigate?.('photos')}>
         <Card className="p-5 sm:p-6">
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
-            <span>{section.icon}</span> {section.title}
-          </h2>
+          <h2 className="mb-4 text-lg font-bold text-white">{section.title}</h2>
           <div className="space-y-2">
             {section.photos.map((p) => (
               <PhotoRow

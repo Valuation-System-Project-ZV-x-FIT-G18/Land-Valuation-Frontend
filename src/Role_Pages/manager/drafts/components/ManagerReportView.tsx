@@ -192,7 +192,7 @@ const ManagerReportView = ({
           {busy === 'PDF' ? 'Generating PDF…' : 'Download PDF'}
         </Button>
         {!readOnly && (
-          <Button type="button" variant="outline" onClick={save} disabled={!!busy} className="!px-5 !py-2 text-sm">{busy === 'Save' ? 'Saving…' : '💾 Save edits'}</Button>
+          <Button type="button" variant="outline" onClick={save} disabled={!!busy} className="!px-5 !py-2 text-sm">{busy === 'Save' ? 'Saving…' : 'Save edits'}</Button>
         )}
         {level === 'L3' && (loadedStatus === 'pending_l3' || loadedStatus === 'draft' || loadedStatus === 'rejected_l3') && (
           <>
