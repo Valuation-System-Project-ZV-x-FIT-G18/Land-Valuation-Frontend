@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Button from '@/Common_Pages/components/ui/Button'
 import Card from '@/Common_Pages/components/ui/Card'
-import GradientText from '@/Common_Pages/components/ui/GradientText'
 import SuccessModal from '@/Common_Pages/components/ui/SuccessModal'
 import Table from '@/Common_Pages/components/ui/Table'
 import {
@@ -90,20 +89,8 @@ const TOAttendanceReviewPage = () => {
         closeLabel="Done"
         onClose={() => setNotice('')}
       />
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => navigate('/coordinator/fleet-management')}
-        className="!px-5 !py-2.5 text-sm"
-      >
-        Back to Fleet Management
-      </Button>
-
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-white sm:text-4xl">
-          TO <GradientText>Attendance</GradientText>
-        </h1>
-        <p className="mx-auto mt-2 max-w-xl text-sm text-emerald-100/70">
+        <p className="mx-auto mt-2 max-w-xl text-sm text-emerald-100">
           Leave requests stay pending until accepted. Only accepted requests move officers to On Leave on that day.
         </p>
       </div>
@@ -117,12 +104,12 @@ const TOAttendanceReviewPage = () => {
       <Card className="p-5 sm:p-6">
         <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
           Pending Requests
-          <span className="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-emerald-100/80">
+          <span className="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-emerald-100">
             {pending.length}
           </span>
         </h3>
         {loading ? (
-          <p className="text-sm text-emerald-100/60">Loading requests...</p>
+          <p className="text-sm text-emerald-100">Loading requests...</p>
         ) : (
           <Table
             columns={['Officer', 'ID', 'Date', 'Reason', 'Status', 'Action']}
@@ -135,7 +122,7 @@ const TOAttendanceReviewPage = () => {
       <Card className="p-5 sm:p-6">
         <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
           Reviewed Requests
-          <span className="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-emerald-100/80">
+          <span className="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-emerald-100">
             {history.length}
           </span>
         </h3>

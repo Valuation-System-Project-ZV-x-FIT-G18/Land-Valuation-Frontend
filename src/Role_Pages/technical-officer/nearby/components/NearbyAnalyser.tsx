@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import StepFooter from '@/Role_Pages/technical-officer/shared/StepFooter'
+import BackButton from '@/Role_Pages/technical-officer/shared/BackButton'
 import Card from '@/Common_Pages/components/ui/Card'
-import Button from '@/Common_Pages/components/ui/Button'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
 import LocationCard from './LocationCard'
 import ComparablesTable from './ComparablesTable'
@@ -21,13 +22,19 @@ const NearbyAnalyser = ({ projectId, onBack, onContinue, onDataSaved, onPreviewC
   const [aiComps, setAiComps] = useState(false)
   const [fetching, setFetching] = useState(false)
   const [report, setReport] = useState<Report | null>(null)
-  const [inp, setInp] = useState({ rate: '', date: new Date().toISOString().slice(0, 10), trend: TRENDS[1] })
+  // forcedSalePct was hard-coded to 80 in the request. The forced sale value is
+  // a professional judgement that varies with the property, and the figure it
+  // produces goes to a bank, so the valuer sets it and the report states it.
+  const [inp, setInp] = useState({ rate: '', date: new Date().toISOString().slice(0, 10), trend: TRENDS[1], forcedSalePct: '80' })
   const [busy, setBusy] = useState(false)
   const [saving, setSaving] = useState(false)
   const [savedToDatabase, setSavedToDatabase] = useState(false)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
   const [searchMessage, setSearchMessage] = useState<{ kind: 'error' | 'notice'; text: string } | null>(null)
+  // Set when a saved analysis is restored, so restoring does not count as a
+  // change that needs re-analysing.
+  const skipNextAutoRef = useRef(false)
 
   useEffect(() => {
     const evidence: Evidence = {
@@ -66,6 +73,7 @@ const NearbyAnalyser = ({ projectId, onBack, onContinue, onDataSaved, onPreviewC
         marketValueWords: report?.summary.marketValueWords ?? '',
         forcedSaleValue: report ? String(report.summary.forcedSaleValue) : '',
         forcedSaleValueWords: report?.summary.forcedSaleValueWords ?? '',
+        forcedSalePct: report ? String(report.summary.forcedSalePct || 80) : inp.forcedSalePct,
         valuationDate: report?.summary.valuationDate ?? inp.date,
         conclusion: report?.conclusion.text ?? '',
         nearbyPropertyDetails: report?.evidence.marketSurveyStatement ?? '',
@@ -114,7 +122,11 @@ const NearbyAnalyser = ({ projectId, onBack, onContinue, onDataSaved, onPreviewC
         setInp((p) => ({
           ...p, rate: String(saved.calculation.ratePerPerch || p.rate),
           date: saved.summary.valuationDate || p.date, trend: saved.conclusion.marketTrend || p.trend,
+          forcedSalePct: String(saved.summary.forcedSalePct || p.forcedSalePct),
         }))
+        // What was just restored already IS the summary, so the auto-rebuild
+        // below must not immediately regenerate it and mark it unsaved.
+        skipNextAutoRef.current = true
       } else {
         fetchComps()
       }
@@ -133,22 +145,57 @@ const NearbyAnalyser = ({ projectId, onBack, onContinue, onDataSaved, onPreviewC
     ])
   const deleteComp = (i: number) => setComps((cs) => cs.filter((_, idx) => idx !== i))
 
+  // The summary is a view of the comparables plus the three inputs, so it is
+  // rebuilt whenever those change instead of waiting for a button. The debounce
+  // keeps typing a rate from firing a request per keystroke, and the signature
+  // stops an unchanged set of inputs from being re-analysed.
+  const inputSignature = JSON.stringify({ comps, ...inp })
+  const lastAnalysedRef = useRef('')
+
+  useEffect(() => {
+    if (skipNextAutoRef.current) {
+      skipNextAutoRef.current = false
+      lastAnalysedRef.current = inputSignature
+      return
+    }
+    if (comps.length === 0 || !(Number(inp.rate) > 0)) return
+    if (lastAnalysedRef.current === inputSignature) return
+
+    const timer = window.setTimeout(() => {
+      lastAnalysedRef.current = inputSignature
+      void generate()
+    }, 900)
+    return () => window.clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputSignature])
+
   const generate = async () => {
     setBusy(true); setError(''); setNotice(''); setSavedToDatabase(false)
+    const forcedSalePct = Number(inp.forcedSalePct)
+    if (!Number.isFinite(forcedSalePct) || forcedSalePct < 1 || forcedSalePct > 100) {
+      setBusy(false)
+      setError('Forced sale percentage must be between 1% and 100%.')
+      return
+    }
     const res = await analyse(projectId, {
       comparables: comps,
       ratePerPerch: Number(inp.rate) || 0,
-      forcedSalePct: 80,
+      forcedSalePct,
       valuationDate: inp.date, previouslyValued: 'not valued', marketTrend: inp.trend,
     })
     setBusy(false)
     if ('error' in res) return setError(res.error)
     setReport(res)
-    setNotice(res.aiUsed ? '✨ Sections generated with AI. Review, edit, then save.' : 'Sections generated. Review, edit, then save.')
+    setNotice(res.aiUsed ? 'Sections generated with AI. Review, edit, then save.' : 'Sections generated. Review, edit, then save.')
   }
 
+  // Returns whether the save succeeded, so the step footer knows whether it may
+  // move on to the next step.
   const save = async () => {
-    if (!report) return
+    if (!report) {
+      setError('Generate the analysis before saving.')
+      return false
+    }
     setSaving(true); setError('')
     const res = await saveAnalysis(projectId, report)
     setSaving(false)
@@ -156,23 +203,24 @@ const NearbyAnalyser = ({ projectId, onBack, onContinue, onDataSaved, onPreviewC
       setSavedToDatabase(true)
       onDataSaved?.()
       setNotice('✓ Analysis saved to the database.')
-    } else {
-      setError(res.error ?? 'Could not save.')
+      return true
     }
+    setError(res.error ?? 'Could not save.')
+    return false
   }
 
   const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <label className="block"><span className="mb-1 block text-[11px] font-medium text-emerald-200/70">{label}</span>{children}</label>
+    <label className="block"><span className="mb-1 block text-[11px] font-medium text-emerald-200">{label}</span>{children}</label>
   )
-  const ic = 'w-full rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-white outline-none focus:border-gold-400/60'
-  const sc = 'w-full rounded-lg border border-white/15 bg-slate-800 px-3 py-1.5 text-sm text-white'
+  const ic = 'w-full rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-white outline-none focus:border-accent-400/60'
+  const sc = 'w-full rounded-lg border border-white/15 bg-surface px-3 py-1.5 text-sm text-white'
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5">
-      <Button type="button" variant="outline" onClick={onBack} className="!px-5 !py-2.5 text-sm">← Back to projects</Button>
+    <div className="mx-auto max-w-5xl space-y-5">
+      <BackButton onClick={onBack} />
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
         <h1 className="text-xl font-semibold text-white sm:text-2xl">Nearby Land Comparables</h1>
-        <span className="rounded-full border border-gold-400/25 bg-gold-400/10 px-3 py-1 text-sm font-semibold">
+        <span className="rounded-full border border-accent-400/25 bg-accent-400/10 px-3 py-1 text-sm font-semibold">
           <GradientText>{projectId}</GradientText>
         </span>
       </div>
@@ -201,8 +249,8 @@ const NearbyAnalyser = ({ projectId, onBack, onContinue, onDataSaved, onPreviewC
 
       <div onFocusCapture={() => onReportNavigate?.('valuation')} onMouseDown={() => onReportNavigate?.('valuation')}>
       <Card className="p-5 sm:p-6">
-        <h2 className="text-lg font-semibold text-gold-300">Prepare comparison summary</h2>
-        <p className="mt-1 text-sm leading-6 text-emerald-100/60">
+        <h2 className="text-lg font-semibold text-accent-300">Prepare comparison summary</h2>
+        <p className="mt-1 text-sm leading-6 text-emerald-100">
           Confirm the adopted base rate from the comparable evidence. This summary records the nearby-market
           evidence and the rate selected by the valuer.
         </p>
@@ -215,6 +263,10 @@ const NearbyAnalyser = ({ projectId, onBack, onContinue, onDataSaved, onPreviewC
             <input className={ic} type="date" value={inp.date}
               onChange={(e) => setInp((current) => ({ ...current, date: e.target.value }))} />
           </Field>
+          <Field label="Forced sale value (% of market value)">
+            <input className={ic} type="number" min="1" max="100" step="5" value={inp.forcedSalePct}
+              onChange={(e) => setInp((current) => ({ ...current, forcedSalePct: e.target.value }))} />
+          </Field>
           <Field label="Market trend">
             <select className={sc} value={inp.trend}
               onChange={(e) => setInp((current) => ({ ...current, trend: e.target.value }))}>
@@ -222,42 +274,54 @@ const NearbyAnalyser = ({ projectId, onBack, onContinue, onDataSaved, onPreviewC
             </select>
           </Field>
         </div>
-        <Button type="button" className="mt-5" loading={busy} onClick={generate}>
-          Prepare summary
-        </Button>
+        {/* No "prepare" button: the summary is a view of these three inputs, so
+            it simply follows them. */}
+        <p className="mt-4 text-xs text-emerald-200">
+          {busy
+            ? 'Updating the summary…'
+            : comps.length === 0
+              ? 'Add at least one comparable to build the summary.'
+              : Number(inp.rate) > 0
+                ? 'The summary below updates automatically as you change these.'
+                : 'Enter or adopt a base rate to build the summary.'}
+        </p>
         {error && !report && <p className="mt-3 text-sm text-red-300">{error}</p>}
       </Card>
       </div>
 
       {report && (
-        <Card className="border border-gold-400/25 p-5 sm:p-6">
+        <Card className="border border-accent-400/25 p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[.16em] text-gold-300/70">Transfer summary</p>
+              <p className="text-xs font-bold uppercase tracking-[.16em] text-accent-300">Transfer summary</p>
               <h2 className="mt-1 text-xl font-semibold text-white">Nearby Land Analysis Summary</h2>
-              <p className="mt-1 text-xs text-emerald-100/55">These details record the saved nearby-market evidence.</p>
+              <p className="mt-1 text-xs text-emerald-100">These details record the saved nearby-market evidence.</p>
             </div>
-            <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-emerald-100/70">
+            <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-emerald-100">
               {report.evidence.comparables.length} comparables
             </span>
           </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-xl border border-white/10 bg-white/5 p-3"><p className="text-[10px] uppercase text-emerald-100/45">Land extent</p><p className="mt-1 font-bold text-white">{report.calculation.totalExtentPerches} perches</p></div>
-            <div className="rounded-xl border border-white/10 bg-white/5 p-3"><p className="text-[10px] uppercase text-emerald-100/45">Lowest evidence</p><p className="mt-1 font-bold text-white">Rs. {report.evidence.rangeLow.toLocaleString('en-LK')}</p></div>
-            <div className="rounded-xl border border-white/10 bg-white/5 p-3"><p className="text-[10px] uppercase text-emerald-100/45">Highest evidence</p><p className="mt-1 font-bold text-white">Rs. {report.evidence.rangeHigh.toLocaleString('en-LK')}</p></div>
-            <div className="rounded-xl border border-white/10 bg-white/5 p-3"><p className="text-[10px] uppercase text-emerald-100/45">Adopted base rate</p><p className="mt-1 font-bold text-gold-300">Rs. {report.calculation.ratePerPerch.toLocaleString('en-LK')} / perch</p></div>
-            <div className="rounded-xl border border-white/10 bg-white/5 p-3"><p className="text-[10px] uppercase text-emerald-100/45">Valuation date</p><p className="mt-1 font-bold text-white">{report.summary.valuationDate}</p></div>
-            <div className="rounded-xl border border-white/10 bg-white/5 p-3"><p className="text-[10px] uppercase text-emerald-100/45">Market trend</p><p className="mt-1 font-bold capitalize text-white">{report.conclusion.marketTrend}</p></div>
+          {/* Only the figures that are decided here. The comparable count and
+              the per-perch range already have their own panel above; repeating
+              them made the same numbers look like two different findings. */}
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-xl border border-white/10 bg-white/5 p-3"><p className="text-[10px] uppercase text-emerald-100">Land extent</p><p className="mt-1 font-bold text-white">{report.calculation.totalExtentPerches} perches</p></div>
+            <div className="rounded-xl border border-white/10 bg-white/5 p-3"><p className="text-[10px] uppercase text-emerald-100">Adopted base rate</p><p className="mt-1 font-bold text-accent-300">Rs. {report.calculation.ratePerPerch.toLocaleString('en-LK')} / perch</p></div>
+            <div className="rounded-xl border border-white/10 bg-white/5 p-3"><p className="text-[10px] uppercase text-emerald-100">Market value</p><p className="mt-1 font-bold text-white">Rs. {report.calculation.marketValue.toLocaleString('en-LK')}</p></div>
+            <div className="rounded-xl border border-white/10 bg-white/5 p-3"><p className="text-[10px] uppercase text-emerald-100">Valuation date</p><p className="mt-1 font-bold text-white">{report.summary.valuationDate}</p></div>
+            <div className="rounded-xl border border-white/10 bg-white/5 p-3"><p className="text-[10px] uppercase text-emerald-100">Market trend</p><p className="mt-1 font-bold capitalize text-white">{report.conclusion.marketTrend}</p></div>
+            <div className="rounded-xl border border-white/10 bg-white/5 p-3"><p className="text-[10px] uppercase text-emerald-100">Forced sale value ({report.summary.forcedSalePct || 80}% of market value)</p><p className="mt-1 font-bold text-white">Rs. {report.summary.forcedSaleValue.toLocaleString('en-LK')}</p></div>
           </div>
-          <div className="mt-4 rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-3 text-xs leading-5 text-emerald-100/70">
-            This summary contains the comparable evidence range, adopted rate, land extent, valuation date and market trend for the selected project.
-          </div>
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            <Button type="button" loading={saving} onClick={save}>Save summary</Button>
-            {savedToDatabase && <Button type="button" variant="outline" onClick={onContinue}>Continue to Generate Descriptions →</Button>}
-            {notice && <p className="text-sm text-emerald-300">{notice}</p>}
-            {error && <p className="text-sm text-red-300">{error}</p>}
-          </div>
+          {notice && <p className="mt-4 text-sm text-emerald-300">{notice}</p>}
+          {error && <p className="mt-4 text-sm text-red-300">{error}</p>}
+          <StepFooter
+            current="nearby"
+            nextDisabled={!report}
+            hint="Generate the analysis first."
+            onNext={onContinue}
+            onSave={save}
+            saving={saving}
+          />
         </Card>
       )}
 

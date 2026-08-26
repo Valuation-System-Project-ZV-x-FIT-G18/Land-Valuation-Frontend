@@ -5,12 +5,8 @@ import type { SectionProps } from '@/Role_Pages/coordinator/register-applicant/t
 // Personal information. Name parts required by the database are derived from
 // the full name on submit, so the user only needs to enter the full name once.
 const NameSection = ({ values, errors, onChange, onBlur }: SectionProps) => (
-    <FormSection title="Personal information">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-200/40">
-        Name
-      </p>
-
-      <div>
+    <FormSection number={1} title="Personal information" description="Enter the applicant's legal name as shown on the NIC.">
+      <div className="max-w-2xl">
         <FormField
           label="Full name *"
           name="fullName"
@@ -21,23 +17,9 @@ const NameSection = ({ values, errors, onChange, onBlur }: SectionProps) => (
           placeholder="e.g. Chaminda Prasad Senarathne"
           autoComplete="off"
           preventAutofill
+          helperText="Enter the complete legal name as shown on the NIC."
         />
-        <p className="mt-1.5 text-xs text-emerald-200/50">
-          Enter complete name — first, middle and last
-        </p>
       </div>
-
-      <FormField
-        label="Business / Company Name (optional)"
-        name="applicantBusinessName"
-        value={values.applicantBusinessName}
-        onChange={onChange}
-        onBlur={onBlur}
-        error={errors.applicantBusinessName}
-        placeholder="e.g. M/S Kumudu Fashion Garment"
-        autoComplete="off"
-        preventAutofill
-      />
     </FormSection>
 )
 

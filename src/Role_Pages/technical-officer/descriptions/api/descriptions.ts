@@ -180,3 +180,48 @@ export async function saveDescriptions(
     return { ok: false, error: 'Could not reach the server.' }
   }
 }
+
+// Generate every section in one backend request.
+//
+// Replaces sixteen parallel generate-one calls. The free Gemini tier allows
+// roughly twenty requests per window, so the old fan-out burned the whole quota
+// on a single click and every section after it silently fell back to template
+// wording. The backend now asks once and saves the result.
+export async function generateAllSections(projectId: string): Promise<{
+  ok: boolean
+  aiSections?: number
+  totalSections?: number
+  data?: Descriptions
+  error?: string
+}> {
+  const controller = new AbortController()
+  // One request writing sixteen paragraphs needs longer than a single section.
+  const timeout = window.setTimeout(() => controller.abort(), 90_000)
+  try {
+    const res = await fetch('/api/technical-officer/descriptions/generate-all', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectId }),
+      signal: controller.signal,
+    })
+    const body = await res.json().catch(() => ({}) as Record<string, unknown>)
+    if (!res.ok || !body.ok) {
+      return { ok: false, error: (body.error as string) || 'Could not generate the sections.' }
+    }
+    return {
+      ok: true,
+      aiSections: body.aiSections as number,
+      totalSections: body.totalSections as number,
+      data: body.data as Descriptions,
+    }
+  } catch (err) {
+    return {
+      ok: false,
+      error: (err as Error).name === 'AbortError'
+        ? 'Generating the sections took too long. Please try again.'
+        : 'Could not reach the server.',
+    }
+  } finally {
+    window.clearTimeout(timeout)
+  }
+}

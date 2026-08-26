@@ -13,8 +13,8 @@ const Hero = () => {
       {/* ---- Left column: text content (staggered entrance animation) ---- */}
       <div className="text-center lg:text-left">
         {/* Small eyebrow badge */}
-        <span className="inline-flex animate-fade-up items-center gap-2 rounded-full border border-gold-400/30 bg-white/5 px-4 py-1.5 text-xs font-medium text-emerald-100 backdrop-blur-sm">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-gold-400" />
+        <span className="inline-flex animate-fade-up items-center gap-2 rounded-full border border-accent-400/30 bg-white/5 px-4 py-1.5 text-xs font-medium text-emerald-100">
+          <span className="h-2 w-2 animate-pulse rounded-full bg-accent-400" />
           Sri Lanka&apos;s Land Valuation Platform
         </span>
 
@@ -29,7 +29,7 @@ const Hero = () => {
 
         {/* Subtitle */}
         <p
-          className="mx-auto mt-6 max-w-xl animate-fade-up text-base text-emerald-100/85 sm:text-lg lg:mx-0"
+          className="mx-auto mt-6 max-w-xl animate-fade-up text-base text-emerald-100 sm:text-lg lg:mx-0"
           style={{ animationDelay: '0.16s' }}
         >
           AI-powered land valuation workflow for banks, loan applicants, and

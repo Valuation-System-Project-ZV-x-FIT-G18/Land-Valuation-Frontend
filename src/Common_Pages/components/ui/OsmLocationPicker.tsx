@@ -114,32 +114,32 @@ const OsmLocationPicker = ({
               }
             }}
             placeholder={placeholder}
-            className="min-w-0 flex-1 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-emerald-200/45 focus:border-gold-400/70 focus:ring-2 focus:ring-gold-400/30"
+            className="min-w-0 flex-1 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-emerald-200 focus:border-accent-400/70 focus:ring-2 focus:ring-accent-400/30"
           />
           <button
             type="button"
             onClick={search}
-            className="rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-emerald-100 transition hover:border-gold-400/50 hover:text-gold-200"
+            className="rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-emerald-100 transition hover:border-accent-400/50 hover:text-accent-200"
           >
             {searching ? 'Searching...' : 'Search'}
           </button>
           <button
             type="button"
             onClick={() => setSatellite((v) => !v)}
-            className="rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-emerald-100 transition hover:border-gold-400/50 hover:text-gold-200"
+            className="rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-emerald-100 transition hover:border-accent-400/50 hover:text-accent-200"
           >
             {satellite ? 'Map View' : 'Satellite'}
           </button>
         </div>
       )}
       {results.length > 0 && showSearch && (
-        <ul className="relative z-[1000] max-h-48 overflow-auto rounded-xl border border-white/15 bg-emerald-950 shadow-xl">
+        <ul className="relative z-[1000] max-h-48 overflow-auto rounded-xl border border-white/15 bg-surface shadow-card">
           {results.map((place, index) => (
             <li key={`${place.lat}-${place.lon}-${index}`}>
               <button
                 type="button"
                 onClick={() => focusPlace(place)}
-                className="block w-full px-4 py-2.5 text-left text-xs text-emerald-100/90 transition hover:bg-white/10"
+                className="block w-full px-4 py-2.5 text-left text-xs text-emerald-100 transition hover:bg-white/10"
               >
                 {place.display_name}
               </button>
@@ -185,11 +185,11 @@ const OsmLocationPicker = ({
           <CircleMarker
             center={[lat as number, lng as number]}
             radius={9}
-            pathOptions={{ color: '#E3C24A', fillColor: '#E3C24A', fillOpacity: 0.85 }}
+            pathOptions={{ color: '#1E96C8', fillColor: '#1E96C8', fillOpacity: 0.85 }}
           />
         )}
       </MapContainer>
-      <p className="text-xs text-emerald-200/60">
+      <p className="text-xs text-emerald-200">
         {hasPoint
           ? `Selected coordinates: ${(lat as number).toFixed(5)}, ${(lng as number).toFixed(5)}`
           : 'Search, zoom, drag, then click the exact property location.'}

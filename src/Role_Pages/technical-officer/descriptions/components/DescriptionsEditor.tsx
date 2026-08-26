@@ -1,5 +1,7 @@
 //02
 import { useEffect, useState } from 'react'
+import StepFooter from '@/Role_Pages/technical-officer/shared/StepFooter'
+import BackButton from '@/Role_Pages/technical-officer/shared/BackButton'
 import Card from '@/Common_Pages/components/ui/Card'
 import Button from '@/Common_Pages/components/ui/Button'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
@@ -10,6 +12,7 @@ import {
   getSources,
   getDescriptions,
   generateSection,
+  generateAllSections,
   saveDescriptions,
   type Descriptions,
   type SectionKey,
@@ -77,7 +80,6 @@ const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft, onDataSaved,
   const [saving, setSaving] = useState(false)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
-  const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     onPreviewChange?.({
@@ -110,11 +112,19 @@ const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft, onDataSaved,
       setPhotos(s.photos)
     })
     getDescriptions(projectId).then((d) => {
-      if (!d) return
-      const current = { ...empty }
-      for (const { key } of ORDER) current[key] = d[key] ?? ''
-      setTexts(current)
+      const written = d && ORDER.some(({ key }) => String(d[key] ?? '').trim())
+      if (written) {
+        const current = { ...empty }
+        for (const { key } of ORDER) current[key] = d[key] ?? ''
+        setTexts(current)
+        return
+      }
+      // A new project must stay blank until the officer explicitly asks for
+      // generation. Merely opening this step must never consume Gemini quota
+      // or make template wording look like AI-generated content.
+      setTexts({ ...empty })
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
 
   // Build the { key: value } dict for a section from its (edited) source fields.
@@ -124,7 +134,6 @@ const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft, onDataSaved,
   }
 
   const setField = (section: SectionKey, key: string, value: string) => {
-    setSaved(false)
     setSources((prev) =>
       prev.map((s) =>
         s.section === section ? { ...s, fields: s.fields.map((f) => (f.key === key ? { ...f, value } : f)) } : s,
@@ -133,7 +142,6 @@ const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft, onDataSaved,
   }
 
   const regenerate = async (section: SectionKey) => {
-    setSaved(false)
     setBusy(section)
     setError('')
     setNotice('')
@@ -141,31 +149,37 @@ const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft, onDataSaved,
     setBusy(null)
     if (res.error) return setError(res.error)
     setTexts((t) => ({ ...t, [section]: res.text }))
-    setNotice(res.aiUsed ? '✨ Regenerated with AI.' : 'Regenerated from the sources using the template fallback.')
+    setNotice(res.aiUsed ? 'Regenerated with AI.' : 'Regenerated from the sources using the template fallback.')
   }
 
+  // One backend request writes and saves every section. This used to fan out
+  // into one AI call per section, which exceeded the free Gemini quota on a
+  // single click and left most sections on template wording.
   const regenerateAll = async () => {
-    setSaved(false)
     setBusy('all')
     setError('')
     setNotice('')
-    let aiUsed = false
-    const next = { ...texts }
-    const results = await Promise.all(
-      ORDER.map(async ({ key }) => ({ key, result: await generateSection(projectId, key, fieldsOf(key)) })),
-    )
-    const failures = results.filter(({ result }) => result.error)
-    for (const { key, result } of results) {
-      if (!result.error) next[key] = result.text
-      aiUsed = aiUsed || result.aiUsed
-    }
-    setTexts(next)
+    const res = await generateAllSections(projectId)
     setBusy(null)
-    if (failures.length) {
-      setError(`${failures.length} section(s) could not be generated. Completed sections were kept; retry the remaining sections.`)
+    if (!res.ok || !res.data) {
+      setError(res.error ?? 'Could not generate the sections.')
       return
     }
-    setNotice(aiUsed ? '✨ All sections generated with AI. Review, edit, then save.' : 'All sections generated from your data. Review, edit, then save.')
+
+    const next = { ...empty }
+    for (const { key } of ORDER) next[key] = res.data[key] ?? ''
+    setTexts(next)
+    onDataSaved?.() // the backend already saved them; refresh the report preview
+
+    const ai = res.aiSections ?? 0
+    const total = res.totalSections ?? ORDER.length
+    setNotice(
+      ai === 0
+        ? 'Sections written from your data using the standard template — the AI service was unavailable. Review, edit, then save.'
+        : ai < total
+          ? `${ai} of ${total} sections written with AI; the rest used the standard template. Review, edit, then save.`
+          : 'All sections generated with AI. Review, edit, then save.',
+    )
   }
 
   const handleSave = async () => {
@@ -175,40 +189,49 @@ const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft, onDataSaved,
     setSaving(false)
     if (res.ok) {
       setNotice('✓ Descriptions saved to the database.')
-      setSaved(true)
       onDataSaved?.()
-    } else {
-      setError(res.error ?? 'Could not save.')
+      return true
     }
+    setError(res.error ?? 'Could not save.')
+    return false
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <Button type="button" variant="ghost" size="sm" onClick={onBack}>
-        ← Back to projects
-      </Button>
+    <div className="mx-auto max-w-5xl space-y-6">
+      <BackButton onClick={onBack} />
 
       <div className="text-center">
         <h1 className="text-2xl font-bold text-white sm:text-3xl">
           Descriptions — <GradientText>{projectId}</GradientText>
         </h1>
-        <p className="mx-auto mt-2 max-w-lg text-emerald-100/70">
-          Each section lists the sources it was built from. Edit any source and regenerate that
-          section, or generate them all at once — then edit the draft and save.
+        <p className="mx-auto mt-2 max-w-lg text-emerald-100">
+          Generate the descriptions from the saved project and inspection data. Each section lists
+          its sources so you can correct a value and regenerate only that section.
         </p>
       </div>
 
-      {ORDER.length > 0 && <Card className="p-6 text-center">
-        <Button type="button" loading={busy === 'all'} disabled={busy !== null} onClick={regenerateAll}>
-          {busy === 'all' ? 'Generating…' : '✨ Generate all sections'}
+      <div className="flex justify-center">
+        <Button type="button" onClick={regenerateAll} loading={busy === 'all'} disabled={busy !== null}>
+          {busy === 'all' ? 'Generating descriptions…' : 'Generate descriptions'}
         </Button>
-        {notice && (
-          <p className="mt-3 rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-2.5 text-sm text-emerald-200">{notice}</p>
-        )}
-        {error && (
-          <p className="mt-3 rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-2.5 text-sm text-amber-300">{error}</p>
-        )}
-      </Card>}
+      </div>
+
+      {(busy === 'all' || notice || error) && (
+        <Card className="p-4 text-center">
+          {busy === 'all' && (
+            <p className="flex items-center justify-center gap-2 text-sm text-emerald-100">
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-200/30 border-t-accent-300" />
+              Writing the report sections…
+            </p>
+          )}
+          {notice && !busy && (
+            <p className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-2.5 text-sm text-emerald-200">{notice}</p>
+          )}
+          {error && !busy && (
+            <p className="rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-2.5 text-sm text-amber-300">{error}</p>
+          )}
+        </Card>
+      )}
 
       {ORDER.map(({ key, label }) => {
         const isImage = key === 'imageAnalysis'
@@ -218,7 +241,6 @@ const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft, onDataSaved,
             label={label}
             text={texts[key] ?? ''}
             onTextChange={(v) => {
-              setSaved(false)
               setTexts((t) => ({ ...t, [key]: v }))
             }}
             fields={isImage ? [] : (sources.find((s) => s.section === key)?.fields ?? [])}
@@ -243,16 +265,14 @@ const DescriptionsEditor = ({ projectId, onBack, onContinueToDraft, onDataSaved,
         onChange={(v) => setTexts((t) => ({ ...t, valuation: v }))}
       />}
 
-      <div className="flex flex-col gap-3">
-        <Button type="button" fullWidth variant="success" loading={saving} disabled={busy !== null} onClick={handleSave}>
-          {saving ? 'Saving…' : 'Save Descriptions'}
-        </Button>
-        {saved && onContinueToDraft && (
-          <Button type="button" fullWidth onClick={onContinueToDraft}>
-            Continue to Create Draft →
-          </Button>
-        )}
-      </div>
+      <StepFooter
+        current="descriptions"
+        nextDisabled={busy !== null}
+        hint="Wait for the current generation to finish."
+        onNext={onContinueToDraft}
+        onSave={handleSave}
+        saving={saving}
+      />
 
     </div>
   )

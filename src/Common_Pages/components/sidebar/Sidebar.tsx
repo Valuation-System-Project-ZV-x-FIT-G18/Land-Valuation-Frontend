@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import { roleMenuGroups, roleMenus, type SidebarSection } from '@/Common_Pages/components/sidebar/roleMenus'
-import SidebarIcon from '@/Common_Pages/components/sidebar/SidebarIcon'
 
 // Fixed, full-height app sidebar for internal pages.
 // 256px wide, pinned left on desktop; slides in as a drawer on mobile.
@@ -13,14 +12,13 @@ const itemBase =
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `${itemBase} ${
     isActive
-      ? 'bg-gradient-to-r from-gold-400/25 to-transparent text-gold-100 shadow-sm'
-      : 'text-emerald-100/70 hover:bg-white/5 hover:text-white'
+      ? 'bg-gradient-to-r from-accent-400/25 to-transparent text-accent-100 shadow-sm'
+      : 'text-emerald-100 hover:bg-white/5 hover:text-white'
   }`
 
 const Item = (props: {
   to: string
   label: string
-  icon?: string
   nested?: boolean
   end?: boolean
   onClick?: () => void
@@ -34,9 +32,8 @@ const Item = (props: {
     {({ isActive }) => (
       <>
         {isActive && (
-          <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 animate-fade-in rounded-r bg-gold-400 shadow-[0_0_10px_rgba(227,194,74,0.6)]" />
+          <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 animate-fade-in rounded-r bg-accent-400 shadow-[0_0_10px_rgba(30, 150, 200,0.6)]" />
         )}
-        {props.icon && <SidebarIcon name={props.icon} />}
         <span>{props.label}</span>
       </>
     )}
@@ -55,13 +52,21 @@ const Sidebar = ({ open, onClose }: SidebarProps) => {
 
   // Keep the group containing the current page open, including after refresh.
   useEffect(() => {
-    if (location.pathname === '/coordinator/project-states') {
-      const trackingGroup = groups.find((group) => group.includeProjectStatus)
-      if (trackingGroup) setOpenSection(trackingGroup.id)
+    // Match nested pages too, so a tab or sub-page inside a section (e.g.
+    // Fleet Management > Rejected) still opens and highlights its entry.
+    const activeItem = items.find(
+      (item) => location.pathname === item.to || location.pathname.startsWith(`${item.to}/`),
+    )
+    if (activeItem?.section) {
+      setOpenSection(activeItem.section)
       return
     }
-    const activeItem = items.find((item) => item.to === location.pathname)
-    if (activeItem?.section) setOpenSection(activeItem.section)
+    // Roles without their own Projects entry reach the same list through the
+    // shared Project Status link appended to their tracking group.
+    if (location.pathname.startsWith('/coordinator/projects')) {
+      const trackingGroup = groups.find((group) => group.includeProjectStatus)
+      if (trackingGroup) setOpenSection(trackingGroup.id)
+    }
   }, [groups, items, location.pathname])
 
   const handleLogout = () => {
@@ -76,12 +81,12 @@ const Sidebar = ({ open, onClose }: SidebarProps) => {
       {open && (
         <div
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-40 bg-black/60 md:hidden"
         />
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-white/10 bg-gradient-to-b from-emerald-900 to-emerald-950 shadow-2xl transition-transform duration-300 md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-white/10 bg-surface shadow-card transition-transform duration-300 md:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -91,20 +96,13 @@ const Sidebar = ({ open, onClose }: SidebarProps) => {
           onClick={onClose}
           className="flex items-center gap-3 border-b border-white/10 px-5 py-4"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-gold-500 shadow-lg">
-            <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 text-white">
-              <path
-                d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinejoin="round"
-              />
-              <circle cx="12" cy="9" r="2.5" fill="currentColor" />
-            </svg>
-          </span>
+          {/* The same logo file the public header uses. The sidebar drew its own
+              pin icon instead, so the brand visibly changed the moment anyone
+              signed in. */}
+          <img src="/images/codehub-logo.png" alt="" className="h-10 w-10 object-contain" />
           <span className="flex flex-col leading-none">
             <span className="text-lg font-bold tracking-wide text-white">CODEHUB</span>
-            <span className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-emerald-200/70">
+            <span className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-emerald-200">
               Land Valuation
             </span>
           </span>
@@ -113,11 +111,29 @@ const Sidebar = ({ open, onClose }: SidebarProps) => {
         {/* Menu (scrolls if long) */}
         <div className="flex-1 overflow-y-auto px-3 py-4">
           <nav className="space-y-1">
-            <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-200/45">
+            <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-200">
               Workspace
             </p>
-            <Item to="/dashboard" label="Dashboard" icon="dashboard" end onClick={onClose} />
-            {groups.map((section) => (
+            <Item to="/dashboard" label="Dashboard" end onClick={onClose} />
+            {user?.role === 'Coordinator' ? (
+              items.map((item) => (
+                <Item key={item.to} to={item.to} label={item.label} onClick={onClose} />
+              ))
+            ) : groups.map((section) => {
+                const sectionItems = items.filter((item) => item.section === section.id)
+                const onlyProjectStatus = section.includeProjectStatus && sectionItems.length === 0
+
+                // A collapsible heading adds an unnecessary click when the
+                // section contains only one destination. Render it directly.
+                if (sectionItems.length + (section.includeProjectStatus ? 1 : 0) === 1) {
+                  if (onlyProjectStatus) {
+                    return <Item key={section.id} to="/coordinator/projects" label="Project Status" onClick={onClose} />
+                  }
+                  const item = sectionItems[0]
+                  return <Item key={section.id} to={item.to} label={item.label} onClick={onClose} />
+                }
+
+                return (
                   <div key={section.id} className="overflow-hidden rounded-xl">
                     <button
                       type="button"
@@ -126,51 +142,48 @@ const Sidebar = ({ open, onClose }: SidebarProps) => {
                       className={`${itemBase} w-full justify-between text-left ${
                         openSection === section.id
                           ? 'bg-white/[0.07] text-white'
-                          : 'text-emerald-100/70 hover:bg-white/5 hover:text-white'
+                          : 'text-emerald-100 hover:bg-white/5 hover:text-white'
                       }`}
                     >
-                      <span className="flex min-w-0 items-center gap-3">
-                        <SidebarIcon name={section.icon} />
+                      <span className="flex min-w-0 items-center">
                         <span className="truncate">{section.label}</span>
                       </span>
                       <svg
                         viewBox="0 0 20 20"
                         fill="none"
                         aria-hidden="true"
-                        className={`h-4 w-4 shrink-0 transition-transform duration-200 ${openSection === section.id ? 'rotate-180 text-gold-300' : ''}`}
+                        className={`h-4 w-4 shrink-0 transition-transform duration-200 ${openSection === section.id ? 'rotate-180 text-accent-300' : ''}`}
                       >
                         <path d="m5 7.5 5 5 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </button>
                     {openSection === section.id && (
                       <div className="mb-1 ml-4 space-y-0.5 border-l border-emerald-300/15 py-1">
-                        {items
-                          .filter((item) => item.section === section.id)
-                          .map((item) => (
-                            <Item key={item.to} to={item.to} label={item.label} icon={item.icon} nested onClick={onClose} />
+                        {sectionItems.map((item) => (
+                            <Item key={item.to} to={item.to} label={item.label} nested onClick={onClose} />
                           ))}
                         {section.includeProjectStatus && (
-                          <Item to="/coordinator/project-states" label="Project Status" icon="map" nested onClick={onClose} />
+                          <Item to="/coordinator/projects" label="Project Status" nested onClick={onClose} />
                         )}
                       </div>
                     )}
                   </div>
-            ))}
+                )
+            })}
           </nav>
         </div>
 
         {/* Bottom: Settings + Logout */}
         <div className="space-y-1 border-t border-white/10 p-3">
-          <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-200/45">
+          <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-200">
             Account
           </p>
-          <Item to="/settings" label="Settings" icon="settings" onClick={onClose} />
+          <Item to="/settings" label="Settings" onClick={onClose} />
           <button
             type="button"
             onClick={handleLogout}
-            className={`${itemBase} w-full text-emerald-100/70 hover:bg-red-500/10 hover:text-red-300`}
+            className={`${itemBase} w-full text-emerald-100 hover:bg-red-500/10 hover:text-red-300`}
           >
-            <SidebarIcon name="logout" />
             <span>Logout</span>
           </button>
         </div>

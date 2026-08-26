@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import Button from '@/Common_Pages/components/ui/Button'
-import GradientText from '@/Common_Pages/components/ui/GradientText'
 import SuccessModal from '@/Common_Pages/components/ui/SuccessModal'
 import FleetTable from '@/Role_Pages/coordinator/fleet-management/components/FleetTable'
 import AssignOfficerForm from '@/Role_Pages/coordinator/fleet-management/components/AssignOfficerForm'
@@ -24,12 +22,23 @@ const AssignOfficersPage = () => {
   const location = useLocation()
   // A valuation handed over from the New Valuation "assign now" flow, if any —
   // we seed the search with its NIC (or Project ID) so it opens straight away.
-  const incoming = location.state as { nic?: string; projectId?: string; reassigning?: boolean } | null
+  // The handover is read once into state and then wiped from the history entry:
+  // left in place it survives reloads and tab switches, so the search box kept
+  // refilling itself with an old NIC the coordinator had already finished with.
+  const [incoming] = useState(
+    () => location.state as { nic?: string; projectId?: string; reassigning?: boolean } | null,
+  )
   const initialQuery = incoming?.nic || incoming?.projectId || undefined
   const [officers, setOfficers] = useState<FleetOfficers>(emptyOfficers)
   const [available, setAvailable] = useState<Officer[]>([])
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+
+  useEffect(() => {
+    if (location.state) navigate(location.pathname, { replace: true, state: null })
+    // Consume the handover once, on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const load = useCallback(async () => {
     const [o, u] = await Promise.all([getFleetOfficers(), getUnassigned()])
@@ -61,22 +70,7 @@ const AssignOfficersPage = () => {
         closeLabel="Done"
         onClose={() => setNotice('')}
       />
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => navigate('/coordinator/fleet-management')}
-        className="!px-5 !py-2.5 text-sm"
-      >
-        ← Fleet Management
-      </Button>
-
       <WorkflowStepper current="assign" />
-
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-white sm:text-4xl">
-          Assign <GradientText>Technical Officers</GradientText>
-        </h1>
-      </div>
 
       {error && (
         <p className="rounded-xl border border-red-400/30 bg-red-500/10 p-3 text-center text-sm text-red-200">
@@ -84,11 +78,11 @@ const AssignOfficersPage = () => {
         </p>
       )}
       {incoming?.reassigning && incoming.projectId && (
-        <div className="border-l-4 border-gold-300 bg-emerald-950/45 px-5 py-4">
+        <div className="border-l-4 border-accent-300 bg-surface px-5 py-4">
           <p className="font-semibold text-white">Rejection accepted</p>
-          <p className="mt-1 text-sm text-emerald-100/75">
+          <p className="mt-1 text-sm text-emerald-100">
             Select a new technical officer and inspection schedule for project{' '}
-            <span className="font-semibold text-gold-300">{incoming.projectId}</span>.
+            <span className="font-semibold text-accent-300">{incoming.projectId}</span>.
           </p>
         </div>
       )}
@@ -104,30 +98,22 @@ const AssignOfficersPage = () => {
 
       {/* Categorized officer lists */}
       <FleetTable
-        title="Available"
-        icon="🟢"
-        columns={baseCols}
+        title="Available"        columns={baseCols}
         rows={officers.available.map((o) => officerCells(o))}
         emptyText="No officers are free right now."
       />
       <FleetTable
-        title="Assigned"
-        icon="🛠️"
-        columns={[...baseCols, 'Project', 'Status']}
+        title="Assigned"        columns={[...baseCols, 'Project', 'Status']}
         rows={officers.assigned.map((o) => [...officerCells(o), o.projectId, o.status])}
         emptyText="No officers are currently assigned."
       />
       <FleetTable
-        title="On Leave"
-        icon="🌴"
-        columns={[...baseCols, 'Reason']}
+        title="On Leave"        columns={[...baseCols, 'Reason']}
         rows={officers.onLeave.map((o) => [...officerCells(o), o.reason])}
         emptyText="No officers are on leave."
       />
       <FleetTable
-        title="Rejected Assignments"
-        icon="⛔"
-        columns={[...baseCols, 'Reason', 'Action']}
+        title="Rejected Assignments"        columns={[...baseCols, 'Reason', 'Action']}
         rows={officers.rejected.map((o) => [
           ...officerCells(o),
           o.reason,

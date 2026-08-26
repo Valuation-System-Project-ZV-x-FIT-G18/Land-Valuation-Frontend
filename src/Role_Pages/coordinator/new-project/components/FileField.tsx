@@ -74,22 +74,22 @@ const FileField = ({
           shownError
             ? 'border-red-400/70 text-red-200'
             : files.length || existingFileName
-              ? 'border-gold-400/35 bg-gold-400/5 text-emerald-100/80'
-              : 'border-white/20 text-emerald-100/70 hover:border-gold-400/50'
+              ? 'border-accent-400/35 bg-accent-400/5 text-emerald-100'
+              : 'border-white/20 text-emerald-100 hover:border-accent-400/50'
         }`}
       >
         {files.length === 0 && !existingFileName ? (
           <label
             htmlFor={`${name}-upload`}
-            className="flex w-full cursor-pointer items-center gap-2 transition hover:text-gold-200"
+            className="flex w-full cursor-pointer items-center gap-2 transition hover:text-accent-200"
           >
             <span>Choose file{multiple ? 's' : ''}</span>
-            <span className="ml-auto text-xs text-emerald-200/40">{accept} · max 5MB</span>
+            <span className="ml-auto text-xs text-emerald-200">{accept} · max 5MB</span>
           </label>
         ) : files.length === 0 && existingFileName ? (
           <div className="min-w-0 text-center">
             <div className="flex min-w-0 items-center justify-center gap-2">
-              <span className="max-w-56 truncate text-xs font-medium text-gold-100" title={existingFileName}>
+              <span className="max-w-56 truncate text-xs font-medium text-accent-100" title={existingFileName}>
                 {existingFileName}
               </span>
             </div>
@@ -99,14 +99,14 @@ const FileField = ({
                   href={existingFileUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-gold-300 transition hover:text-gold-200 hover:underline"
+                  className="text-accent-300 transition hover:text-accent-200 hover:underline"
                 >
                   View
                 </a>
               )}
               <label
                 htmlFor={`${name}-upload`}
-                className="cursor-pointer text-emerald-200/70 transition hover:text-gold-200 hover:underline"
+                className="cursor-pointer text-emerald-200 transition hover:text-accent-200 hover:underline"
               >
                 Replace
               </label>
@@ -114,7 +114,7 @@ const FileField = ({
                 <button
                   type="button"
                   onClick={() => onRemoveExisting(name)}
-                  className="text-emerald-200/60 transition hover:text-red-300"
+                  className="text-emerald-200 transition hover:text-red-300"
                 >
                   Remove
                 </button>
@@ -127,13 +127,13 @@ const FileField = ({
               <li key={`${f.name}-${i}`} className="flex min-w-0 items-center justify-center gap-3">
                 <span className="max-w-48 truncate text-center text-xs" title={f.name}>
                   {f.name}{' '}
-                  <span className="text-emerald-200/40">({(f.size / 1024).toFixed(0)} KB)</span>
+                  <span className="text-emerald-200">({(f.size / 1024).toFixed(0)} KB)</span>
                 </span>
                 <span className="flex shrink-0 items-center gap-3">
                   <button
                     type="button"
                     onClick={() => view(f)}
-                    className="font-medium text-gold-300 transition hover:text-gold-200 hover:underline"
+                    className="font-medium text-accent-300 transition hover:text-accent-200 hover:underline"
                   >
                     View
                   </button>
@@ -141,7 +141,7 @@ const FileField = ({
                     type="button"
                     onClick={() => remove(i)}
                     aria-label={`Remove ${f.name}`}
-                    className="text-emerald-200/60 transition hover:text-red-300"
+                    className="text-emerald-200 transition hover:text-red-300"
                   >
                     ✕
                   </button>
@@ -152,7 +152,7 @@ const FileField = ({
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <label
                   htmlFor={`${name}-upload`}
-                  className="cursor-pointer text-xs font-medium text-emerald-200/70 transition hover:text-gold-200 hover:underline"
+                  className="cursor-pointer text-xs font-medium text-emerald-200 transition hover:text-accent-200 hover:underline"
                 >
                   {multiple ? '+ Add more files' : '↻ Replace file'}
                 </label>

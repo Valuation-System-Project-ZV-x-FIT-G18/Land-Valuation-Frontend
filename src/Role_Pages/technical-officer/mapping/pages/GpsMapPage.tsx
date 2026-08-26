@@ -31,7 +31,7 @@ const GpsMapPage = () => {
 
   if (selected || directProjectId) {
     const projectId = selected?.projectId ?? directProjectId
-    return <WorkflowPreviewLayout projectId={projectId} refreshToken={previewVersion} valueOverrides={previewValues} navigationTarget={navigationTarget}>
+    return <WorkflowPreviewLayout step="gps" projectId={projectId} refreshToken={previewVersion} valueOverrides={previewValues} navigationTarget={navigationTarget}>
       <MapWorkspace projectId={projectId} onBack={() => { setSelected(null); setDirectProjectId('') }} onDataSaved={() => setPreviewVersion((value) => value + 1)} onPreviewChange={setPreviewValues} onReportNavigate={(section) => setNavigationTarget({ section, requestId: Date.now() })} />
     </WorkflowPreviewLayout>
   }
@@ -39,12 +39,12 @@ const GpsMapPage = () => {
   return (
     <div className="mx-auto max-w-5xl space-y-7">
       <TOWorkflowStepper current="gps" />
-      <div className="rounded-2xl border border-white/10 bg-emerald-950/40 px-6 py-8 text-center shadow-card backdrop-blur-sm sm:px-10 sm:py-10">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold-300/75">Technical Officer Workspace</p>
+      <div className="rounded-2xl border border-white/10 bg-surface px-6 py-8 text-center shadow-card sm:px-10 sm:py-10">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent-300">Technical Officer Workspace</p>
         <h1 className="mt-3 text-3xl font-bold text-white sm:text-4xl">
           GPS &amp; <GradientText>Map Integration</GradientText>
         </h1>
-        <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-emerald-100/65 sm:text-base">
+        <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-emerald-100 sm:text-base">
           Select an assigned project to verify its exact position, review satellite imagery, and prepare professional access and locality notes.
         </p>
       </div>

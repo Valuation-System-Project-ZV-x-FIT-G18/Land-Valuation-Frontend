@@ -9,6 +9,7 @@ export async function submitLogin(email: string, password: string): Promise<Logi
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
     })
     const body = await res.json().catch(() => ({}) as Record<string, unknown>)

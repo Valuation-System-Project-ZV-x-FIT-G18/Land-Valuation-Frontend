@@ -86,12 +86,12 @@ const FillFormPage = () => {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           Fill <GradientText>Form</GradientText>
         </h1>
-        <p className="mx-auto mt-2 max-w-md text-emerald-100/70">
+        <p className="mx-auto mt-2 max-w-md text-emerald-100">
           Send your coordinator the property details you know. Have more than one property? Add
           a separate entry for each.
         </p>
@@ -110,10 +110,10 @@ const FillFormPage = () => {
       </Button>
 
       {loading ? (
-        <p className="text-center text-sm text-emerald-200/60">Loading…</p>
+        <p className="text-center text-sm text-emerald-200">Loading…</p>
       ) : drafts.length === 0 ? (
         <Card className="p-8 text-center">
-          <p className="text-sm text-emerald-100/70">
+          <p className="text-sm text-emerald-100">
             You haven&apos;t sent any property details yet. Click &quot;+ New Property&quot; to
             start.
           </p>
@@ -126,10 +126,10 @@ const FillFormPage = () => {
                 <p className="text-sm font-semibold text-white">
                   {d.label || 'Untitled property'}
                 </p>
-                <p className="mt-0.5 truncate text-xs text-emerald-200/60">
+                <p className="mt-0.5 truncate text-xs text-emerald-200">
                   {summarize(d.data) || 'No details filled in yet'}
                 </p>
-                <p className="mt-0.5 text-[11px] text-emerald-200/40">Updated {time(d.updatedAt)}</p>
+                <p className="mt-0.5 text-[11px] text-emerald-200">Updated {time(d.updatedAt)}</p>
               </div>
               <span
                 className={`shrink-0 rounded-full border px-3 py-1 text-xs font-semibold ${

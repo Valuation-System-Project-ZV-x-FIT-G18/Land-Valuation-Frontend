@@ -1,21 +1,22 @@
 //02
-import { Routes, Route } from 'react-router-dom'
-import { LoginModalProvider } from '@/Common_Pages/components/auth/useLoginModal'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import GuestOnly from '@/Common_Pages/components/auth/GuestOnly'
 import { AuthProvider } from '@/Common_Pages/components/auth/useAuth'
 import Layout from '@/Common_Pages/components/layout/Layout'
 import InternalLayout from '@/Common_Pages/components/layout/InternalLayout'
-import PlaceholderPage from '@/Common_Pages/components/PlaceholderPage'
 import HomePage from '@/Home_Pages/firstpage/pages/HomePage'
 import AboutPage from '@/Home_Pages/about/pages/AboutPage'
 import ServicesPage from '@/Home_Pages/services/pages/ServicesPage'
 import ContactPage from '@/Home_Pages/contact/pages/ContactPage'
-import InternalLoginPage from '@/Home_Pages/internal-login/pages/InternalLoginPage'
-import ExternalLoginPage from '@/Home_Pages/external-login/pages/ExternalLoginPage'
+import ValuationRequestPage from '@/Home_Pages/valuation-request/pages/ValuationRequestPage'
+import LoginPage from '@/Home_Pages/login/pages/LoginPage'
 import DashboardPage from '@/Home_Pages/dashboard/pages/DashboardPage'
 import ChangePasswordPage from '@/Home_Pages/change-password/pages/ChangePasswordPage'
 import SettingsPage from '@/Home_Pages/settings/pages/SettingsPage'
 import AddRolePage from '@/Role_Pages/admin/add-role/pages/AddRolePage'
 import UserDetailsPage from '@/Role_Pages/admin/user-details/pages/UserDetailsPage'
+import AdminAuditPage from '@/Role_Pages/admin/audit/pages/AdminAuditPage'
+import BankManagementPage from '@/Role_Pages/admin/banks/pages/BankManagementPage'
 import MessagesPage from '@/Home_Pages/messages/pages/MessagesPage'
 import ContactMessagesPage from '@/Role_Pages/coordinator/website-inbox/pages/ContactMessagesPage'
 import FillFormPage from '@/Role_Pages/loan-applicant/fill-form/pages/FillFormPage'
@@ -29,14 +30,14 @@ import ManagerDraftsPage from '@/Role_Pages/manager/drafts/pages/ManagerDraftsPa
 import ApprovedDraftsPage from '@/Role_Pages/manager/drafts/pages/ApprovedDraftsPage'
 import MakePaymentPage from '@/Role_Pages/client/pages/MakePaymentPage'
 import BankViewReportPage from '@/Role_Pages/client/pages/BankViewReportPage'
-import CreateProjectPage from '@/Role_Pages/coordinator/create-project/pages/CreateProjectPage'
+import ApplicantsPage from '@/Role_Pages/coordinator/applicants/pages/ApplicantsPage'
 import RegisterApplicantPage from '@/Role_Pages/coordinator/register-applicant/pages/RegisterApplicantPage'
 import EditApplicantPage from '@/Role_Pages/coordinator/register-applicant/pages/EditApplicantPage'
 import NewProjectPage from '@/Role_Pages/coordinator/new-project/pages/NewProjectPage'
 import NewValuationPage from '@/Role_Pages/coordinator/new-valuation/pages/NewValuationPage'
+import ValuationsPage from '@/Role_Pages/coordinator/valuations/pages/ValuationsPage'
 import ProjectStatusPage from '@/Role_Pages/coordinator/project-status/pages/ProjectStatusPage'
-import AssignTechnicalOfficerPage from '@/Role_Pages/coordinator/assign-technical-officer/pages/AssignTechnicalOfficerPage'
-import FleetManagementPage from '@/Role_Pages/coordinator/fleet-management/pages/FleetManagementPage'
+import FleetWorkspace from '@/Role_Pages/coordinator/fleet-management/components/FleetWorkspace'
 import PaymentSlipsPage from '@/Role_Pages/coordinator/payment-slips/pages/PaymentSlipsPage'
 import RejectedOfficersPage from '@/Role_Pages/coordinator/fleet-management/pages/RejectedOfficersPage'
 import TOAttendancePage from '@/Role_Pages/technical-officer/attendance/pages/TOAttendancePage'
@@ -51,7 +52,6 @@ import TOCorrectionsPage from '@/Role_Pages/technical-officer/draft/pages/TOCorr
 const App = () => {
   return (
     <AuthProvider>
-      <LoginModalProvider>
         <Routes>
           {/* Public pages use the marketing layout (header + footer) */}
           <Route element={<Layout />}>
@@ -59,8 +59,11 @@ const App = () => {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/services" element={<ServicesPage />} />
             <Route path="/contact" element={<ContactPage />} />
-            <Route path="/login/internal" element={<InternalLoginPage />} />
-            <Route path="/login/external" element={<ExternalLoginPage />} />
+            <Route path="/request-valuation" element={<ValuationRequestPage />} />
+            <Route path="/login" element={<GuestOnly><LoginPage /></GuestOnly>} />
+            {/* One sign-in page for everyone; the old split paths still resolve. */}
+            <Route path="/login/internal" element={<Navigate to="/login" replace />} />
+            <Route path="/login/external" element={<Navigate to="/login" replace />} />
           </Route>
 
           {/* Internal pages use the app shell (fixed sidebar) */}
@@ -69,6 +72,8 @@ const App = () => {
             <Route path="/change-password" element={<ChangePasswordPage />} />
             <Route path="/admin/add-role" element={<AddRolePage />} />
             <Route path="/admin/user-details" element={<UserDetailsPage />} />
+            <Route path="/admin/audit-log" element={<AdminAuditPage />} />
+            <Route path="/admin/banks" element={<BankManagementPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/messages" element={<MessagesPage />} />
             <Route path="/applicant/fill-form" element={<FillFormPage />} />
@@ -134,9 +139,12 @@ const App = () => {
               path="/coordinator/contact-messages"
               element={<ContactMessagesPage />}
             />
+            {/* Applicants: the roster plus the NIC search that starts the flow. */}
+            <Route path="/coordinator/applicants" element={<ApplicantsPage />} />
+            {/* Create Project was the old name for the applicant step. */}
             <Route
               path="/coordinator/create-project"
-              element={<CreateProjectPage />}
+              element={<Navigate to="/coordinator/applicants" replace />}
             />
             <Route
               path="/coordinator/register-applicant"
@@ -148,48 +156,50 @@ const App = () => {
             />
             <Route
               path="/coordinator/new-project"
-              element={<NewProjectPage />}
+              element={<Navigate to="/coordinator/projects/new" replace />}
             />
-            <Route
-              path="/coordinator/revaluation"
-              element={<PlaceholderPage title="Revaluation Dashboard" />}
-            />
+            {/* Valuations: the list of valuation requests and the form that raises one. */}
+            <Route path="/coordinator/valuations" element={<ValuationsPage />} />
+            <Route path="/coordinator/valuations/new" element={<NewValuationPage />} />
+            {/* New Valuation was the old path; it is still linked from older
+                screens, and rendering the same page keeps their router state. */}
             <Route
               path="/coordinator/new-valuation"
               element={<NewValuationPage />}
             />
+            {/* Superseded by Fleet Management > Assign Officers; kept as a
+                redirect so any bookmarked link still lands somewhere useful. */}
             <Route
               path="/coordinator/assign-technical-officer"
-              element={<AssignTechnicalOfficerPage />}
+              element={<Navigate to="/coordinator/fleet-management/assign" replace />}
             />
+            {/* Projects: the list of projects and the form that creates one. */}
+            <Route path="/coordinator/projects" element={<ProjectStatusPage />} />
+            <Route path="/coordinator/projects/new" element={<NewProjectPage />} />
+            {/* Project Status was the old name for the same list. */}
             <Route
               path="/coordinator/project-states"
-              element={<ProjectStatusPage />}
-            />
-            <Route
-              path="/coordinator/fleet-management"
-              element={<FleetManagementPage />}
+              element={<Navigate to="/coordinator/projects" replace />}
             />
             <Route
               path="/coordinator/payment-slips"
               element={<PaymentSlipsPage />}
             />
+            {/* Fleet Management is one tabbed workspace behind a single sidebar entry. */}
+            <Route path="/coordinator/fleet-management" element={<FleetWorkspace />}>
+              <Route index element={<Navigate to="summary" replace />} />
+              <Route path="summary" element={<FleetSummaryPage />} />
+              <Route path="assign" element={<AssignOfficersPage />} />
+              <Route path="rejected" element={<RejectedOfficersPage />} />
+              <Route path="attendance" element={<TOAttendanceReviewPage />} />
+            </Route>
+            {/* Rejected used to be its own sidebar page — keep old links working. */}
             <Route
-              path="/coordinator/fleet-management/summary"
-              element={<FleetSummaryPage />}
+              path="/coordinator/rejected-officers"
+              element={<Navigate to="/coordinator/fleet-management/rejected" replace />}
             />
-            <Route
-              path="/coordinator/fleet-management/assign"
-              element={<AssignOfficersPage />}
-            />
-            <Route
-              path="/coordinator/fleet-management/attendance"
-              element={<TOAttendanceReviewPage />}
-            />
-            <Route path="/coordinator/rejected-officers" element={<RejectedOfficersPage />} />
           </Route>
         </Routes>
-      </LoginModalProvider>
     </AuthProvider>
   )
 }

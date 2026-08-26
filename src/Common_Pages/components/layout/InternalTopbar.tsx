@@ -24,11 +24,11 @@ const IconButton = ({
     type="button"
     aria-label={label}
     onClick={onClick}
-    className="relative rounded-lg p-2 text-emerald-100/80 transition hover:bg-white/10 hover:text-white"
+    className="relative rounded-lg p-2 text-emerald-100 transition hover:bg-white/10 hover:text-white"
   >
     {children}
     {dot && (
-      <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-gold-400 ring-2 ring-emerald-950" />
+      <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-accent-400 ring-2 ring-surface" />
     )}
   </button>
 )
@@ -41,7 +41,7 @@ const InternalTopbar = ({ onMenu }: { onMenu: () => void }) => {
   const onMessages = location.pathname === '/messages'
 
   return (
-    <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-white/10 bg-emerald-950/70 px-4 py-3 backdrop-blur-md sm:px-6">
+    <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-white/10 bg-surface px-4 py-3 sm:px-6">
       {/* Mobile: open the sidebar */}
       <button
         type="button"
@@ -87,7 +87,7 @@ const InternalTopbar = ({ onMenu }: { onMenu: () => void }) => {
             <Avatar userId={user?.userId ?? ''} name={user?.name ?? ''} photoPath={user?.photoPath} size="sm" />
             <div className="hidden leading-tight sm:block">
               <p className="text-sm font-semibold text-white">{user?.name}</p>
-              <p className="text-xs font-medium text-gold-300">{user?.role}</p>
+              <p className="text-xs font-medium text-accent-300">{user?.role}</p>
             </div>
             <svg
               viewBox="0 0 24 24"
@@ -95,7 +95,7 @@ const InternalTopbar = ({ onMenu }: { onMenu: () => void }) => {
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
-              className={`hidden h-4 w-4 text-emerald-100/60 transition-transform sm:block ${menuOpen ? 'rotate-180' : ''}`}
+              className={`hidden h-4 w-4 text-emerald-100 transition-transform sm:block ${menuOpen ? 'rotate-180' : ''}`}
             >
               <path d="m6 9 6 6 6-6" />
             </svg>
@@ -108,21 +108,21 @@ const InternalTopbar = ({ onMenu }: { onMenu: () => void }) => {
                 className="fixed inset-0 z-40"
                 onClick={() => setMenuOpen(false)}
               />
-              <div className="absolute right-0 z-50 mt-2 w-64 origin-top-right animate-scale-in overflow-hidden rounded-2xl border border-white/10 bg-emerald-950/95 shadow-card-hover backdrop-blur-md">
+              <div className="absolute right-0 z-50 mt-2 w-64 origin-top-right animate-scale-in overflow-hidden rounded-2xl border border-white/10 bg-surface shadow-card-hover">
                 <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
                   <Avatar userId={user?.userId ?? ''} name={user?.name ?? ''} photoPath={user?.photoPath} size="md" />
                   <div className="leading-tight">
                     <p className="text-sm font-semibold text-white">{user?.name}</p>
-                    <p className="text-xs font-medium text-gold-300">{user?.role}</p>
+                    <p className="text-xs font-medium text-accent-300">{user?.role}</p>
                   </div>
                 </div>
                 <dl className="space-y-2 px-4 py-3 text-xs">
                   <div className="flex items-center justify-between">
-                    <dt className="text-emerald-200/60">User ID</dt>
+                    <dt className="text-emerald-200">User ID</dt>
                     <dd className="font-medium text-white">{user?.userId}</dd>
                   </div>
                   <div className="flex items-center justify-between">
-                    <dt className="text-emerald-200/60">Role</dt>
+                    <dt className="text-emerald-200">Role</dt>
                     <dd className="font-medium text-white">{user?.role}</dd>
                   </div>
                 </dl>
@@ -133,7 +133,7 @@ const InternalTopbar = ({ onMenu }: { onMenu: () => void }) => {
                       setMenuOpen(false)
                       navigate('/settings')
                     }}
-                    className="w-full rounded-xl bg-gold-400/15 px-4 py-2 text-sm font-semibold text-gold-300 transition hover:bg-gold-400/25"
+                    className="w-full rounded-xl bg-accent-400/15 px-4 py-2 text-sm font-semibold text-accent-300 transition hover:bg-accent-400/25"
                   >
                     Edit Profile
                   </button>

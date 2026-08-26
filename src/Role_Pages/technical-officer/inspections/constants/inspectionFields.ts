@@ -1,11 +1,10 @@
 // The land site inspection & valuation form, grouped into sections.
 export type InspField = { key: string; label: string; textarea?: boolean; type?: 'text' | 'select'; options?: string[]; group?: string }
-export type InspSection = { title: string; icon: string; fields: InspField[] }
+export type InspSection = { title: string; fields: InspField[] }
 
 export const inspectionSections: InspSection[] = [
   {
     title: 'Access & Location',
-    icon: '🚗',
     fields: [
       { key: 'accessRoute', label: 'Access route description from nearest town', textarea: true },
       { key: 'roadWidth', label: 'Access road width' },
@@ -17,7 +16,6 @@ export const inspectionSections: InspSection[] = [
   },
   {
     title: 'Description of the Land',
-    icon: '🌱',
     fields: [
       { key: 'landShape', label: 'Shape of land' },
       { key: 'landPosition', label: 'Land position relative to road' },
@@ -33,7 +31,6 @@ export const inspectionSections: InspSection[] = [
   },
   {
     title: 'Boundary Verification',
-    icon: '🧭',
     fields: [
       { key: 'northBoundary', label: 'North Boundary' },
       { key: 'eastBoundary', label: 'East Boundary' },
@@ -44,7 +41,6 @@ export const inspectionSections: InspSection[] = [
   },
   {
     title: 'Locality Description',
-    icon: '🏘️',
     fields: [
       { key: 'localityName', label: 'Village, town or locality', group: 'Character of the locality' },
       { key: 'nearestTown', label: 'Nearest main town / town centre', group: 'Character of the locality' },
@@ -67,7 +63,6 @@ export const inspectionSections: InspSection[] = [
   },
   {
     title: 'Inspection Details',
-    icon: '✍️',
     fields: [
       { key: 'inspectionDate', label: 'Date of inspection' },
       { key: 'presentedParty', label: 'Party present at the inspection' },

@@ -9,6 +9,7 @@ import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/c
 import TOWorkflowStepper from '@/Role_Pages/technical-officer/shared/TOWorkflowStepper'
 import { acceptAssignment, rejectAssignment } from '@/Role_Pages/coordinator/fleet-management/api/fleet'
 import { getAssignments, type Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
+import { clearWorkflowSelection, saveWorkflowSelection } from '@/Role_Pages/technical-officer/assignments/utils/workflowSelection'
 
 // Technical Officer > Assigned Projects.
 // Projects -> valuations -> the chosen valuation's full details.
@@ -70,11 +71,13 @@ const AssignedProjectsPage = () => {
     setMsg('')
     setSelected(assignment)
     if (selectionKey) localStorage.setItem(selectionKey, JSON.stringify(assignment))
+    saveWorkflowSelection(toId, { assignment, projectId: assignment.projectId })
   }
 
   const clearSelection = () => {
     setSelected(null)
     if (selectionKey) localStorage.removeItem(selectionKey)
+    clearWorkflowSelection(toId)
   }
 
   const statusFilter = useCallback((assignment: Assignment) => {
@@ -104,6 +107,7 @@ const AssignedProjectsPage = () => {
       const updated = { ...selected, status: 'Assignment Accepted' }
       setSelected(updated)
       if (selectionKey) localStorage.setItem(selectionKey, JSON.stringify(updated))
+      saveWorkflowSelection(toId, { assignment: updated, projectId: updated.projectId })
       setMsg('Assignment accepted.')
     } else {
       setMsg(res.error ?? 'Could not accept.')
@@ -145,7 +149,8 @@ const AssignedProjectsPage = () => {
   if (selected) {
     const isPending = selected.status === 'Technical Officer Assigned'
     return (
-      <div className="mx-auto max-w-3xl space-y-4">
+      <div className="mx-auto max-w-5xl space-y-4">
+        <TOWorkflowStepper current="assigned" />
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Button type="button" variant="outline" onClick={clearSelection} className="!px-5 !py-2.5 text-sm">
             Back to projects
@@ -175,7 +180,7 @@ const AssignedProjectsPage = () => {
         {msg && <p className="text-sm text-emerald-200">{msg}</p>}
         <AssignmentCard a={selected} />
         <Modal open={rejectOpen} onClose={closeReject} title="Reject assignment">
-          <p className="text-sm leading-6 text-emerald-100/70">
+          <p className="text-sm leading-6 text-emerald-100">
             Explain why you cannot take this assignment. Your reason will be shared with the
             coordinator so they can reassign the project.
           </p>
@@ -220,13 +225,13 @@ const AssignedProjectsPage = () => {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <TOWorkflowStepper current="assigned" />
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           Assigned <GradientText>Projects</GradientText>
         </h1>
-        <p className="mx-auto mt-2 max-w-md text-emerald-100/70">
+        <p className="mx-auto mt-2 max-w-md text-emerald-100">
           Choose a project, then a valuation, to view its location, schedule and owner details.
         </p>
       </div>
@@ -243,20 +248,20 @@ const AssignedProjectsPage = () => {
             key={value}
             type="button"
             onClick={() => setFilter(value)}
-            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${filter === value ? 'border-gold-400/60 bg-gold-400/15 text-gold-200' : 'border-white/15 text-emerald-100/70 hover:border-white/30'}`}
+            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${filter === value ? 'border-accent-400/60 bg-accent-400/15 text-accent-200' : 'border-white/15 text-emerald-100 hover:border-white/30'}`}
           >
             {label}
           </button>
         ))}
       </div>
-      <p className="-mt-2 text-center text-sm text-white/75">{filterHelp}</p>
+      <p className="-mt-2 text-center text-sm text-white">{filterHelp}</p>
       <label className="block">
         <span className="sr-only">Search assigned projects</span>
         <input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search by project ID, owner name or district"
-          className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-white/40 focus:border-gold-400/60 focus:ring-2 focus:ring-gold-400/15"
+          className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-white focus:border-accent-400/60 focus:ring-2 focus:ring-accent-400/15"
         />
       </label>
       <ProjectValuationPicker

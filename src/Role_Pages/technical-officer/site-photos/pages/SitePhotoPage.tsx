@@ -9,6 +9,7 @@ import TOWorkflowStepper from '@/Role_Pages/technical-officer/shared/TOWorkflowS
 import type { Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 import WorkflowPreviewLayout from '@/Role_Pages/technical-officer/shared/WorkflowPreviewLayout'
 import type { ReportNavigationTarget } from '@/Role_Pages/technical-officer/draft/components/LiveReportPreview'
+import { clearWorkflowSelection, loadWorkflowSelection, saveWorkflowSelection } from '@/Role_Pages/technical-officer/assignments/utils/workflowSelection'
 
 const SITE_PHOTO_STORAGE_KEY = 'technical-officer-site-photo-project'
 
@@ -26,7 +27,7 @@ const SitePhotoPage = () => {
     if (stateProjectId) return stateProjectId
 
     try {
-      return localStorage.getItem(SITE_PHOTO_STORAGE_KEY)
+      return loadWorkflowSelection(toId)?.projectId ?? localStorage.getItem(SITE_PHOTO_STORAGE_KEY)
     } catch {
       return null
     }
@@ -52,22 +53,23 @@ const SitePhotoPage = () => {
     } catch {
       // ignore storage errors
     }
+    if (!projectId) clearWorkflowSelection(toId)
   }
 
   if (selectedProjectId) {
-    return <WorkflowPreviewLayout projectId={selectedProjectId} refreshToken={previewVersion} navigationTarget={navigationTarget}>
+    return <WorkflowPreviewLayout step="photos" projectId={selectedProjectId} refreshToken={previewVersion} navigationTarget={navigationTarget}>
       <SitePhotoUpload projectId={selectedProjectId} toId={toId} onBack={() => persistProject(null)} onDataSaved={() => setPreviewVersion((value) => value + 1)} onReportNavigate={(section) => setNavigationTarget({ section, requestId: Date.now() })} />
     </WorkflowPreviewLayout>
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       <TOWorkflowStepper current="photos" />
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           Site <GradientText>Photo</GradientText>
         </h1>
-        <p className="mx-auto mt-2 max-w-lg text-emerald-100/70">
+        <p className="mx-auto mt-2 max-w-lg text-emerald-100">
           Select an assigned project to upload, review, or replace its site photographs.
         </p>
       </div>
@@ -83,11 +85,11 @@ const SitePhotoPage = () => {
 
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/50">Assigned projects</p>
-          <p className="mt-1 text-sm text-emerald-100/60">Choose one to manage its photo evidence.</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white">Assigned projects</p>
+          <p className="mt-1 text-sm text-emerald-100">Choose one to manage its photo evidence.</p>
         </div>
         {searchTerm && (
-          <button type="button" onClick={() => setSearchTerm('')} className="text-xs font-medium text-gold-300 hover:text-gold-200">
+          <button type="button" onClick={() => setSearchTerm('')} className="text-xs font-medium text-accent-300 hover:text-accent-200">
             Clear search
           </button>
         )}
@@ -100,7 +102,10 @@ const SitePhotoPage = () => {
         searchTerm={searchTerm}
         directProjectSelection
         projectActionLabel="Manage photos →"
-        onSelect={(assignment: Assignment) => persistProject(assignment.projectId)}
+        onSelect={(assignment: Assignment) => {
+          persistProject(assignment.projectId)
+          saveWorkflowSelection(toId, { assignment, projectId: assignment.projectId })
+        }}
       />
     </div>
   )

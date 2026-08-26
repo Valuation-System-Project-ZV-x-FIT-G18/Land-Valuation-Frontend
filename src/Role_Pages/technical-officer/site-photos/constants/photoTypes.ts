@@ -1,12 +1,11 @@
 // The site photographs a technical officer uploads, grouped by category.
 export type PhotoType = { key: string; label: string }
 // `describe: false` disables the AI caption (used for "Additional" photos).
-export type PhotoSection = { title: string; icon: string; describe?: boolean; photos: PhotoType[] }
+export type PhotoSection = { title: string; describe?: boolean; photos: PhotoType[] }
 
 export const photoSections: PhotoSection[] = [
   {
     title: 'Access & Approach',
-    icon: '🛣️',
     photos: [
       { key: 'accessRoad', label: 'Access Road Photo' },
       { key: 'routeFromMainRoad', label: 'Route from Main Road Photo' },
@@ -14,7 +13,6 @@ export const photoSections: PhotoSection[] = [
   },
   {
     title: 'Land Photographs',
-    icon: '🏞️',
     photos: [
       { key: 'frontView', label: 'Front View of Land' },
       { key: 'rearView', label: 'Rear View of Land' },
@@ -24,7 +22,6 @@ export const photoSections: PhotoSection[] = [
   },
   {
     title: 'Boundary Photographs',
-    icon: '🧭',
     photos: [
       { key: 'northBoundary', label: 'North Boundary Photo' },
       { key: 'eastBoundary', label: 'East Boundary Photo' },
@@ -34,7 +31,6 @@ export const photoSections: PhotoSection[] = [
   },
   {
     title: 'Additional Site Photographs',
-    icon: '📸',
     describe: false, // no AI caption for additional photos
     photos: [
       { key: 'gateEntrance', label: 'Gate / Entrance Photo' },

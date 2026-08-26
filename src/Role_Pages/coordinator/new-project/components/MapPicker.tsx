@@ -38,7 +38,7 @@ const MapPicker = ({ lat, lng, onPick, onTextChange }: MapPickerProps) => {
           }}
           inputMode="decimal"
           placeholder="e.g. 6.0976100"
-          className="font-mono text-gold-200"
+          className="font-mono text-accent-200"
         />
         <Input
           label="Longitude"
@@ -54,7 +54,7 @@ const MapPicker = ({ lat, lng, onPick, onTextChange }: MapPickerProps) => {
           }}
           inputMode="decimal"
           placeholder="e.g. 80.8712300"
-          className="font-mono text-gold-200"
+          className="font-mono text-accent-200"
         />
       </div>
     </div>

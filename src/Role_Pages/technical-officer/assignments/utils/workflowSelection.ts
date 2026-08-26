@@ -16,5 +16,19 @@ export const loadWorkflowSelection = (userId: string): WorkflowSelection | null 
 }
 
 export const saveWorkflowSelection = (userId: string, selection: WorkflowSelection) => {
-  if (userId && selection.projectId) localStorage.setItem(key(userId), JSON.stringify(selection))
+  if (!userId || !selection.projectId) return
+  try {
+    localStorage.setItem(key(userId), JSON.stringify(selection))
+  } catch {
+    // The current route state still keeps the workflow usable when storage is unavailable.
+  }
+}
+
+export const clearWorkflowSelection = (userId: string) => {
+  if (!userId) return
+  try {
+    localStorage.removeItem(key(userId))
+  } catch {
+    // Nothing else is required when browser storage is unavailable.
+  }
 }

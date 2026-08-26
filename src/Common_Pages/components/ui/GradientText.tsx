@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 // Reusable accent text used to highlight key words in headings.
-// A bright amber -> gold gradient: creative but still clearly readable
+// A single solid accent colour, readable on the light surface.
 // on the dark green background. Change it here once and it updates everywhere.
 
 type GradientTextProps = {
@@ -12,7 +12,7 @@ type GradientTextProps = {
 const GradientText = ({ children, className = '' }: GradientTextProps) => {
   return (
     <span
-      className={`bg-gradient-to-r from-amber-200 via-gold-200 to-amber-400 bg-clip-text font-bold text-transparent ${className}`}
+      className={`font-bold text-accent-200 ${className}`}
     >
       {children}
     </span>

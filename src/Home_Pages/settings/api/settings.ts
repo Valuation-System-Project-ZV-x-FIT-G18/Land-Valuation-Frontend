@@ -21,11 +21,11 @@ export async function updateProfile(
   profile: Profile,
 ): Promise<{ ok: boolean; profile?: Profile; error?: string }> {
   const {
-    firstName, lastName, initials, email, phone,
+    firstName, lastName, email, phone,
     dateOfBirth, province, district, city, postalCode, address,
   } = profile
   const payload = {
-    firstName, lastName, initials, email, phone,
+    firstName, lastName, email, phone,
     dateOfBirth, province, district, city, postalCode, address,
   }
   try {

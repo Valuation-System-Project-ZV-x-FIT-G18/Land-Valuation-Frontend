@@ -6,6 +6,8 @@ import LiveDraftBuilder from '@/Role_Pages/technical-officer/draft/components/Li
 import ProjectValuationPicker from '@/Role_Pages/technical-officer/assignments/components/ProjectValuationPicker'
 import { getAssignments, type Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 import TOWorkflowStepper from '@/Role_Pages/technical-officer/shared/TOWorkflowStepper'
+import { clearWorkflowSelection, loadWorkflowSelection, saveWorkflowSelection } from '@/Role_Pages/technical-officer/assignments/utils/workflowSelection'
+import WorkflowContextBanner from '@/Role_Pages/technical-officer/shared/WorkflowContextBanner'
 
 // Technical Officer > Inspection Data.
 // Projects → valuations → OCR upload + inspection form for that project.
@@ -22,15 +24,21 @@ const InspectionDataPage = () => {
   // The assignment is reloaded here so a refresh still uses current data.
   useEffect(() => {
     const state = location.state as { projectId?: string; valuationId?: number } | null
-    if (!state?.projectId || !state?.valuationId || !toId) return
+    const stored = loadWorkflowSelection(toId)
+    const projectId = state?.projectId ?? stored?.projectId
+    const valuationId = state?.valuationId ?? stored?.assignment?.valuationId
+    if (!projectId || !toId) return
     let active = true
     setRestoring(true)
     void getAssignments(toId).then((result) => {
       if (!active) return
       const match = result.assignments.find(
-        (item) => item.projectId === state.projectId && item.valuationId === state.valuationId,
+        (item) => item.projectId === projectId && (!valuationId || item.valuationId === valuationId),
       )
-      if (match) setSelected(match)
+      if (match) {
+        setSelected(match)
+        saveWorkflowSelection(toId, { assignment: match, projectId: match.projectId })
+      }
       setRestoring(false)
     })
     return () => { active = false }
@@ -60,26 +68,28 @@ const InspectionDataPage = () => {
   if (selected) {
     return (
       <div className="w-full">
+        <TOWorkflowStepper current="inspection" />
+        <WorkflowContextBanner projectId={selected.projectId} assignment={selected} />
         <LiveDraftBuilder
           assignment={selected}
           toId={toId}
           inspectionMode
-          onBack={() => setSelected(null)}
+          onBack={() => { setSelected(null); clearWorkflowSelection(toId) }}
         />
       </div>
     )
   }
 
-  if (restoring) return <p className="text-center text-sm text-emerald-100/70">Opening your selected valuation…</p>
+  if (restoring) return <p className="text-center text-sm text-emerald-100">Opening your selected valuation…</p>
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <TOWorkflowStepper current="inspection" />
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           Inspection <GradientText>Data</GradientText>
         </h1>
-        <p className="mx-auto mt-2 max-w-md text-emerald-100/70">
+        <p className="mx-auto mt-2 max-w-md text-emerald-100">
           Step 2 of 6 — Select an active valuation to record site inspection data.
         </p>
       </div>
@@ -91,7 +101,7 @@ const InspectionDataPage = () => {
           placeholder="Search by project ID, owner name or district"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-emerald-100/40 outline-none focus:border-gold-400/60 focus:ring-2 focus:ring-gold-400/30"
+          className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:italic placeholder:text-emerald-200/45 outline-none focus:border-accent-400/60 focus:ring-2 focus:ring-accent-400/30"
         />
       </div>
 
@@ -101,8 +111,8 @@ const InspectionDataPage = () => {
           onClick={() => setFilterTab('active')}
           className={`px-4 py-2.5 text-sm font-medium transition ${
             filterTab === 'active'
-              ? 'border-b-2 border-gold-300 text-gold-300'
-              : 'text-emerald-100/60 hover:text-emerald-100'
+              ? 'border-b-2 border-accent-300 text-accent-300'
+              : 'text-emerald-100 hover:text-emerald-100'
           }`}
         >
           Active inspections
@@ -111,8 +121,8 @@ const InspectionDataPage = () => {
           onClick={() => setFilterTab('new')}
           className={`px-4 py-2.5 text-sm font-medium transition ${
             filterTab === 'new'
-              ? 'border-b-2 border-gold-300 text-gold-300'
-              : 'text-emerald-100/60 hover:text-emerald-100'
+              ? 'border-b-2 border-accent-300 text-accent-300'
+              : 'text-emerald-100 hover:text-emerald-100'
           }`}
         >
           New assignments
@@ -121,8 +131,8 @@ const InspectionDataPage = () => {
           onClick={() => setFilterTab('completed')}
           className={`px-4 py-2.5 text-sm font-medium transition ${
             filterTab === 'completed'
-              ? 'border-b-2 border-gold-300 text-gold-300'
-              : 'text-emerald-100/60 hover:text-emerald-100'
+              ? 'border-b-2 border-accent-300 text-accent-300'
+              : 'text-emerald-100 hover:text-emerald-100'
           }`}
         >
           Completed archive
@@ -130,7 +140,7 @@ const InspectionDataPage = () => {
       </div>
 
       {/* Instruction text */}
-      <p className="text-sm text-emerald-100/70">
+      <p className="text-sm text-emerald-100">
         Choose a project, then select the correct valuation scheduled for inspection.
       </p>
 
@@ -138,7 +148,10 @@ const InspectionDataPage = () => {
       <ProjectValuationPicker
         toId={toId}
         actionLabel="Start inspection →"
-        onSelect={setSelected}
+        onSelect={(assignment) => {
+          setSelected(assignment)
+          saveWorkflowSelection(toId, { assignment, projectId: assignment.projectId })
+        }}
         statusFilter={statusFilter}
         searchTerm={searchTerm}
         emptyText={

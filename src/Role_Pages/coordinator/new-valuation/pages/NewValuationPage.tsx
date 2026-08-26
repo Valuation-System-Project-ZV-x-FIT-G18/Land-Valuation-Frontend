@@ -20,7 +20,7 @@ const NewValuationPage = () => {
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           New <GradientText>Valuation</GradientText>
         </h1>
-        <p className="mx-auto mt-2 max-w-md text-emerald-100/70">
+        <p className="mx-auto mt-2 max-w-md text-emerald-100">
           Load an existing project, then enter the bank&apos;s valuation request.
         </p>
       </div>
@@ -34,12 +34,12 @@ const NewValuationPage = () => {
             <h3 className="mt-4 text-2xl"><GradientText>Valuation Created</GradientText></h3>
             <dl className="mx-auto mt-5 max-w-xs space-y-2 text-sm">
               <div className="flex justify-between border-b border-white/10 pb-2">
-                <dt className="text-emerald-200/60">Project ID</dt>
+                <dt className="text-emerald-200">Project ID</dt>
                 <dd className="font-medium text-white">{done.projectId}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-emerald-200/60">Valuation No.</dt>
-                <dd className="font-semibold text-gold-300">#{done.valuationId}</dd>
+                <dt className="text-emerald-200">Valuation No.</dt>
+                <dd className="font-semibold text-accent-300">#{done.valuationId}</dd>
               </div>
             </dl>
 
@@ -58,9 +58,9 @@ const NewValuationPage = () => {
                 type="button"
                 variant="outline"
                 fullWidth
-                onClick={() => setDone(null)}
+                onClick={() => navigate('/coordinator/projects')}
               >
-                No
+                View Projects
               </Button>
             </div>
           </div>

@@ -56,14 +56,14 @@ const ValuerProfileForm = ({ userId, defaultName, onSaved }: Props) => {
     } else setServerError(result.error ?? 'Could not save the valuer profile.')
   }
 
-  if (loading) return <Card className="p-6 text-center text-sm text-emerald-100/60">Loading professional profile…</Card>
+  if (loading) return <Card className="p-6 text-center text-sm text-emerald-100">Loading professional profile…</Card>
 
   return (
     <Card className="overflow-hidden p-0">
-      <div className="border-b border-white/10 bg-gradient-to-r from-gold-400/10 to-transparent px-6 py-5 sm:px-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-300">Manager L1 · Report Signatory</p>
+      <div className="border-b border-white/10 bg-gradient-to-r from-accent-400/10 to-transparent px-6 py-5 sm:px-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-300">Manager L1 · Report Signatory</p>
         <h2 className="mt-2 text-xl font-bold text-white">Valuer Professional Profile</h2>
-        <p className="mt-1 text-sm text-emerald-100/65">Saved once and available for valuation reports and compliance statements.</p>
+        <p className="mt-1 text-sm text-emerald-100">Saved once and available for valuation reports and compliance statements.</p>
       </div>
       <form onSubmit={submit} className="space-y-8 p-6 sm:p-8" noValidate>
         <section>

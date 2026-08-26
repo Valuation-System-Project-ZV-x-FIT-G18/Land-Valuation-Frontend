@@ -53,8 +53,8 @@ const ApprovedDraftsPage = ({ view = 'approved' }: { view?: 'approved' | 'reject
   if (user && !LEVEL[user.role]) {
     return (
       <Card className="mx-auto max-w-lg p-8 text-center">
-        <p className="font-semibold text-gold-200">Not available</p>
-        <p className="mt-1 text-sm text-emerald-100/70">This page is only for managers.</p>
+        <p className="font-semibold text-accent-200">Not available</p>
+        <p className="mt-1 text-sm text-emerald-100">This page is only for managers.</p>
       </Card>
     )
   }
@@ -90,7 +90,7 @@ const ApprovedDraftsPage = ({ view = 'approved' }: { view?: 'approved' | 'reject
       {r.project.reviewStatus === 'locked' ? 'Finalized' : STATUS_LABEL[r.project.reviewStatus] ?? r.project.reviewStatus}
     </Badge>,
     r.project.reviewStatus === 'locked' && level !== 'L1'
-      ? <span key="restricted" className="text-xs text-emerald-100/45">Finalized — L1 only</span>
+      ? <span key="restricted" className="text-xs text-emerald-100">Finalized — L1 only</span>
       : <Button key="view" type="button" size="sm" variant="outline" onClick={() => setViewing(r)}>View Draft</Button>,
   ])
 
@@ -98,19 +98,19 @@ const ApprovedDraftsPage = ({ view = 'approved' }: { view?: 'approved' | 'reject
     <div className="mx-auto max-w-5xl space-y-6">
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">{copy.heading}</h1>
-        <p className="mx-auto mt-2 max-w-md text-emerald-100/70">{copy.description}</p>
+        <p className="mx-auto mt-2 max-w-md text-emerald-100">{copy.description}</p>
       </div>
 
       <SearchBox value={q} onChange={setQ} />
 
       <Card className="overflow-hidden">
-        <div className="h-1 w-full bg-gradient-to-r from-amber-200 via-gold-300 to-amber-400" />
+        <div className="h-1 w-full bg-gradient-to-r from-amber-200 via-accent-300 to-amber-400" />
         <div className="p-6 sm:p-8">
-          <p className="mb-4 text-sm text-emerald-100/70">
+          <p className="mb-4 text-sm text-emerald-100">
             <span className="font-semibold text-white">{projects.length}</span> {copy.countLabel}{projects.length === 1 ? '' : 's'}
           </p>
           {loading ? (
-            <p className="text-center text-sm text-emerald-200/60">Loading…</p>
+            <p className="text-center text-sm text-emerald-200">Loading…</p>
           ) : (
             <Table
               columns={['Project ID', 'Owner', 'Location', 'Valuation', view === 'approved' ? 'Approved On' : 'Rejected On', 'Current Status', 'Action']}

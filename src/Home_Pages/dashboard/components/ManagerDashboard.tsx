@@ -102,8 +102,8 @@ const ManagerDashboard = ({ user }: Props) => {
   const cards = [
     { label: 'Pending Reviews', value: data.pending.length, to: '/manager/check-drafts', tone: 'text-amber-200', dot: 'bg-amber-300' },
     { label: 'Approved Reports', value: data.approved.length, to: '/manager/approved-drafts', tone: 'text-emerald-200', dot: 'bg-emerald-300' },
-    { label: 'Rejected Reports', value: data.rejected.length, to: '/manager/rejected-drafts', tone: 'text-red-200', dot: 'bg-red-300' },
-    { label: 'Finalized Reports', value: data.final.length, to: '/manager/final-reports', tone: 'text-gold-200', dot: 'bg-gold-300' },
+    { label: 'Rejected Reports', value: data.rejected.length, to: '/manager/rejected-drafts', tone: 'text-red-200', dot: 'bg-red-500' },
+    { label: 'Finalized Reports', value: data.final.length, to: '/manager/final-reports', tone: 'text-accent-200', dot: 'bg-accent-300' },
   ].filter((card) => card.label !== 'Finalized Reports' || level === 'L1')
 
   return (
@@ -128,24 +128,24 @@ const ManagerDashboard = ({ user }: Props) => {
             <Card hover className="h-full p-5 transition hover:-translate-y-0.5">
               <div className="flex items-center justify-between">
                 <span className={`h-2.5 w-2.5 rounded-full ${card.dot}`} />
-                <span className="text-sm text-emerald-100/40">View →</span>
+                <span className="text-sm text-emerald-100">View →</span>
               </div>
               <p className={`mt-5 text-3xl font-bold ${card.tone}`}>{loading ? '—' : card.value}</p>
-              <p className="mt-1 text-sm font-medium text-emerald-100/75">{card.label}</p>
+              <p className="mt-1 text-sm font-medium text-emerald-100">{card.label}</p>
             </Card>
           </button>
         ))}
       </div>
 
       <Card className="overflow-hidden">
-        <div className="h-1 bg-gradient-to-r from-amber-200 via-gold-300 to-amber-400" />
+        <div className="h-1 bg-gradient-to-r from-amber-200 via-accent-300 to-amber-400" />
         <div className="p-5 sm:p-7">
           <div className="mb-5 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-xl font-semibold text-white">Reports Requiring My Attention</h2>
-              <p className="mt-1 text-sm text-emerald-100/60">{attentionCopy[level]}</p>
+              <p className="mt-1 text-sm text-emerald-100">{attentionCopy[level]}</p>
             </div>
-            {!loading && <span className="text-xs text-gold-200">{data.pending.length} pending</span>}
+            {!loading && <span className="text-xs text-accent-200">{data.pending.length} pending</span>}
           </div>
 
           {loading ? (
@@ -155,13 +155,13 @@ const ManagerDashboard = ({ user }: Props) => {
             </div>
           ) : !error && data.pending.length === 0 ? (
             <div className="rounded-xl border border-dashed border-white/15 bg-white/[0.03] px-5 py-10 text-center">
-              <p className="font-medium text-gold-200">You are all caught up</p>
-              <p className="mt-1 text-sm text-emerald-100/60">No reports are currently waiting for your {level} review.</p>
+              <p className="font-medium text-accent-200">You are all caught up</p>
+              <p className="mt-1 text-sm text-emerald-100">No reports are currently waiting for your {level} review.</p>
             </div>
           ) : !error ? (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[820px] text-left text-sm">
-                <thead className="border-b border-white/10 text-xs uppercase tracking-wide text-emerald-100/45">
+                <thead className="border-b border-white/10 text-xs uppercase tracking-wide text-emerald-100">
                   <tr>
                     <th className="px-3 py-3 font-medium">Project</th>
                     <th className="px-3 py-3 font-medium">Applicant / Client</th>
@@ -175,13 +175,13 @@ const ManagerDashboard = ({ user }: Props) => {
                 <tbody className="divide-y divide-white/10">
                   {data.pending.map((project) => (
                     <tr key={project.projectId} className="transition hover:bg-white/[0.03]">
-                      <td className="px-3 py-4 font-semibold text-gold-200">{project.projectId}</td>
+                      <td className="px-3 py-4 font-semibold text-accent-200">{project.projectId}</td>
                       <td className="px-3 py-4 text-white">{project.ownerName || '—'}</td>
-                      <td className="px-3 py-4 text-emerald-100/70">Manager {level} review</td>
-                      <td className="px-3 py-4 text-emerald-100/70">
+                      <td className="px-3 py-4 text-emerald-100">Manager {level} review</td>
+                      <td className="px-3 py-4 text-emerald-100">
                         {level === 'L3' ? project.valuations[0]?.technicalOfficerId || 'Technical Officer' : `Manager ${level === 'L2' ? 'L3' : 'L2'}`}
                       </td>
-                      <td className="px-3 py-4 text-emerald-100/60">{formatUpdated(project.updatedAt)}</td>
+                      <td className="px-3 py-4 text-emerald-100">{formatUpdated(project.updatedAt)}</td>
                       <td className="px-3 py-4"><Badge tone="warning">{STATUS_LABEL[project.reviewStatus] ?? project.reviewStatus}</Badge></td>
                       <td className="px-3 py-4 text-right"><Button type="button" size="sm" variant="outline" onClick={() => review(project)}>Review</Button></td>
                     </tr>
@@ -196,7 +196,7 @@ const ManagerDashboard = ({ user }: Props) => {
       <Card className="p-5 sm:p-7">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-white">Recent Activity</h2>
-          <span className="text-xs text-emerald-100/45">Latest workflow changes</span>
+          <span className="text-xs text-emerald-100">Latest workflow changes</span>
         </div>
         {loading ? (
           <div className="h-20 animate-pulse rounded-xl bg-white/5" />
@@ -206,15 +206,15 @@ const ManagerDashboard = ({ user }: Props) => {
             <Button type="button" size="sm" variant="outline" onClick={load}>Try again</Button>
           </div>
         ) : data.activities.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-white/15 px-4 py-7 text-center text-sm text-emerald-100/60">No recent review activity is available yet.</p>
+          <p className="rounded-xl border border-dashed border-white/15 px-4 py-7 text-center text-sm text-emerald-100">No recent review activity is available yet.</p>
         ) : (
           <ul className="divide-y divide-white/10">
             {data.activities.map((activity) => (
               <li key={`${activity.projectId}-${activity.toStatus}-${activity.createdAt}`} className="flex gap-3 py-3 first:pt-0 last:pb-0">
-                <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-gold-300" />
+                <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-accent-300" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm text-emerald-50">{activityText(activity)}</p>
-                  <p className="mt-0.5 text-xs text-emerald-100/45">{formatUpdated(activity.createdAt)}</p>
+                  <p className="mt-0.5 text-xs text-emerald-100">{formatUpdated(activity.createdAt)}</p>
                 </div>
               </li>
             ))}

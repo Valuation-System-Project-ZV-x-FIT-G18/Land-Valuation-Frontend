@@ -19,9 +19,7 @@ export type FieldConfig = {
 }
 
 export type SectionConfig = {
-  title: string
-  icon: string
-  fields: FieldConfig[]
+  title: string  fields: FieldConfig[]
   hasMap?: boolean // render the map picker after this section's fields
 }
 

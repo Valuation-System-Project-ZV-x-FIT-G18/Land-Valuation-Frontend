@@ -75,8 +75,8 @@ const ValuationAssignRow = ({ valuation: v, officers, onAssign }: Props) => {
     <div className="rounded-xl border border-white/10 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="text-sm font-medium text-emerald-100">
-          Valuation <span className="text-gold-300">#{v.valuationId}</span>
-          <span className="ml-2 rounded-full bg-emerald-400/10 px-3 py-1 text-xs capitalize text-emerald-200/80">
+          Valuation <span className="text-accent-300">#{v.valuationId}</span>
+          <span className="ml-2 rounded-full bg-emerald-400/10 px-3 py-1 text-xs capitalize text-emerald-200">
             {v.status.replace(/_/g, ' ')}
           </span>
         </span>
@@ -138,7 +138,7 @@ const ValuationAssignRow = ({ valuation: v, officers, onAssign }: Props) => {
             value={time}
             onChange={(e) => { setTime(e.target.value); setError('') }}
           />
-          <p className="-mt-2 text-xs text-emerald-200/60 sm:col-start-2">
+          <p className="-mt-2 text-xs text-emerald-200 sm:col-start-2">
             Available hours: 8:00 AM–5:00 PM
           </p>
           {error && <p className="text-sm text-red-300 sm:col-span-2">{error}</p>}
@@ -159,8 +159,8 @@ const ValuationAssignRow = ({ valuation: v, officers, onAssign }: Props) => {
 
 const Info = ({ label, value }: { label: string; value: string }) => (
   <div>
-    <dt className="text-xs font-medium uppercase tracking-wide text-emerald-200/50">{label}</dt>
-    <dd className="mt-0.5 text-white/90">{value}</dd>
+    <dt className="text-xs font-medium uppercase tracking-wide text-emerald-200">{label}</dt>
+    <dd className="mt-0.5 text-white">{value}</dd>
   </div>
 )
 

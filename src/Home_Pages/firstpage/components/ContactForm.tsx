@@ -29,7 +29,7 @@ const ContactForm = () => {
         <h2 className="text-3xl font-bold text-white sm:text-4xl">
           Any <GradientText>inquiries?</GradientText>
         </h2>
-        <p className="mx-auto mt-3 max-w-xl text-emerald-100/80">
+        <p className="mx-auto mt-3 max-w-xl text-emerald-100">
           Have a question or need a valuation? Send us a message and our team
           will get back to you.
         </p>
@@ -41,7 +41,7 @@ const ContactForm = () => {
             <p className="text-2xl">
               <GradientText>Thank you!</GradientText>
             </p>
-            <p className="mt-2 text-emerald-100/80">
+            <p className="mt-2 text-emerald-100">
               Your message has been received. We&apos;ll be in touch shortly.
             </p>
           </div>

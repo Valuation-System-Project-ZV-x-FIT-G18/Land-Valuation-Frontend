@@ -25,7 +25,6 @@ const AssignOfficerForm = ({ officers, onAssigned, initialQuery }: Props) => {
   const [searched, setSearched] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [lastQuery, setLastQuery] = useState('')
 
   const runSearch = async (query: string) => {
     if (!query.trim()) {
@@ -39,7 +38,6 @@ const AssignOfficerForm = ({ officers, onAssigned, initialQuery }: Props) => {
     setProjects(res.projects)
     setSearched(true)
     setOpenProject(res.projects.length === 1 ? res.projects[0].projectId : null)
-    setLastQuery(query)
     if (res.error) setError(res.error)
   }
 
@@ -52,9 +50,20 @@ const AssignOfficerForm = ({ officers, onAssigned, initialQuery }: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialQuery])
 
+  const clear = () => {
+    setQ('')
+    setProjects([])
+    setOpenProject(null)
+    setSearched(false)
+    setError('')
+  }
+
+  // After an assignment lands the search that found the project has served its
+  // purpose, so the form resets to empty. Leaving the finished NIC in the box
+  // meant the next assignment started from the previous person's search.
   const refresh = () => {
     onAssigned()
-    if (lastQuery) runSearch(lastQuery)
+    clear()
   }
 
   const current = projects.find((p) => p.projectId === openProject)
@@ -62,7 +71,7 @@ const AssignOfficerForm = ({ officers, onAssigned, initialQuery }: Props) => {
   return (
     <Card className="p-6 sm:p-8">
       <h3 className="mb-1 text-lg font-bold text-white">Assign a Technical Officer</h3>
-      <p className="mb-5 text-sm text-emerald-100/70">
+      <p className="mb-5 text-sm text-emerald-100">
         Search by NIC or Project ID, choose a project, then a valuation to assign.
       </p>
 
@@ -83,12 +92,17 @@ const AssignOfficerForm = ({ officers, onAssigned, initialQuery }: Props) => {
         <Button type="submit" disabled={loading} className="sm:mt-7">
           {loading ? 'Searching…' : 'Search'}
         </Button>
+        {(q || searched) && (
+          <Button type="button" variant="outline" onClick={clear} className="sm:mt-7">
+            Clear
+          </Button>
+        )}
       </form>
 
       {error && <p className="mt-3 text-sm text-red-300">{error}</p>}
 
       {searched && projects.length === 0 && !error && (
-        <p className="mt-4 text-sm text-emerald-200/60">
+        <p className="mt-4 text-sm text-emerald-200">
           No projects found for that NIC or Project ID.
         </p>
       )}
@@ -104,10 +118,10 @@ const AssignOfficerForm = ({ officers, onAssigned, initialQuery }: Props) => {
                 className="flex w-full flex-wrap items-center justify-between gap-2 px-4 py-3 text-left text-sm transition hover:bg-white/5"
               >
                 <span className="font-medium text-emerald-100">
-                  Project <span className="text-gold-300">{p.projectId}</span>
-                  {p.ownerName && <span className="text-emerald-200/60"> · {p.ownerName}</span>}
+                  Project <span className="text-accent-300">{p.projectId}</span>
+                  {p.ownerName && <span className="text-emerald-200"> · {p.ownerName}</span>}
                 </span>
-                <span className="text-emerald-200/70">
+                <span className="text-emerald-200">
                   {p.valuations.length} valuation{p.valuations.length === 1 ? '' : 's'} →
                 </span>
               </button>
@@ -128,12 +142,12 @@ const AssignOfficerForm = ({ officers, onAssigned, initialQuery }: Props) => {
             ← All projects
           </Button>
           <p className="text-sm font-medium text-emerald-100">
-            Project <span className="text-gold-300">{current.projectId}</span>
-            {current.ownerName && <span className="text-emerald-200/60"> · {current.ownerName}</span>}
+            Project <span className="text-accent-300">{current.projectId}</span>
+            {current.ownerName && <span className="text-emerald-200"> · {current.ownerName}</span>}
           </p>
 
           {current.valuations.length === 0 ? (
-            <p className="text-sm text-emerald-200/60">This project has no valuations yet.</p>
+            <p className="text-sm text-emerald-200">This project has no valuations yet.</p>
           ) : (
             <div className="space-y-3">
               {current.valuations.map((v: WorkValuation) => (

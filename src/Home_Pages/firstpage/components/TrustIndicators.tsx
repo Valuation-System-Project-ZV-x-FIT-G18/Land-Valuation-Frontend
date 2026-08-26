@@ -15,12 +15,12 @@ const TrustIndicators = () => {
       {stats.map((stat) => (
         <div
           key={stat.label}
-          className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition-colors hover:border-gold-400/40"
+          className="rounded-xl border border-white/10 bg-white/5 p-4 transition-colors hover:border-accent-400/40"
         >
-          <dt className="text-2xl font-bold text-gold-400 sm:text-3xl">
+          <dt className="text-2xl font-bold text-accent-400 sm:text-3xl">
             {stat.value}
           </dt>
-          <dd className="mt-1 text-xs font-medium text-emerald-100/80 sm:text-sm">
+          <dd className="mt-1 text-xs font-medium text-emerald-100 sm:text-sm">
             {stat.label}
           </dd>
         </div>

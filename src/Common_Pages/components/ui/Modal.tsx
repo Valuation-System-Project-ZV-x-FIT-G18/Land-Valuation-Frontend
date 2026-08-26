@@ -41,17 +41,17 @@ const Modal = ({ open, onClose, title, children }: ModalProps) => {
     >
       {/* Dark backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/60"
         onClick={onClose}
       />
 
       {/* Panel */}
-      <div className="relative z-10 max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border border-gold-400/25 bg-emerald-950 p-6 shadow-2xl sm:max-h-[calc(100dvh-3rem)]">
+      <div className="relative z-10 max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border border-accent-400/25 bg-surface p-6 shadow-card sm:max-h-[calc(100dvh-3rem)]">
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute right-4 top-4 text-lg text-emerald-200 transition hover:text-gold-300"
+          className="absolute right-4 top-4 text-lg text-emerald-200 transition hover:text-accent-300"
         >
           ✕
         </button>

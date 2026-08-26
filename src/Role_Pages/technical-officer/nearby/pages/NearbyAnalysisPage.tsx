@@ -38,7 +38,7 @@ const NearbyAnalysisPage = () => {
   if (selected || directProjectId) {
     const projectId = selected?.projectId ?? directProjectId
     return (
-      <WorkflowPreviewLayout projectId={projectId} refreshToken={previewVersion} valueOverrides={previewValues} evidenceOverride={previewEvidence} valuationOverride={previewValuation} navigationTarget={navigationTarget}>
+      <WorkflowPreviewLayout step="nearby" projectId={projectId} refreshToken={previewVersion} valueOverrides={previewValues} evidenceOverride={previewEvidence} valuationOverride={previewValuation} navigationTarget={navigationTarget}>
       <NearbyAnalyser
         projectId={projectId}
         onContinue={() => navigate('/technical-officer/descriptions', {
@@ -60,12 +60,12 @@ const NearbyAnalysisPage = () => {
   return (
     <div className="mx-auto max-w-5xl space-y-7">
       <TOWorkflowStepper current="nearby" />
-      <div className="rounded-2xl border border-white/10 bg-emerald-950/40 px-6 py-8 text-center shadow-card backdrop-blur-sm sm:px-10 sm:py-10">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-gold-300/75">Market comparison</p>
+      <div className="rounded-2xl border border-white/10 bg-surface px-6 py-8 text-center shadow-card sm:px-10 sm:py-10">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent-300">Market comparison</p>
         <h1 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
           Find <GradientText>Nearby Lands</GradientText>
         </h1>
-        <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-emerald-100/65">
+        <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-emerald-100">
           Select a project to identify and rank the strongest nearby bare or residential land comparables by
           distance, recency, property type, extent and access.
         </p>

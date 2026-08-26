@@ -50,7 +50,7 @@ const ForgotPasswordModal = ({ open, onClose }: { open: boolean; onClose: () => 
             &#9993;
           </div>
           <h3 className="mt-4 text-2xl"><GradientText>Check your email</GradientText></h3>
-          <p className="mx-auto mt-2 max-w-xs text-sm text-emerald-100/70">
+          <p className="mx-auto mt-2 max-w-xs text-sm text-emerald-100">
             If an account matches that email, we&apos;ve sent a temporary password. Sign in with
             your email address and the temporary password, then choose a new password.
           </p>
@@ -59,7 +59,7 @@ const ForgotPasswordModal = ({ open, onClose }: { open: boolean; onClose: () => 
       ) : (
         <div>
           <h3 className="text-xl font-bold text-white">Forgot <GradientText>Password</GradientText></h3>
-          <p className="mt-1 text-sm text-emerald-100/70">
+          <p className="mt-1 text-sm text-emerald-100">
             Enter the email address registered to your account. We&apos;ll send a temporary password there.
           </p>
           <div className="mt-4">

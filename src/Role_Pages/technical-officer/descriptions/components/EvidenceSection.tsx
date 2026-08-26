@@ -57,15 +57,15 @@ const EvidenceSection = ({ projectId, value, onChange }: Props) => {
     update({ rows: (s?.rows ?? []).map((r, idx) => (idx === i ? { ...r, ...patch } : r)) })
 
   if (!s) return null
-  const cell = 'w-full rounded-lg border border-white/15 bg-white/5 px-2.5 py-1.5 text-xs text-white outline-none focus:border-gold-400/60'
+  const cell = 'w-full rounded-lg border border-white/15 bg-white/5 px-2.5 py-1.5 text-xs text-white outline-none focus:border-accent-400/60'
   const Bullet = ({ children }: { children: React.ReactNode }) => (
-    <li className="flex gap-2 text-xs text-emerald-100/85"><span className="text-gold-400/70">•</span><span>{children}</span></li>
+    <li className="flex gap-2 text-xs text-emerald-100"><span className="text-accent-400">•</span><span>{children}</span></li>
   )
 
   return (
     <Card className="p-5 sm:p-6">
-      <h3 className="mb-1 text-sm font-bold uppercase tracking-wide text-gold-300">9. Evidence of Land Values &amp; Rentals</h3>
-      <p className="mb-3 text-xs font-semibold text-emerald-100/80">9.1 RICS Evidence Hierarchy — Direct Comparable</p>
+      <h3 className="mb-1 text-sm font-bold uppercase tracking-wide text-accent-300">9. Evidence of Land Values &amp; Rentals</h3>
+      <p className="mb-3 text-xs font-semibold text-emerald-100">9.1 RICS Evidence Hierarchy — Direct Comparable</p>
 
       {!s.hasAnalysis && (
         <p className="mb-3 rounded-lg border border-amber-300/30 bg-amber-300/10 p-2 text-[11px] text-amber-200">
@@ -85,7 +85,7 @@ const EvidenceSection = ({ projectId, value, onChange }: Props) => {
         <Bullet>Completed transactions of similar real estate with enough reliable data — Not available.</Bullet>
         <Bullet>
           Similar real estate being marketed where offers may have been made but no binding contract —{' '}
-          <select value={s.offersStatus} onChange={(e) => update({ offersStatus: e.target.value })} className="rounded border border-white/15 bg-slate-800 px-2 py-0.5 text-xs text-white">
+          <select value={s.offersStatus} onChange={(e) => update({ offersStatus: e.target.value })} className="rounded border border-white/15 bg-surface px-2 py-0.5 text-xs text-white">
             <option>Not available</option><option>Available</option>
           </select>
         </Bullet>
@@ -96,8 +96,8 @@ const EvidenceSection = ({ projectId, value, onChange }: Props) => {
 
       {/* Comparable evidence table */}
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full text-left text-xs text-emerald-100/90">
-          <thead className="text-[11px] uppercase text-emerald-200/60">
+        <table className="w-full text-left text-xs text-emerald-100">
+          <thead className="text-[11px] uppercase text-emerald-200">
             <tr><th className="py-1 pr-2">Ref. No</th><th className="py-1 pr-2">Remarks</th><th className="py-1 text-right">Per perch price (Rs.)</th></tr>
           </thead>
           <tbody>
@@ -105,17 +105,17 @@ const EvidenceSection = ({ projectId, value, onChange }: Props) => {
               <tr key={i} className="border-t border-white/10 align-top">
                 <td className="py-2 pr-2"><input value={r.refNo} onChange={(e) => setRow(i, { refNo: e.target.value })} className={cell} /></td>
                 <td className="py-2 pr-2"><textarea value={r.remarks} onChange={(e) => setRow(i, { remarks: e.target.value })} rows={3} className={cell + ' resize-none'} /></td>
-                <td className="py-2 text-right"><input type="number" value={r.pricePerPerch || ''} onChange={(e) => setRow(i, { pricePerPerch: Number(e.target.value) })} className={cell + ' text-right font-semibold text-gold-200'} /></td>
+                <td className="py-2 text-right"><input type="number" value={r.pricePerPerch || ''} onChange={(e) => setRow(i, { pricePerPerch: Number(e.target.value) })} className={cell + ' text-right font-semibold text-accent-200'} /></td>
               </tr>
             ))}
-            {s.rows.length === 0 && <tr><td colSpan={3} className="py-2 text-[11px] text-emerald-100/50">No comparable evidence yet.</td></tr>}
+            {s.rows.length === 0 && <tr><td colSpan={3} className="py-2 text-[11px] text-emerald-100">No comparable evidence yet.</td></tr>}
           </tbody>
         </table>
       </div>
 
-      <label className="mt-3 block text-[11px] font-medium text-emerald-200/60">Value range statement</label>
+      <label className="mt-3 block text-[11px] font-medium text-emerald-200">Value range statement</label>
       <textarea value={s.rangeStatement} onChange={(e) => update({ rangeStatement: e.target.value })} rows={2}
-        className="mt-1 w-full resize-none rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-gold-400/60" />
+        className="mt-1 w-full resize-none rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-accent-400/60" />
     </Card>
   )
 }

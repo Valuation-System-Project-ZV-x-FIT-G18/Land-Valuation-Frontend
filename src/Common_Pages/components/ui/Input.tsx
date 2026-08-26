@@ -1,7 +1,7 @@
 import type { InputHTMLAttributes, ReactNode } from 'react'
 
 // Lightweight text input that matches the app's field styling (glass surface,
-// gold focus ring, red error state). Unlike FormField this is unmanaged — use
+// accent focus ring, red error state). Unlike FormField this is unmanaged — use
 // it for standalone inputs like search boxes and inline table cells, so the
 // same look isn't re-written inline on every page.
 //   label:  optional field label above the input
@@ -38,10 +38,10 @@ const Input = ({
   ...rest
 }: InputProps) => {
   const inputId = id ?? name
-  // Border/ring turns red on error, gold on focus otherwise.
+  // Border/ring turns red on error, accent on focus otherwise.
   const borderClass = error
     ? 'border-red-400/70 focus:border-red-400 focus:ring-red-400/30'
-    : 'border-white/15 focus:border-gold-400/60 focus:ring-gold-400/30'
+    : 'border-white/15 focus:border-accent-400/60 focus:ring-accent-400/30'
 
   const input = (
     <input
@@ -58,7 +58,7 @@ const Input = ({
 
   const withIcon = icon ? (
     <div className="relative">
-      <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-200/40">
+      <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-200">
         {icon}
       </span>
       {input}

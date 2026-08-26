@@ -14,12 +14,12 @@ type CardProps = {
 
 const Card = ({ children, className = '', hover = false }: CardProps) => {
   const hoverClass = hover
-    ? 'card-hover hover:border-gold-400/40 hover:shadow-card-hover'
+    ? 'card-hover hover:border-accent-400/40 hover:shadow-card-hover'
     : ''
 
   return (
     <div
-      className={`rounded-2xl border border-white/10 bg-emerald-950/40 shadow-card backdrop-blur-sm ${hoverClass} ${className}`}
+      className={`rounded-2xl border border-white/10 bg-surface shadow-card ${hoverClass} ${className}`}
     >
       {children}
     </div>

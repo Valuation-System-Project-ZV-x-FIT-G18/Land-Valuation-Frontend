@@ -5,7 +5,6 @@
 
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { useLoginModal } from '@/Common_Pages/components/auth/useLoginModal'
 
 const NAV = [
   { label: 'Home', to: '/' },
@@ -15,26 +14,24 @@ const NAV = [
 ]
 
 const Header = () => {
-  const location = useLocation()
-  const { open: loginOpen } = useLoginModal()
-  const [menuOpen, setMenuOpen] = useState(false)
+  const location = useLocation()  const [menuOpen, setMenuOpen] = useState(false)
   // The Home/About/Services/Contact menu belongs on the public marketing pages,
   // and is hidden while the login popup is open.
   const showMenu =
-    ['/', '/about', '/services', '/contact'].includes(location.pathname) && !loginOpen
+    ['/', '/about', '/services', '/contact'].includes(location.pathname)
 
   // Underline that grows from the left on hover; solid when on the active page.
   const linkClass = (to: string) => {
     const active = location.pathname === to
-    return `relative text-sm font-medium transition-colors duration-200 sm:text-base after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:rounded-full after:bg-gold-400 after:transition-all after:duration-300 ${
+    return `relative text-sm font-medium transition-colors duration-200 sm:text-base after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:rounded-full after:bg-accent-400 after:transition-all after:duration-300 ${
       active
-        ? 'text-gold-400 after:w-full'
-        : 'text-emerald-50/90 hover:text-gold-400 after:w-0 hover:after:w-full'
+        ? 'text-accent-400 after:w-full'
+        : 'text-emerald-50 hover:text-accent-400 after:w-0 hover:after:w-full'
     }`
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gold-500/20 bg-emerald-800/50 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-accent-500/20 bg-surface-muted">
       <div className="mx-auto flex max-w-7xl items-center px-4 py-3 sm:px-8 sm:py-4">
         {/* ---- Left side: logo + company name ---- */}
         <Link
@@ -45,14 +42,14 @@ const Header = () => {
           <img
             src="/images/codehub-logo.png"
             alt="CODEHUB logo"
-            className="h-16 w-16 transition-transform duration-300 group-hover:scale-105"
+            className="h-14 w-14 transition-transform duration-300 group-hover:scale-105"
           />
 
           <span className="flex flex-col leading-none">
-            <span className="bg-gradient-to-r from-white to-gold-400 bg-clip-text text-xl font-bold tracking-wide text-transparent sm:text-2xl">
+            <span className="text-xl font-bold tracking-wide text-white sm:text-2xl">
               CODEHUB
             </span>
-            <span className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.2em] text-emerald-200/90 sm:text-xs">
+            <span className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.2em] text-emerald-200 sm:text-xs">
               Land Valuation
             </span>
           </span>
@@ -88,7 +85,7 @@ const Header = () => {
 
       {/* Mobile dropdown panel */}
       {showMenu && menuOpen && (
-        <nav className="animate-fade-in border-t border-white/10 bg-emerald-900/80 px-4 py-3 backdrop-blur-md sm:hidden">
+        <nav className="animate-fade-in border-t border-white/10 bg-surface px-4 py-3 sm:hidden">
           {NAV.map((item) => (
             <Link
               key={item.label}
@@ -96,8 +93,8 @@ const Header = () => {
               onClick={() => setMenuOpen(false)}
               className={`block rounded-lg px-3 py-2.5 text-base font-medium transition ${
                 location.pathname === item.to
-                  ? 'bg-gold-400/15 text-gold-200'
-                  : 'text-emerald-50/90 hover:bg-white/5 hover:text-gold-300'
+                  ? 'bg-accent-400/15 text-accent-200'
+                  : 'text-emerald-50 hover:bg-white/5 hover:text-accent-300'
               }`}
             >
               {item.label}

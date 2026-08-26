@@ -104,8 +104,8 @@ const BankBranchSelect = ({ bankName, branchCode, onSelect, bankError, branchErr
       </div>
 
       {!loading && bankNames.length === 0 && (
-        <p className="text-xs text-gold-200/80">
-          No banks have been registered yet. Ask the admin to add a Bank account first.
+        <p className="text-xs text-accent-200">
+          No bank branches are available. Ask an administrator to register the bank and its official branch first.
         </p>
       )}
 
@@ -122,8 +122,8 @@ const BankBranchSelect = ({ bankName, branchCode, onSelect, bankError, branchErr
 const ReadOnly = ({ label, value }: { label: string; value: string }) => (
   <div>
     <label className="mb-1.5 block text-sm font-medium text-emerald-100">{label}</label>
-    <div className="w-full rounded-xl border border-white/10 bg-emerald-900/50 px-4 py-3 text-white/90">
-      {value || <span className="text-emerald-200/40">Auto-filled from the branch</span>}
+    <div className="w-full rounded-xl border border-white/10 bg-surface px-4 py-3 text-white">
+      {value || <span className="text-emerald-200">Auto-filled from the branch</span>}
     </div>
   </div>
 )

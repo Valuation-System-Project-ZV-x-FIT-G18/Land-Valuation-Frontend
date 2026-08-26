@@ -26,13 +26,13 @@ const SelectField = ({
 }: SelectFieldProps) => {
   const borderClass = error
     ? 'border-red-400/70 focus:border-red-400 focus:ring-red-400/30'
-    : 'border-white/15 focus:border-gold-400/60 focus:ring-gold-400/30'
+    : 'border-white/15 focus:border-accent-400/60 focus:ring-accent-400/30'
 
   return (
     <div>
       <label
         htmlFor={name}
-        className="mb-1.5 block text-sm font-medium text-emerald-100"
+        className="mb-1.5 block text-sm font-semibold text-emerald-50"
       >
         {label}
       </label>
@@ -43,15 +43,15 @@ const SelectField = ({
         onChange={onChange}
         onBlur={onBlur}
         disabled={disabled}
-        className={`w-full rounded-xl border bg-emerald-900 px-4 py-3 text-white outline-none transition focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${borderClass}`}
+        className={`min-h-11 w-full rounded-lg border bg-surface px-3.5 py-2.5 text-[15px] text-white shadow-sm outline-none transition focus:bg-surface focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${borderClass}`}
       >
         {options.map((o) => (
-          <option key={o.value} value={o.value} className="bg-emerald-900">
+          <option key={o.value} value={o.value} className="bg-surface">
             {o.label}
           </option>
         ))}
       </select>
-      {error && <p className="mt-1.5 text-xs text-red-300">{error}</p>}
+      {error && <p className="mt-1.5 text-xs font-medium text-red-300">{error}</p>}
     </div>
   )
 }

@@ -140,7 +140,7 @@ const DraftEditor = ({ draft, nic, onSubmit, onSaved, onCancel }: DraftEditorPro
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <Button type="button" variant="outline" onClick={onCancel} className="!px-5 !py-2.5 text-sm">
         ← Back to my properties
       </Button>
@@ -149,7 +149,7 @@ const DraftEditor = ({ draft, nic, onSubmit, onSaved, onCancel }: DraftEditorPro
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           {draft ? 'Edit' : 'New'} <GradientText>Property</GradientText>
         </h1>
-        <p className="mx-auto mt-2 max-w-md text-emerald-100/70">
+        <p className="mx-auto mt-2 max-w-md text-emerald-100">
           Fill in as much as you know about the property. Your coordinator will confirm the rest
           when creating your project.
         </p>
@@ -213,7 +213,7 @@ const DraftEditor = ({ draft, nic, onSubmit, onSaved, onCancel }: DraftEditorPro
           <h2 className="mb-1 flex items-center gap-2 text-lg font-bold text-white">
             13. Documents
           </h2>
-          <p className="mb-5 text-sm text-emerald-100/70">
+          <p className="mb-5 text-sm text-emerald-100">
             Attach any of these you already have (PDF or image). You can add the rest later.
           </p>
           <div className="space-y-2">
@@ -228,11 +228,11 @@ const DraftEditor = ({ draft, nic, onSubmit, onSaved, onCancel }: DraftEditorPro
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-white">{u.label}</p>
                     {chosen ? (
-                      <div className="mt-0.5 flex min-w-0 items-center gap-2 text-xs text-gold-200">
+                      <div className="mt-0.5 flex min-w-0 items-center gap-2 text-xs text-accent-200">
                         <span className="truncate">{chosen.name}</span>
                         <button
                           type="button"
-                          className="shrink-0 font-medium underline hover:text-gold-100"
+                          className="shrink-0 font-medium underline hover:text-accent-100"
                           onClick={() => {
                             const url = URL.createObjectURL(chosen)
                             window.open(url, '_blank', 'noopener,noreferrer')
@@ -247,13 +247,13 @@ const DraftEditor = ({ draft, nic, onSubmit, onSaved, onCancel }: DraftEditorPro
                         href={draftFileUrl(draft.id, u.name)}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-0.5 inline-flex items-center gap-1 text-xs text-gold-200 underline"
+                        className="mt-0.5 inline-flex items-center gap-1 text-xs text-accent-200 underline"
                       >
                         {existing} · View
                       </a>
                     ) : null}
                   </div>
-                  <label className="shrink-0 cursor-pointer rounded-lg border border-white/15 px-3 py-1.5 text-xs font-medium text-emerald-100/80 transition hover:border-gold-400/50 hover:text-gold-200">
+                  <label className="shrink-0 cursor-pointer rounded-lg border border-white/15 px-3 py-1.5 text-xs font-medium text-emerald-100 transition hover:border-accent-400/50 hover:text-accent-200">
                     {chosen || existing ? 'Replace' : 'Upload'}
                     <input
                       type="file"

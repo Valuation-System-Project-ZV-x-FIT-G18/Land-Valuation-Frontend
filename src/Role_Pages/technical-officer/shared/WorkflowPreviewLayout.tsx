@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { getBuildValues } from '@/Role_Pages/technical-officer/draft/api/draft'
+import { getBuildValues, getReportSurveyPlanSource } from '@/Role_Pages/technical-officer/draft/api/draft'
 import { getEvidence, getValuation, type Evidence, type Valuation } from '@/Role_Pages/technical-officer/descriptions/api/descriptions'
 import { getPhotos, getReportPhotoSources } from '@/Role_Pages/technical-officer/site-photos/api/site-photos'
 import { buildReportHtml } from '@/Role_Pages/technical-officer/draft/utils/buildReportHtml'
 import LiveReportPreview, { type ReportNavigationTarget } from '@/Role_Pages/technical-officer/draft/components/LiveReportPreview'
+import TOWorkflowStepper, { type TOStepId } from '@/Role_Pages/technical-officer/shared/TOWorkflowStepper'
+import WorkflowContextBanner from '@/Role_Pages/technical-officer/shared/WorkflowContextBanner'
+import { useAuth } from '@/Common_Pages/components/auth/useAuth'
+import { loadWorkflowSelection } from '@/Role_Pages/technical-officer/assignments/utils/workflowSelection'
 
 const parse = (value?: string) => {
   try { return value ? JSON.parse(value) : null } catch { return null }
@@ -17,28 +21,35 @@ type Props = {
   evidenceOverride?: Evidence | null
   navigationTarget?: ReportNavigationTarget | null
   onPreviewHtmlChange?: (html: string) => void
+  // Which workflow step this screen is. The stepper has to stay on screen while
+  // the officer works through the steps, not only on the project picker they
+  // see before choosing one.
+  step?: TOStepId
   children: ReactNode
 }
 
 // Shared shell used after a project is selected in every field-work and
 // valuation-support stage. The left tool changes; the report stays visible.
-const WorkflowPreviewLayout = ({ projectId, refreshToken = 0, valueOverrides = {}, valuationOverride, evidenceOverride, navigationTarget, onPreviewHtmlChange, children }: Props) => {
+const WorkflowPreviewLayout = ({ projectId, refreshToken = 0, valueOverrides = {}, valuationOverride, evidenceOverride, navigationTarget, onPreviewHtmlChange, step, children }: Props) => {
+  const { user } = useAuth()
+  const workflowSelection = loadWorkflowSelection(user?.userId ?? '')
   const [values, setValues] = useState<Record<string, string> | null>(null)
   const [valuation, setValuation] = useState<Valuation | null>(null)
   const [evidence, setEvidence] = useState<Evidence | null>(null)
-  const [photoCount, setPhotoCount] = useState(0)
   const [photoSources, setPhotoSources] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setLoading(true)
-    Promise.all([getBuildValues(projectId), getValuation(projectId), getEvidence(projectId), getPhotos(projectId)])
-      .then(async ([buildValues, valuationData, evidenceData, photos]) => {
+    Promise.all([getBuildValues(projectId), getValuation(projectId), getEvidence(projectId), getPhotos(projectId), getReportSurveyPlanSource(projectId)])
+      .then(async ([buildValues, valuationData, evidenceData, photos, surveyPlan]) => {
         setValues(buildValues)
         setValuation(valuationData)
         setEvidence(evidenceData)
-        setPhotoCount(photos.photos.length)
-        setPhotoSources(await getReportPhotoSources(projectId, photos.photos))
+        setPhotoSources({
+          ...(await getReportPhotoSources(projectId, photos.photos)),
+          ...(surveyPlan ? { surveyPlanImage: surveyPlan } : {}),
+        })
       })
       .finally(() => setLoading(false))
   }, [projectId, refreshToken])
@@ -54,21 +65,19 @@ const WorkflowPreviewLayout = ({ projectId, refreshToken = 0, valueOverrides = {
     if (html) onPreviewHtmlChange?.(html)
   }, [html, onPreviewHtmlChange])
 
-  const readiness = useMemo(() => [
-    { label: 'Inspection Data', ready: !!previewValues.inspectionDate },
-    { label: 'Property Details', ready: !!previewValues.propertyAddress },
-    { label: 'Site Photos', ready: photoCount > 0 },
-    { label: 'GPS / Map', ready: !!previewValues.gpsCoordinates },
-    { label: 'Comparable Analysis', ready: !!previewEvidence?.hasAnalysis || !!previewEvidence?.comparables.length },
-    { label: 'Descriptions', ready: !!(previewValues.landDescription || previewValues.localityDescription) },
-    { label: 'Valuation', ready: !!previewValuation || !!previewValues.marketValue },
-  ], [photoCount, previewEvidence, previewValuation, previewValues])
+  // The stepper costs about 6rem of height, so the split pane below it gives
+  // that back instead of pushing the report preview off the bottom of the view.
+  const gridHeight = step ? 'xl:h-[calc(100vh-14rem)]' : 'xl:h-[calc(100vh-8rem)]'
 
   return (
-    <div className="grid gap-4 xl:h-[calc(100vh-8rem)] xl:min-h-[680px] xl:grid-cols-[minmax(360px,2fr)_minmax(0,3fr)]">
-      <section className="min-h-0 min-w-0 overflow-y-auto overflow-x-hidden rounded-2xl border border-white/10 bg-emerald-950/25 p-4 [&_*]:min-w-0">{children}</section>
-      <LiveReportPreview html={html} loading={loading} savedDraft={false} readiness={readiness} navigationTarget={navigationTarget} />
-    </div>
+    <>
+      {step && <TOWorkflowStepper current={step} />}
+      <WorkflowContextBanner projectId={projectId} assignment={workflowSelection?.assignment} />
+      <div className={`grid gap-4 ${gridHeight} xl:min-h-[680px] xl:grid-cols-[minmax(360px,2fr)_minmax(0,3fr)]`}>
+        <section className="min-h-0 min-w-0 overflow-y-auto overflow-x-hidden rounded-2xl border border-white/10 bg-surface p-4 [&_*]:min-w-0">{children}</section>
+        <LiveReportPreview html={html} loading={loading} savedDraft={false} navigationTarget={navigationTarget} />
+      </div>
+    </>
   )
 }
 

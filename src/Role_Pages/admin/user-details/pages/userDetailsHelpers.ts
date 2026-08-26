@@ -7,8 +7,8 @@ export const emptyForm: EditableUser = {
 }
 
 // Colour-code each role so the table is easy to scan at a glance.
-export const ROLE_TONE: Record<string, 'gold' | 'info' | 'success' | 'warning' | 'neutral'> = {
-  Admin: 'gold',
+export const ROLE_TONE: Record<string, 'accent' | 'info' | 'success' | 'warning' | 'neutral'> = {
+  Admin: 'accent',
   Coordinator: 'info',
   'Technical Officer': 'success',
   'Manager L1': 'warning',
@@ -27,4 +27,4 @@ export const editFields: { name: keyof EditableUser; label: string; type?: strin
 ]
 
 export const inputClass =
-  'w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-emerald-200/40 outline-none focus:border-gold-400/60'
+  'w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-emerald-200/40 outline-none focus:border-accent-400/60'

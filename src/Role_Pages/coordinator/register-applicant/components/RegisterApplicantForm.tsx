@@ -75,10 +75,6 @@ const RegisterApplicantForm = ({ initialNic = '', editApplicant }: RegisterAppli
       case 'fullName':
         if (!deriveName(v.fullName).valid) return 'Enter the full name (first and last).'
         return namePattern.test(v.fullName.trim()) ? undefined : 'Name can only contain letters.'
-      case 'applicantBusinessName':
-        return v.applicantBusinessName.trim().length > 150
-          ? 'Business name cannot exceed 150 characters.'
-          : undefined
       case 'nic':
         return validateNIC(v.nic)
       case 'email':
@@ -118,7 +114,7 @@ const RegisterApplicantForm = ({ initialNic = '', editApplicant }: RegisterAppli
 
   const validate = (): RegisterErrors => {
     const fields: (keyof RegisterApplicantValues)[] = [
-      'fullName', 'applicantBusinessName', 'nic', 'email', 'phone',
+      'fullName', 'nic', 'email', 'phone',
     ]
     const e: RegisterErrors = {}
     fields.forEach((n) => {
@@ -164,9 +160,7 @@ const RegisterApplicantForm = ({ initialNic = '', editApplicant }: RegisterAppli
       const lower = message.toLowerCase()
       if (lower.includes('email')) setErrors((current) => ({ ...current, email: message }))
       else if (lower.includes('nic')) setErrors((current) => ({ ...current, nic: message }))
-      else if (lower.includes('business')) {
-        setErrors((current) => ({ ...current, applicantBusinessName: message }))
-      } else setServerError(message)
+      else setServerError(message)
       return
     }
     sessionStorage.removeItem('applicantSearchQuery') // clear the NIC on the search page
@@ -184,12 +178,12 @@ const RegisterApplicantForm = ({ initialNic = '', editApplicant }: RegisterAppli
         <p className="mt-4 text-2xl">
           <GradientText>{isEdit ? 'Applicant Updated!' : 'Applicant Registered!'}</GradientText>
         </p>
-        <p className="mt-2 text-emerald-100/80">
+        <p className="mt-2 text-emerald-100">
           {firstName} {lastName}
           {isEdit ? "'s details have been updated." : ' has been added to the system.'}
         </p>
         {!isEdit && (
-          <p className="mx-auto mt-2 max-w-md text-sm text-emerald-100/65">
+          <p className="mx-auto mt-2 max-w-md text-sm text-emerald-100">
             Their sign-in email and temporary password have been sent to {form.email}.
           </p>
         )}
@@ -197,14 +191,14 @@ const RegisterApplicantForm = ({ initialNic = '', editApplicant }: RegisterAppli
         <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Button
             type="button"
-            onClick={() => navigate('/coordinator/new-project', { state: { nic: form.nic } })}
+            onClick={() => navigate('/coordinator/projects/new', { state: { nic: form.nic } })}
           >
             Yes, create project
           </Button>
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate('/coordinator/create-project')}
+            onClick={() => navigate('/coordinator/applicants')}
           >
             No, back to search
           </Button>
@@ -225,7 +219,7 @@ const RegisterApplicantForm = ({ initialNic = '', editApplicant }: RegisterAppli
                 },
               })
             }
-            className="mt-4 text-sm font-medium text-gold-200/80 underline-offset-4 transition hover:text-gold-100 hover:underline"
+            className="mt-4 text-sm font-medium text-accent-200 underline-offset-4 transition hover:text-accent-100 hover:underline"
           >
             Made a mistake? Edit details
           </button>
@@ -235,8 +229,12 @@ const RegisterApplicantForm = ({ initialNic = '', editApplicant }: RegisterAppli
   }
 
   return (
-    <Card className="mx-auto mt-8 max-w-3xl p-6 sm:p-8">
-      <form onSubmit={handleSubmit} noValidate autoComplete="off" className="space-y-8">
+    <Card className="mx-auto mt-6 max-w-5xl overflow-hidden">
+      <div className="border-b border-white/10 px-6 py-5 sm:px-8">
+        <h2 className="font-semibold text-white">Applicant details</h2>
+        <p className="mt-1 text-sm text-emerald-100">Fields marked with * are required.</p>
+      </div>
+      <form onSubmit={handleSubmit} noValidate autoComplete="off" className="space-y-5 p-6 sm:p-8">
         <NameSection values={values} errors={errors} onChange={handleChange} onBlur={handleBlur} />
         <IdentityContactSection
           values={values}
@@ -248,7 +246,7 @@ const RegisterApplicantForm = ({ initialNic = '', editApplicant }: RegisterAppli
 
         {serverError && <p className="text-sm text-red-300">{serverError}</p>}
 
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <div className="flex flex-col-reverse gap-3 border-t border-white/10 pt-5 sm:flex-row sm:justify-between">
           <Button type="button" variant="outline" onClick={() => navigate(-1)}>
             Cancel
           </Button>

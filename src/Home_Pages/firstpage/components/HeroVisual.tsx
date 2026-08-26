@@ -8,15 +8,15 @@ const HeroVisual = () => {
   return (
     <div className="relative mx-auto w-full max-w-md">
       {/* Soft glow behind the visual */}
-      <div className="absolute -inset-6 rounded-[2rem] bg-gold-400/10 blur-3xl" />
+      <div className="absolute -inset-6 rounded-[2rem] bg-accent-400/10 blur-3xl" />
 
       {/* Main panel: dark emerald so the gold map + pins stand out clearly */}
-      <div className="relative overflow-hidden rounded-3xl border border-gold-400/25 bg-emerald-950/80 p-6 shadow-2xl backdrop-blur-sm">
+      <div className="relative overflow-hidden rounded-3xl border border-accent-400/25 bg-emerald-950/80 p-6 shadow-card">
         {/* Panel heading */}
         <div className="mb-2 flex items-center justify-between">
           <p className="text-sm font-semibold text-white">Valuation Coverage</p>
           <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-200">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-gold-400" />
+            <span className="h-2 w-2 animate-pulse rounded-full bg-accent-400" />
             Live
           </span>
         </div>
@@ -27,14 +27,14 @@ const HeroVisual = () => {
         </div>
 
         {/* Small legend */}
-        <p className="mt-2 text-center text-xs text-emerald-200/80">
-          <span className="font-semibold text-gold-400">24 districts</span> with
+        <p className="mt-2 text-center text-xs text-emerald-200">
+          <span className="font-semibold text-accent-400">24 districts</span> with
           active valuation locations
         </p>
       </div>
 
       {/* Overlapping photo card: technical officer conducting inspection */}
-      <div className="absolute -bottom-8 -left-6 w-44 overflow-hidden rounded-2xl border border-white/20 bg-emerald-900 shadow-2xl sm:w-52">
+      <div className="absolute -bottom-8 -left-6 w-44 overflow-hidden rounded-2xl border border-white/20 bg-emerald-900 shadow-card sm:w-52">
         <img
           src="/images/officer-inspection.jpg"
           alt="Technical officer conducting a land inspection with surveying equipment"
@@ -42,7 +42,7 @@ const HeroVisual = () => {
         />
         <div className="px-3 py-2">
           <p className="text-xs font-semibold text-white">Field Inspection</p>
-          <p className="text-[10px] text-emerald-200/80">
+          <p className="text-[10px] text-emerald-200">
             Licensed technical officers on site
           </p>
         </div>

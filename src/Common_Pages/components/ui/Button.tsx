@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
 // Reusable button used across the app.
-//   variant: 'primary' (gold CTA, default) | 'outline' | 'success' | 'danger' | 'ghost'
+//   variant: 'primary' (accent CTA, default) | 'outline' | 'success' | 'danger' | 'ghost'
 //   size:    'sm' | 'md' (default) | 'lg'
 //   loading: shows a spinner and disables the button while an action runs
 //   fullWidth: stretch to the container width
@@ -29,15 +29,15 @@ const sizes = {
 // Colors specific to each variant.
 const variants = {
   primary:
-    'bg-gradient-to-r from-amber-300 to-gold-400 text-emerald-950 shadow-lg shadow-gold-500/30 hover:from-amber-200 hover:to-gold-300 hover:shadow-xl hover:shadow-gold-500/40 hover:-translate-y-0.5 focus:ring-gold-300/50',
+    'bg-accent-500 text-paper shadow-sm hover:bg-accent-600 focus:ring-accent-500/35',
   outline:
-    'border border-white/25 bg-white/5 text-white hover:border-gold-300/60 hover:bg-white/10 focus:ring-gold-300/40',
+    'border border-emerald-700 bg-surface text-white hover:bg-surface-muted focus:ring-emerald-500/25',
   success:
-    'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25 hover:from-emerald-400 hover:to-emerald-500 hover:-translate-y-0.5 focus:ring-emerald-400/40',
+    'bg-emerald-500 text-paper shadow-sm hover:bg-emerald-600 focus:ring-emerald-500/35',
   danger:
-    'border border-red-400/40 bg-red-500/10 text-red-200 hover:border-red-400/70 hover:bg-red-500/20 hover:text-red-100 focus:ring-red-400/40',
+    'border border-red-400 bg-red-50 text-red-700 hover:bg-red-100 focus:ring-red-400/30',
   ghost:
-    'text-emerald-100/80 hover:bg-white/10 hover:text-white focus:ring-white/20',
+    'text-emerald-100 hover:bg-surface-muted hover:text-white focus:ring-emerald-500/20',
 }
 
 // Small inline spinner shown while `loading`.

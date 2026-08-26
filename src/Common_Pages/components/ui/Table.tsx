@@ -21,7 +21,7 @@ const Table = ({
   className = '',
 }: TableProps) => {
   if (rows.length === 0) {
-    return <p className="text-sm text-emerald-200/50">{emptyText}</p>
+    return <p className="text-sm text-emerald-200">{emptyText}</p>
   }
 
   return (
@@ -31,7 +31,7 @@ const Table = ({
         style={{ minWidth: `${minWidth}px` }}
       >
         <thead>
-          <tr className="border-b border-white/10 text-xs uppercase tracking-wide text-emerald-200/50">
+          <tr className="border-b border-white/10 text-xs uppercase tracking-wide text-emerald-200">
             {columns.map((c) => (
               <th key={c} className="px-3 py-2 font-medium">
                 {c}
@@ -46,7 +46,7 @@ const Table = ({
               className="border-b border-white/5 transition-colors last:border-0 hover:bg-white/5"
             >
               {row.map((cell, j) => (
-                <td key={j} className="px-3 py-2.5 text-emerald-100/90">
+                <td key={j} className="px-3 py-2.5 text-emerald-100">
                   {cell}
                 </td>
               ))}

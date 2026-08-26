@@ -15,6 +15,9 @@ export type AssignedOfficer = Officer & {
   valuationRowId: number
   valuationId: number
   status: string
+  assignedDate: string // yyyy-mm-dd of the site visit, empty when not set
+  assignedTime: string
+  propertyLocation: string
 }
 
 export type LeaveOfficer = Officer & { reason: string }

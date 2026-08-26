@@ -3,9 +3,9 @@ import GradientText from '@/Common_Pages/components/ui/GradientText'
 
 // Simple "About" page describing the CODEHUB Land Valuation System.
 const points = [
-  { icon: '🎯', title: 'Our Purpose', text: 'To make land valuation in Sri Lanka faster, accurate and transparent for banks, valuers and applicants.' },
-  { icon: '🛡️', title: 'Trusted Standards', text: 'Valuations follow IVSL, RICS and IVSC guidance, prepared by RICS-registered chartered valuation surveyors.' },
-  { icon: '⚙️', title: 'End-to-End', text: 'From the applicant request to inspection, AI-assisted report drafting, multi-level review and secure release.' },
+  { title: 'Our Purpose', text: 'To make land valuation in Sri Lanka faster, accurate and transparent for banks, valuers and applicants.' },
+  { title: 'Trusted Standards', text: 'Valuations follow IVSL, RICS and IVSC guidance, prepared by RICS-registered chartered valuation surveyors.' },
+  { title: 'End-to-End', text: 'From the applicant request to inspection, AI-assisted report drafting, multi-level review and secure release.' },
 ]
 
 const AboutPage = () => (
@@ -14,7 +14,7 @@ const AboutPage = () => (
       <h1 className="text-4xl font-bold text-white sm:text-5xl">
         About <GradientText>CODEHUB</GradientText>
       </h1>
-      <p className="mx-auto mt-4 max-w-2xl text-emerald-100/80">
+      <p className="mx-auto mt-4 max-w-2xl text-emerald-100">
         CODEHUB is a modern land valuation platform that connects loan applicants, banks, technical officers and
         managers in one streamlined workflow — from the first request all the way to a finalised, professionally
         reviewed valuation report.
@@ -24,9 +24,8 @@ const AboutPage = () => (
     <div className="mt-10 grid gap-4 sm:grid-cols-3">
       {points.map((p) => (
         <Card key={p.title} className="p-6 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gold-400/10 text-2xl">{p.icon}</div>
-          <h3 className="font-semibold text-gold-300">{p.title}</h3>
-          <p className="mt-2 text-sm text-emerald-100/70">{p.text}</p>
+          <h3 className="font-semibold text-accent-300">{p.title}</h3>
+          <p className="mt-2 text-sm text-emerald-100">{p.text}</p>
         </Card>
       ))}
     </div>

@@ -7,6 +7,7 @@ import ManagerDashboard from '@/Home_Pages/dashboard/components/ManagerDashboard
 import AdminDashboard from '@/Home_Pages/dashboard/components/AdminDashboard'
 import ClientDashboard from '@/Home_Pages/dashboard/components/ClientDashboard'
 import TechnicalOfficerDashboard from '@/Home_Pages/dashboard/components/TechnicalOfficerDashboard'
+import CoordinatorDashboard from '@/Home_Pages/dashboard/components/CoordinatorDashboard'
 import { roleMenus, type SidebarItem } from '@/Common_Pages/components/sidebar/roleMenus'
 import SidebarIcon from '@/Common_Pages/components/sidebar/SidebarIcon'
 import '@/Home_Pages/dashboard/styles/dashboard-page.css'
@@ -32,13 +33,14 @@ const DashboardPage = () => {
   if (user.role === 'Bank') return <ClientDashboard user={user} audience="bank" />
   if (user.role === 'Loan Applicant') return <ClientDashboard user={user} audience="applicant" />
   if (user.role === 'Technical Officer') return <TechnicalOfficerDashboard user={user} />
+  if (user.role === 'Coordinator') return <CoordinatorDashboard user={user} />
 
   const isCoordinator = user.role === 'Coordinator'
 
   // The role's own menu items + Project Status (available to everyone).
   const actions: SidebarItem[] = [
     ...(roleMenus[user.role] ?? []),
-    { label: 'Project Status', to: '/coordinator/project-states', icon: 'map' },
+    { label: 'Project Status', to: '/coordinator/projects', icon: 'map' },
   ]
 
   return (
@@ -53,51 +55,51 @@ const DashboardPage = () => {
           <div className="grid lg:grid-cols-[1.35fr_0.65fr]">
             <div className="p-6 sm:p-8">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-400/15 text-gold-300">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-400/15 text-accent-300">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 19V9m5 10V5m5 14v-7m5 7V8" />
                   </svg>
                 </span>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-300/80">Workspace overview</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-300">Workspace overview</p>
                   <h2 className="mt-1 font-display text-xl font-semibold text-white">Coordination centre</h2>
                 </div>
               </div>
 
-              <p className="mt-5 max-w-2xl text-sm leading-6 text-emerald-100/65">
+              <p className="mt-5 max-w-2xl text-sm leading-6 text-emerald-100">
                 Manage the valuation workflow from one organised workspace. Use the sidebar to access applicant records, projects, valuations, payments and field operations.
               </p>
 
-              <div className="mt-6 flex items-center gap-2 text-xs text-emerald-200/50">
+              <div className="mt-6 flex items-center gap-2 text-xs text-emerald-200">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.65)]" />
                 System workspace is ready
               </div>
             </div>
 
             <div className="flex flex-col justify-center border-t border-white/10 bg-white/[0.025] p-6 sm:p-8 lg:border-l lg:border-t-0">
-              <p className="text-xs font-medium uppercase tracking-wider text-emerald-200/45">Today</p>
+              <p className="text-xs font-medium uppercase tracking-wider text-emerald-200">Today</p>
               <p className="mt-2 font-display text-2xl font-semibold text-white">
                 {new Intl.DateTimeFormat(undefined, { weekday: 'long' }).format(new Date())}
               </p>
-              <p className="mt-1 text-sm text-emerald-100/60">
+              <p className="mt-1 text-sm text-emerald-100">
                 {new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date())}
               </p>
-              <div className="mt-5 h-px bg-gradient-to-r from-gold-400/40 to-transparent" />
-              <p className="mt-4 text-xs leading-5 text-emerald-200/50">Select a section from the sidebar to begin your work.</p>
+              <div className="mt-5 h-px bg-gradient-to-r from-accent-400/40 to-transparent" />
+              <p className="mt-4 text-xs leading-5 text-emerald-200">Select a section from the sidebar to begin your work.</p>
             </div>
           </div>
         </Card>
       ) : <div>
-        <p className="mb-3 text-sm text-emerald-100/70">{ROLE_TAGLINE[user.role] ?? 'Your workspace.'}</p>
+        <p className="mb-3 text-sm text-emerald-100">{ROLE_TAGLINE[user.role] ?? 'Your workspace.'}</p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {actions.map((a) => (
             <Link
               key={a.to}
               to={a.to}
-              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-emerald-950/40 p-5 shadow-card backdrop-blur-sm transition duration-200 hover:-translate-y-0.5 hover:border-gold-400/40 hover:shadow-card-hover"
+              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-surface p-5 shadow-card transition duration-200 hover:-translate-y-0.5 hover:border-accent-400/40 hover:shadow-card-hover"
             >
               <div className="flex items-start justify-between">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/5 text-gold-300 transition group-hover:bg-gold-400/15">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/5 text-accent-300 transition group-hover:bg-accent-400/15">
                   <SidebarIcon name={a.icon} />
                 </div>
                 <svg
@@ -107,20 +109,20 @@ const DashboardPage = () => {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="h-4 w-4 text-emerald-100/40 transition group-hover:translate-x-0.5 group-hover:text-gold-300"
+                  className="h-4 w-4 text-emerald-100 transition group-hover:translate-x-0.5 group-hover:text-accent-300"
                 >
                   <path d="M7 17 17 7M8 7h9v9" />
                 </svg>
               </div>
-              <p className="mt-3 font-semibold text-gold-300">{a.label}</p>
-              <p className="mt-0.5 text-xs text-emerald-100/60">Open {a.label.toLowerCase()}</p>
+              <p className="mt-3 font-semibold text-accent-300">{a.label}</p>
+              <p className="mt-0.5 text-xs text-emerald-100">Open {a.label.toLowerCase()}</p>
             </Link>
           ))}
         </div>
       </div>}
 
       {!isCoordinator && actions.length === 1 && (
-        <Card className="p-5 text-sm text-emerald-100/70">
+        <Card className="p-5 text-sm text-emerald-100">
           More options for your role will appear here as they are enabled.
         </Card>
       )}

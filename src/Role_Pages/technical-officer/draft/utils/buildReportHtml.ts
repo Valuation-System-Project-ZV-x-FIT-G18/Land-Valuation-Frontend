@@ -29,30 +29,47 @@ export function buildReportHtml(
   projectId: string,
   savedEvidence?: SavedEvidence | null,
 ): string {
+  // Every value position is tagged with the field it came from. That is what
+  // makes the report clickable: the preview walks up from whatever was clicked
+  // to the nearest [data-report-field] and jumps the form to that input. It
+  // has to wrap the "[ To be filled ]" marker too — an empty field is exactly
+  // the one the officer most wants to click through to and fill in.
+  const tag = (key: string, inner: string, filled = true) =>
+    `<span data-report-field="${key}"${filled ? ' class="report-filled-value"' : ''} style="border-radius:3px;transition:background-color .25s ease,outline-color .25s ease">${inner}</span>`
+
   // A filled field: the value, or the "[ To be filled ]" marker when empty.
-  const F = (key: string) => (v[key] && v[key].trim() ? esc(v[key]) : TBF)
+  const F = (key: string) => {
+    const filled = Boolean(v[key] && v[key].trim())
+    return tag(key, filled ? esc(v[key]) : TBF, filled)
+  }
   // An optional field: the value, or nothing (for lines that may legitimately
   // be empty, e.g. a second address line — so we don't nag on those).
-  const Fo = (key: string) => (v[key] && v[key].trim() ? esc(v[key]) : '')
+  const Fo = (key: string) => (v[key] && v[key].trim() ? tag(key, esc(v[key]), true) : '')
   // A money field: "Rs. 1,234,567 /-" or the marker when empty.
-  const money = (key: string) => (v[key] && v[key].trim() ? rs(v[key]) : TBF)
+  const money = (key: string) => {
+    const filled = Boolean(v[key] && v[key].trim())
+    return tag(key, filled ? rs(v[key]) : TBF, filled)
+  }
 
+  // The forced sale figure is a percentage of the market value; the report names
+  // that percentage so the bank can check the arithmetic rather than trust it.
+  const fsPct = (v.forcedSalePct || '').trim()
+  const fsLabel = fsPct ? ` (${esc(fsPct)}% of Market Value)` : ''
   const gps = (v.gpsCoordinates || '').split(',').map((x) => x.trim())
   const hasGps = gps.length === 2 && !!gps[0] && !!gps[1]
   const lat = hasGps ? Number(gps[0]) : 0
   const lng = hasGps ? Number(gps[1]) : 0
   const dd = 0.0025 // ~250 m half-window for the zoomed satellite view
-  const localityText = v.localityFacilities || v.localityDescription || [
-    v.vicinityCharacter && `The subject property is situated in a ${v.vicinityCharacter.toLowerCase()} locality.`,
-    v.nearbyFacilities && `Nearby facilities include ${v.nearbyFacilities.replace(/[.]+$/, '')}.`,
-    v.availableUtilities && `Available utilities include ${v.availableUtilities.replace(/[.]+$/, '')}.`,
-    v.transportFrequency && `Public transport availability is ${v.transportFrequency.toLowerCase()}.`,
-  ].filter(Boolean).join(' ')
-  const conclusionText = v.conclusion || (valuation?.marketValue
-    ? `Having considered the location, physical characteristics, available comparable evidence and prevailing market conditions, and applying the Direct Comparison Method, the current Market Value of the subject property is concluded at ${rs(valuation.marketValue)}.`
-    : '')
+  // Narrative sections are written by the Descriptions step (AI, with a
+  // per-section template fallback only when the AI fails). Composing a
+  // paragraph here from the inspection answers meant the report showed template
+  // prose that had never been through that path at all — so an untouched report
+  // looked written. Without a saved description these stay empty and the report
+  // shows its "to be filled" marker.
+  const localityText = v.localityFacilities || v.localityDescription || ''
+  const conclusionText = v.conclusion || ''
 
-  return `<div style="font-family:Calibri,Arial,sans-serif;font-size:12px;color:#111;line-height:1.55">
+  return `${screenPageCss}<div class="lv-report" style="font-family:Calibri,Arial,sans-serif;font-size:12px;color:#111;line-height:1.55">
    ${coverPage(F, Fo)}
    ${letterPage(v, F, money)}
    ${boilerplatePage(v, F)}
@@ -84,7 +101,7 @@ export function buildReportHtml(
    </section>
 
    ${H('5.', 'PROPERTY DETAILS')}
-   ${H('5.1', 'SITUATION')}${P(v.localityDescription, true)}
+   ${H('5.1', 'SITUATION')}${P(v.localityDescription, true, false, 'localityDescription')}
 
    ${H('5.2', 'DESCRIPTION OF THE PROPERTY')}
    ${H('5.2.1', 'EXTENT')}
@@ -106,7 +123,7 @@ export function buildReportHtml(
 
    <section data-report-section="access" style="border-radius:4px;transition:background-color .25s ease,outline-color .25s ease">
    ${H('5.3', 'ACCESS AND NATURE OF THE ACCESSIBILITY')}
-   ${P(v.accessLocationDescription, true)}
+   ${P(v.accessLocationDescription, true, false, 'accessLocationDescription')}
    <p style="margin:6px 0">Coordinate of the Location : ${F('gpsCoordinates')} &nbsp;&nbsp; Location : ${F('propertyLocationCity')}</p>
    ${hasGps ? `<div style="display:flex;flex-wrap:wrap;gap:10px;margin:8px 0">
      <figure style="margin:0;text-align:center;font-size:10px;color:#555">Satellite view<br>${satImg(lat, lng, dd, v.satelliteLocationImage)}</figure>
@@ -115,7 +132,7 @@ export function buildReportHtml(
    </section>
 
    <section data-report-section="land" style="border-radius:4px;transition:background-color .25s ease,outline-color .25s ease">
-   ${H('5.4', 'DESCRIPTION OF THE LAND')}${P(v.landDescription, true)}
+   ${H('5.4', 'DESCRIPTION OF THE LAND')}${P(v.landDescription, true, false, 'landDescription')}
    ${inspectionObservationsTbl(F)}
    </section>
 
@@ -129,23 +146,23 @@ export function buildReportHtml(
    <section data-report-section="legal" style="border-radius:4px;transition:background-color .25s ease,outline-color .25s ease">
    ${H('6.', 'LEGAL & PLANNING CLEARANCE')}
    ${H('6.1', 'LEGAL ASPECT')}
-   ${H('6.1.1', 'OWNERSHIP')}${P(v.legalDescription, true)}
-   ${H('6.1.2', 'LOCAL AUTHORITY TAX')}${P(v.localAuthorityTax, true)}
-   ${H('6.1.3', 'STREET LINE & BUILDING LIMITS')}${P(v.streetLineBuildingLimits, true)}
+   ${H('6.1.1', 'OWNERSHIP')}${P(v.legalDescription, true, false, 'legalDescription')}
+   ${H('6.1.2', 'LOCAL AUTHORITY TAX')}${P(v.localAuthorityTax, true, false, 'localAuthorityTax')}
+   ${H('6.1.3', 'STREET LINE & BUILDING LIMITS')}${P(v.streetLineBuildingLimits, true, false, 'streetLineBuildingLimits')}
    ${H('6.2', 'PLANNING REGULATIONS')}
-   ${H('6.2.1', 'MANDATORY REQUIREMENTS')}${P(v.mandatoryRequirements, true)}
-   ${H('6.2.2', 'RENT CONTROL REGULATION')}${P(v.rentControlRegulation, true)}
+   ${H('6.2.1', 'MANDATORY REQUIREMENTS')}${P(v.mandatoryRequirements, true, false, 'mandatoryRequirements')}
+   ${H('6.2.2', 'RENT CONTROL REGULATION')}${P(v.rentControlRegulation, true, false, 'rentControlRegulation')}
    </section>
 
-   <section data-report-section="locality" style="border-radius:4px;transition:background-color .25s ease,outline-color .25s ease">${H('7.', 'LOCALITY')}${P(localityText, true)}</section>
+   <section data-report-section="locality" style="border-radius:4px;transition:background-color .25s ease,outline-color .25s ease">${H('7.', 'LOCALITY')}${P(localityText, true, false, 'localityFacilities')}</section>
 
    ${H('8.', 'APPROACH AND METHOD TO THE VALUATION')}
-   ${P(v.valuationApproachStatement || 'In assessing the subject land, I have applied the Direct Comparison Method under the Market Approach. The available sales and asking-price evidence of comparable lands has been analysed with appropriate consideration of location, extent, access, shape, physical characteristics, planning restrictions and prevailing market conditions.')}
+   ${P(v.valuationApproachStatement || 'In assessing the subject land, I have applied the Direct Comparison Method under the Market Approach. The available sales and asking-price evidence of comparable lands has been analysed with appropriate consideration of location, extent, access, shape, physical characteristics, planning restrictions and prevailing market conditions.', false, !v.valuationApproachStatement)}
 
    <section data-report-section="comparables" style="border-radius:4px;transition:background-color .25s ease,outline-color .25s ease">
    ${H('9.', 'EVIDENCE OF LAND VALUES & RENTALS')}
    ${H('9.1', 'RICS EVIDENCE HIERARCHY')}
-   ${P(v.nearbyPropertyDetails, true)}${evidenceTbl(evidence, savedEvidence)}
+   ${P(v.nearbyPropertyDetails, true, false, 'nearbyPropertyDetails')}${evidenceTbl(evidence, savedEvidence)}
    </section>
 
    ${H('10.0', 'BASE OF VALUATION & RATIONAL')}
@@ -160,23 +177,66 @@ export function buildReportHtml(
    ${valuationTbl(valuation, v)}
    </section>
 
-   <section data-report-section="conclusion" style="border-radius:4px;transition:background-color .25s ease,outline-color .25s ease">${H('12.', 'CONCLUSION')}${P(conclusionText, true)}</section>
+   <section data-report-section="conclusion" style="border-radius:4px;transition:background-color .25s ease,outline-color .25s ease">${H('12.', 'CONCLUSION')}${P(conclusionText, true, false, 'conclusion')}</section>
 
    ${H('13.', 'SUMMARY')}
    <p style="margin:4px 0">The valuation details are as follows.</p>
    <p style="margin:2px 0;font-weight:700;text-decoration:underline">Land Only</p>
    <table style="width:100%;font-size:12px">
      <tr><td style="padding:2px 0;font-weight:700">Market Value as at ${F('valuationDate')}</td><td style="text-align:right;font-weight:700">; - ${money('marketValue')}${v.marketValueWords ? ` (${esc(v.marketValueWords)})` : ''}</td></tr>
-     <tr><td style="padding:2px 0;font-weight:700">Forced Sale value as at ${F('valuationDate')}</td><td style="text-align:right;font-weight:700">; - ${money('forcedSaleValue')}${v.forcedSaleValueWords ? ` (${esc(v.forcedSaleValueWords)})` : ''}</td></tr>
+     <tr><td style="padding:2px 0;font-weight:700">Forced Sale value as at ${F('valuationDate')}${fsLabel}</td><td style="text-align:right;font-weight:700">; - ${money('forcedSaleValue')}${v.forcedSaleValueWords ? ` (${esc(v.forcedSaleValueWords)})` : ''}</td></tr>
    </table>
 
    ${H('14.', 'CERTIFICATION')}
-   ${P(v.certification || `I certify that the property inspected and valued by me corresponds precisely to Lot No. ${F('lotNo')} in Survey Plan No. ${F('surveyPlanNo')} dated ${F('surveyDate')} made by ${F('surveyorName')} Licensed Surveyor. The property’s boundaries were verified on-site and confirmed to align with the boundaries indicated in the aforementioned plan. I recommend that the above estimated values are fair and reasonable.`)}
+   ${P(v.certification || `I certify that the property inspected and valued by me corresponds precisely to Lot No. ${F('lotNo')} in Survey Plan No. ${F('surveyPlanNo')} dated ${F('surveyDate')} made by ${F('surveyorName')} Licensed Surveyor. The property’s boundaries were verified on-site and confirmed to align with the boundaries indicated in the aforementioned plan. I recommend that the above estimated values are fair and reasonable.`, false, !v.certification)}
    ${P('The valuer has experience in the location and category of the property being valued and has made a personal inspection of the property. This valuation complies with the valuation standards used in Sri Lanka (IVSL), the International Valuation Standards, and the standards compiled by the Royal Institution of Chartered Surveyors (RICS).')}
    <p style="margin-top:24px">Vlr. H.M.R.R. Narampanawa (FRICS)<br>RICS Registered Chartered Valuation Surveyor<br>Panel Valuer of ${F('bankName')}</p>
-   ${pageFooter()}
   </div>`
 }
+
+// On screen, page-break-after does nothing, so every page ran straight into the
+// next one - one page's footer sat directly against the following page's
+// header. These rules only apply to the preview: the PDF is rendered with
+// print media emulation, where the real page breaks take over.
+const screenPageCss = `
+<style>
+@media screen {
+  /* Standard wording the system supplied because the officer wrote none. It
+     reads exactly like their own prose, so without a mark there is no way to
+     answer "is this real, or is it the template?" — and unreviewed boilerplate
+     is how a wrong sentence reaches the bank. Screen only: the exported PDF
+     shows it as ordinary text. */
+  .lv-report .lv-default {
+    background: rgba(30, 150, 200, 0.07);
+    box-shadow: inset 2px 0 0 rgba(30, 150, 200, 0.55);
+    padding-left: 6px;
+  }
+  .lv-report [style*="page-break-after"] {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 1000px;
+    padding-bottom: 28px;
+    margin-bottom: 44px;
+    /* A heavy red rule marks where the printed page actually ends. It is a
+       preview-only cut line, so it is labelled rather than left as a bare red
+       bar that could read as an error. */
+    border-bottom: 3px solid #dc2626;
+  }
+  .lv-report [style*="page-break-after"]::after {
+    content: "PAGE BREAK";
+    position: absolute;
+    right: 0;
+    bottom: -10px;
+    padding: 3px 7px;
+    border-radius: 2px;
+    background: #dc2626;
+    color: #fff;
+    font: 700 9px/1 Arial, sans-serif;
+    letter-spacing: .08em;
+  }
+}
+</style>`
 
 // ── Shared bits ───────────────────────────────────────────────────────────
 
@@ -206,12 +266,6 @@ const pageHeader = () => `
   </table>
 </div>`
 
-// The running page footer: firm contact bar.
-const pageFooter = () => `
-<div style="margin-top:24px;border-top:2px solid #1f3a4d;padding-top:6px;font-family:Arial,sans-serif;font-size:9px;color:#333;text-align:center;line-height:1.7">
-  <div>92/A, Kalukondayawa, Malwana, Sri Lanka. &nbsp;|&nbsp; Head Office: 508/2/4, Awissawella Road, Kaduwela, Sri Lanka.</div>
-  <div>+94 773 623 550 | +94 112 539 977 &nbsp;&nbsp; valuer.jayathilake@gmail.com &nbsp;&nbsp; www.ijvr.lk</div>
-</div>`
 
 // Numbered section heading (e.g. "5.2.1  EXTENT").
 const H = (n: string, t: string) =>
@@ -219,11 +273,11 @@ const H = (n: string, t: string) =>
 
 // A body paragraph. `markEmpty` shows the "[ To be filled ]" marker instead of
 // rendering nothing, so a required narrative section is never silently blank.
-const P = (t: string | undefined, markEmpty = false) =>
+const P = (t: string | undefined, markEmpty = false, isDefault = false, key = '') =>
   esc(t)
-    ? `<p style="margin:6px 0;text-align:justify">${esc(t)}</p>`
+    ? `<p${isDefault ? ' class="lv-default"' : ''} style="margin:6px 0;text-align:justify">${esc(t)}</p>`
     : markEmpty
-      ? `<p style="margin:6px 0">${TBF}</p>`
+      ? `<p style="margin:6px 0">${key ? `<span data-report-field="${key}">${TBF}</span>` : TBF}</p>`
       : ''
 
 // Label/value row for the Client Information table.
@@ -281,13 +335,16 @@ const coverPage = (F: (k: string) => string, Fo: (k: string) => string) => {
 }
 
 // ── Page 2: covering letter ───────────────────────────────────────────────
-const letterPage = (v: Record<string, string>, F: (k: string) => string, money: (k: string) => string) => `
+const letterPage = (v: Record<string, string>, F: (k: string) => string, money: (k: string) => string) => {
+  const pct = (v.forcedSalePct || '').trim()
+  const fsLabel = pct ? ` (${esc(pct)}% of Market Value)` : ''
+  return `
   <div style="page-break-after:always;min-height:1000px;display:flex;flex-direction:column">
    ${pageHeader()}
    <div style="flex:1;font-size:12px;color:#111;line-height:1.6;margin-top:22px">
      <table style="width:100%;border-collapse:collapse;font-size:12px">
       <tr>
-       <td style="width:38%"><span style="border:1px solid #333;padding:4px 12px;font-weight:700">Ref/${F('projectId')}/2025</span></td>
+       <td style="width:38%"><span style="border:1px solid #333;padding:4px 12px;font-weight:700">Ref/${F('projectId')}/${new Date().getFullYear()}</span></td>
        <td style="width:32%;text-align:center;font-weight:700">Confidential</td>
        <td style="width:30%;text-align:right;font-weight:700">${F('valuationRequestDate')}</td>
       </tr>
@@ -295,17 +352,17 @@ const letterPage = (v: Record<string, string>, F: (k: string) => string, money: 
      <p style="margin:20px 0 0">The Manager,<br>${F('bankName')},<br>${F('branchName')}.</p>
      <p style="margin:16px 0">Dear Sir,</p>
      <p style="text-align:center;font-weight:700;text-decoration:underline;margin:0 16px">VALUATION REPORT OF PROPERTY DEPICTED AS LOT NO. ${F('lotNo')} IN SURVEY PLAN NO. ${F('surveyPlanNo')} DATED ${F('surveyDate')} MADE BY ${F('surveyorName')} LICENSED SURVEYOR</p>
-     <p style="margin:16px 0;text-align:justify">${v.requestDescription ? esc(v.requestDescription) : `The Manager of ${F('bankName')} - ${F('branchName')} has requested by letter dated ${F('valuationRequestDate')} a valuation of the subject property.`}</p>
+     <p style="margin:16px 0;text-align:justify">${v.requestDescription ? esc(v.requestDescription) : `<span class="lv-default">The Manager of ${F('bankName')} - ${F('branchName')} has requested by letter dated ${F('valuationRequestDate')} a valuation of the subject property.</span>`}</p>
      <p style="margin:14px 0 6px;font-weight:700">The valuation details are as follows;</p>
      <p style="margin:6px 0 2px;font-weight:700;text-decoration:underline">Land Only</p>
      <table style="width:100%;font-size:12px">
        <tr><td style="font-weight:700">Market Value as at ${F('valuationDate')}</td><td style="text-align:right;font-weight:700">; - ${money('marketValue')}</td></tr>
-       <tr><td style="font-weight:700">Forced Sale value as at ${F('valuationDate')}</td><td style="text-align:right;font-weight:700">; - ${money('forcedSaleValue')}</td></tr>
+       <tr><td style="font-weight:700">Forced Sale value as at ${F('valuationDate')}${fsLabel}</td><td style="text-align:right;font-weight:700">; - ${money('forcedSaleValue')}</td></tr>
      </table>
      <p style="margin:18px 0">Further details are included in the report. Please refer the annexure 01 mentioned below.</p>
    </div>
-   ${pageFooter()}
   </div>`
+}
 
 // ── Page: Limitations / Assumptions / Compliance (fixed boilerplate) ──────
 const boilerplatePage = (v: Record<string, string>, F: (k: string) => string) => {
@@ -316,7 +373,7 @@ const boilerplatePage = (v: Record<string, string>, F: (k: string) => string) =>
    <div style="margin-top:18px;font-size:12px">
     <h3 style="font-size:13px;font-weight:700;color:#0f766e;margin:14px 0 6px">LIMITATIONS</h3>
     ${v.limitations ? P(v.limitations, true) : ''}
-    <ul style="${v.limitations ? 'display:none;' : ''}margin:0 0 0 18px;padding:0">
+    <ul class="${v.limitations ? '' : 'lv-default'}" style="${v.limitations ? 'display:none;' : ''}margin:0 0 0 18px;padding:0">
      ${li('This valuation is valid only for the estimate of market value and forced sale value for the purpose of mortgage and should not be used for any other purpose or in any manner other than as stated herein.')}
      ${li('I am not liable for any damages incurred by the client of the report if it is used for a purpose other than the “Intended Purpose” of the report.')}
      ${li(`This valuation has been prepared for the Directors of ${F('bankName')} and is not intended for any other person. No responsibility is accepted to third parties for the whole or any part of the contents.`)}
@@ -326,7 +383,7 @@ const boilerplatePage = (v: Record<string, string>, F: (k: string) => string) =>
     </ul>
     <h3 style="font-size:13px;font-weight:700;color:#0f766e;margin:14px 0 6px">GENERAL ASSUMPTIONS</h3>
     ${v.generalAssumptions ? P(v.generalAssumptions, true) : ''}
-    <ul style="${v.generalAssumptions ? 'display:none;' : ''}margin:0 0 0 18px;padding:0">
+    <ul class="${v.generalAssumptions ? '' : 'lv-default'}" style="${v.generalAssumptions ? 'display:none;' : ''}margin:0 0 0 18px;padding:0">
      ${li('I have valued the property based on the assumption that the owner holds an unencumbered freehold interest in the property.')}
      ${li('The property has been valued as if wholly owned, with no account taken of any outstanding debts, including mortgage bonds, loans, or other charges.')}
     </ul>
@@ -338,7 +395,6 @@ const boilerplatePage = (v: Record<string, string>, F: (k: string) => string) =>
      ${li('The valuation has been conducted by the valuer to the best of their knowledge, based on an analysis of market evidence.')}
     </ul>
    </div>
-   ${pageFooter()}
   </div>`
 }
 
@@ -417,8 +473,17 @@ const surveyPlanImg = (v: Record<string, string>, projectId: string) => {
   return `<img src="${esc(src)}" alt="Survey plan" style="display:block;max-width:100%;max-height:720px;margin:0 auto;border:1px solid #bbb;object-fit:contain" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=color:#999>[ Survey plan not available as an image ]</span>')"/>`
 }
 
-const mapImg = (lat: number, lng: number, mappedSrc?: string) =>
-  `<img src="${esc(mappedSrc || `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=16&size=360x260&markers=${lat},${lng},red`)}" alt="Location map" style="max-width:100%;border:1px solid #bbb"/>`
+// The road map beside the satellite view. This used to point at
+// staticmap.openstreetmap.de, which no longer answers at all (the connection
+// fails outright), so the location map was always a broken-image icon while the
+// satellite view beside it loaded fine. It now uses the same ArcGIS export the
+// satellite view uses — no API key, and one less third party to depend on.
+// `imageSR` is required here: without it the street service returns a 500.
+const mapImg = (lat: number, lng: number, mappedSrc?: string) => {
+  const d = 0.01 // ~1 km half-window, wide enough to show the road network
+  const fallback = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/export?bbox=${lng - d},${lat - d},${lng + d},${lat + d}&bboxSR=4326&imageSR=4326&size=360,260&format=png&f=image`
+  return `<img src="${esc(mappedSrc || fallback)}" alt="Location map" style="max-width:100%;border:1px solid #bbb" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=color:#999>[ Location map unavailable ]</span>')"/>`
+}
 
 const satImg = (lat: number, lng: number, d: number, mappedSrc?: string) =>
   `<img src="${esc(mappedSrc || `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${lng - d},${lat - d},${lng + d},${lat + d}&bboxSR=4326&size=360,260&format=png&f=image`)}" alt="Satellite location" style="max-width:100%;border:1px solid #bbb" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=color:#999>[ Satellite view unavailable ]</span>')"/>`

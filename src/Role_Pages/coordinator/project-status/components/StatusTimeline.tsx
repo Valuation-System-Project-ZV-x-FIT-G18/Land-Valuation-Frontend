@@ -29,7 +29,7 @@ const StatusTimeline = ({ steps }: { steps: TimelineStep[] }) => (
                 ? 'border-emerald-400 bg-emerald-500/20 text-emerald-300'
                 : state === 'current'
                   ? 'border-sky-400 bg-sky-500/25 text-sky-200 ring-4 ring-sky-400/20'
-                  : 'border-white/20 bg-white/5 text-emerald-200/40'
+                  : 'border-white/20 bg-white/5 text-emerald-200'
             }`}
           >
             {state === 'done' ? '✓' : i + 1}
@@ -43,14 +43,14 @@ const StatusTimeline = ({ steps }: { steps: TimelineStep[] }) => (
                   ? 'text-emerald-100'
                   : state === 'current'
                     ? 'text-sky-200'
-                    : 'text-emerald-100/40'
+                    : 'text-emerald-100'
               }`}
             >
               {step.label}
             </p>
             <p
               className={`text-xs ${
-                state === 'current' ? 'text-sky-300/70' : 'text-emerald-200/40'
+                state === 'current' ? 'text-sky-300/70' : 'text-emerald-200'
               }`}
             >
               {state === 'done' ? 'Done' : state === 'current' ? 'Current step' : 'Waiting'}

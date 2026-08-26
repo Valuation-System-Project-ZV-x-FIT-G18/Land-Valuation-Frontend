@@ -108,3 +108,25 @@ export async function createValuation(
     return { ok: false, error: 'Could not reach the server. Please try again.' }
   }
 }
+
+// Open the bank's uploaded request letter in a new tab.
+//
+// Not a plain <a href="/api/..."> link: the bearer token is attached by the
+// patched window.fetch, which a browser navigation bypasses, so the endpoint
+// answered 401 and the tab showed an error instead of the document.
+export async function openRequestLetter(
+  rowId: number,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch(`/api/coordinator/valuations/file?id=${rowId}`)
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      return { ok: false, error: body.error || 'Could not open the document.' }
+    }
+    const url = URL.createObjectURL(await res.blob())
+    window.open(url, '_blank', 'noopener')
+    return { ok: true }
+  } catch {
+    return { ok: false, error: 'Could not reach the server.' }
+  }
+}

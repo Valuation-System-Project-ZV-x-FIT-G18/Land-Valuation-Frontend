@@ -4,6 +4,7 @@ import Button from '@/Common_Pages/components/ui/Button'
 import { valuationSections } from '@/Role_Pages/coordinator/new-valuation/constants/valuationFields'
 import {
   fetchValuationDetails,
+  openRequestLetter,
   type ValuationDetails,
 } from '@/Role_Pages/coordinator/new-valuation/api/new-valuation'
 
@@ -13,7 +14,6 @@ type Props = { rowId: number; onBack: () => void }
 const bankFields: { name: string; label: string }[] = [
   { name: 'bankName', label: 'Bank' },
   { name: 'branchName', label: 'Branch' },
-  { name: 'bankBranchCity', label: 'Bank Branch City / Address' },
   { name: 'bankContactPerson', label: 'Contact Person' },
   { name: 'bankContactNo', label: 'Contact Number' },
 ]
@@ -22,6 +22,7 @@ const bankFields: { name: string; label: string }[] = [
 const ValuationDetailsView = ({ rowId, onBack }: Props) => {
   const [data, setData] = useState<ValuationDetails | null>(null)
   const [loading, setLoading] = useState(true)
+  const [fileError, setFileError] = useState('')
 
   useEffect(() => {
     fetchValuationDetails(rowId)
@@ -30,7 +31,7 @@ const ValuationDetailsView = ({ rowId, onBack }: Props) => {
   }, [rowId])
 
   if (loading) {
-    return <p className="text-center text-sm text-emerald-200/70">Loading valuation…</p>
+    return <p className="text-center text-sm text-emerald-200">Loading valuation…</p>
   }
   if (!data) {
     return (
@@ -49,8 +50,8 @@ const ValuationDetailsView = ({ rowId, onBack }: Props) => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-bold text-white">
-          Valuation <span className="text-gold-300">#{data.valuationId}</span>
-          <span className="text-sm font-normal text-emerald-200/60"> · Project {data.projectId}</span>
+          Valuation <span className="text-accent-300">#{data.valuationId}</span>
+          <span className="text-sm font-normal text-emerald-200"> · Project {data.projectId}</span>
         </h2>
         <Button type="button" variant="outline" className="!px-5 !py-2.5 text-sm" onClick={onBack}>
           Back
@@ -59,7 +60,7 @@ const ValuationDetailsView = ({ rowId, onBack }: Props) => {
 
       {/* Bank & branch */}
       <Card className="p-6">
-        <h3 className="mb-4 text-base font-semibold text-emerald-100">🏦 Bank &amp; Branch</h3>
+        <h3 className="mb-4 text-base font-semibold text-emerald-100">Bank &amp; Branch</h3>
         <dl className="grid gap-4 sm:grid-cols-2">
           {bankFields.map((f) => (
             <Field key={f.name} label={f.label} value={d[f.name]} />
@@ -71,7 +72,7 @@ const ValuationDetailsView = ({ rowId, onBack }: Props) => {
       {valuationSections.map((section) => (
         <Card key={section.title} className="p-6">
           <h3 className="mb-4 text-base font-semibold text-emerald-100">
-            {section.icon} {section.title}
+            {section.title}
           </h3>
           <dl className="grid gap-4 sm:grid-cols-2">
             {section.fields.map((f) => (
@@ -83,18 +84,21 @@ const ValuationDetailsView = ({ rowId, onBack }: Props) => {
 
       {/* Bank's request letter */}
       <Card className="p-6">
-        <h3 className="mb-3 text-base font-semibold text-emerald-100">📎 Bank&apos;s Request Letter</h3>
+        <h3 className="mb-3 text-base font-semibold text-emerald-100">Bank&apos;s Request Letter</h3>
+        {fileError && <p className="mb-2 text-sm text-red-300">{fileError}</p>}
         {data.hasRequestLetter ? (
-          <a
-            href={`/api/coordinator/valuations/file?id=${data.rowId}`}
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm font-medium text-gold-300 underline-offset-2 hover:underline"
+          <button
+            type="button"
+            onClick={async () => {
+              const res = await openRequestLetter(data.rowId)
+              if (!res.ok) setFileError(res.error ?? 'Could not open the document.')
+            }}
+            className="text-sm font-medium text-accent-300 underline-offset-2 hover:underline"
           >
             View document ↗
-          </a>
+          </button>
         ) : (
-          <p className="text-sm text-emerald-200/50">No request letter was uploaded.</p>
+          <p className="text-sm text-emerald-200">No request letter was uploaded.</p>
         )}
       </Card>
     </div>
@@ -104,9 +108,9 @@ const ValuationDetailsView = ({ rowId, onBack }: Props) => {
 // One label/value pair.
 const Field = ({ label, value }: { label: string; value?: string }) => (
   <div>
-    <dt className="text-xs font-medium uppercase tracking-wide text-emerald-200/50">{label}</dt>
-    <dd className="mt-0.5 text-sm text-white/90">
-      {value ? value : <span className="text-emerald-200/40">—</span>}
+    <dt className="text-xs font-medium uppercase tracking-wide text-emerald-200">{label}</dt>
+    <dd className="mt-0.5 text-sm text-white">
+      {value ? value : <span className="text-emerald-200">—</span>}
     </dd>
   </div>
 )

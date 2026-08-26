@@ -37,13 +37,13 @@ const SectionCard = ({ label, text, onTextChange, fields, photos, onFieldChange,
         onChange={(e) => onTextChange(e.target.value)}
         rows={photos ? 5 : 4}
         placeholder="Click Regenerate to draft this section…"
-        className="w-full resize-none rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white outline-none focus:border-gold-400/60 focus:ring-2 focus:ring-gold-400/30"
+        className="w-full resize-none rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white outline-none focus:border-accent-400/60 focus:ring-2 focus:ring-accent-400/30"
       />
 
       <button
         type="button"
         onClick={() => setShowSources((v) => !v)}
-        className="mt-3 text-xs font-medium text-gold-300/90 hover:text-gold-200"
+        className="mt-3 text-xs font-medium text-accent-300 hover:text-accent-200"
       >
         {showSources ? '▾' : '▸'} Sources used {photos ? `(${photos.length} photo${photos.length === 1 ? '' : 's'})` : `(${fields.length})`}
       </button>
@@ -52,9 +52,9 @@ const SectionCard = ({ label, text, onTextChange, fields, photos, onFieldChange,
         <div className="mt-3 space-y-2 rounded-xl border border-white/10 bg-black/20 p-3">
           {photos ? (
             photos.length === 0 ? (
-              <p className="text-xs text-emerald-100/60">No site photos uploaded for this project.</p>
+              <p className="text-xs text-emerald-100">No site photos uploaded for this project.</p>
             ) : (
-              <ul className="list-inside list-disc text-xs text-emerald-100/80">
+              <ul className="list-inside list-disc text-xs text-emerald-100">
                 {photos.map((p, i) => (
                   <li key={`${p}-${i}`}>{p}</li>
                 ))}
@@ -62,13 +62,13 @@ const SectionCard = ({ label, text, onTextChange, fields, photos, onFieldChange,
             )
           ) : (
             <>
-              <p className="text-[11px] text-emerald-100/60">
+              <p className="text-[11px] text-emerald-100">
                 Edit any value below, then click Regenerate to rebuild this section from it.
               </p>
               <div className="grid gap-2 sm:grid-cols-2">
                 {fields.map((f) => (
                   <label key={f.key} className="block">
-                    <span className="mb-1 block text-[11px] font-medium text-emerald-100/70">{f.label}</span>
+                    <span className="mb-1 block text-[11px] font-medium text-emerald-100">{f.label}</span>
                     <Input
                       sizeVariant="sm"
                       aria-label={f.label}

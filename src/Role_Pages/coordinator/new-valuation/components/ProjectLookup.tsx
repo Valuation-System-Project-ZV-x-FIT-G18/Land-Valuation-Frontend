@@ -42,7 +42,7 @@ const ProjectLookup = ({ onFound }: ProjectLookupProps) => {
   return (
     <Card className="p-6 sm:p-8">
       <h2 className="mb-1 text-lg font-bold text-white">Project (NIC or Project ID)</h2>
-      <p className="mb-5 text-sm text-emerald-100/70">
+      <p className="mb-5 text-sm text-emerald-100">
         Enter the applicant&apos;s NIC or the Project ID to load its valuation.
       </p>
 
@@ -75,7 +75,7 @@ const ProjectLookup = ({ onFound }: ProjectLookupProps) => {
             </svg>
           </div>
           <h3 className="mt-4 text-xl font-bold text-red-300">No Project Found</h3>
-          <p className="mx-auto mt-2 max-w-xs text-sm text-emerald-100/70">
+          <p className="mx-auto mt-2 max-w-xs text-sm text-emerald-100">
             No project exists for this applicant yet. Create the project first to
             raise a valuation.
           </p>
@@ -83,7 +83,7 @@ const ProjectLookup = ({ onFound }: ProjectLookupProps) => {
             type="button"
             fullWidth
             className="mt-5"
-            onClick={() => navigate('/coordinator/new-project', { state: { nic: lastQ } })}
+            onClick={() => navigate('/coordinator/projects/new', { state: { nic: lastQ } })}
           >
             Create Project
           </Button>

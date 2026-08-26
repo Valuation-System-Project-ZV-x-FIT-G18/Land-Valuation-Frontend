@@ -4,9 +4,7 @@ import type { SectionConfig } from '@/Role_Pages/coordinator/new-project/types/n
 export const valuationSections: SectionConfig[] = [
   {
     title: 'Project / Reference Info',
-    icon: '📋',
     fields: [
-      { name: 'bankBranchCity', label: 'Bank Branch City / Address (optional)', placeholder: 'e.g. Godagama' },
       { name: 'bankRequestDate', label: "Date of Bank's Request Letter", type: 'date' },
       { name: 'valuationPurpose', label: 'Purpose of Valuation', placeholder: 'e.g. Secured Lending / Mortgage', required: true },
       { name: 'valuationType', label: 'Valuation Type', type: 'select', options: ['New Valuation', 'Revaluation'], required: true },

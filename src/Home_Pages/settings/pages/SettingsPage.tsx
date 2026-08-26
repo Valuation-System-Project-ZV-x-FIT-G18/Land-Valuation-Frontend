@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import Card from '@/Common_Pages/components/ui/Card'
 import Button from '@/Common_Pages/components/ui/Button'
 import FormField from '@/Common_Pages/components/ui/FormField'
@@ -19,7 +20,6 @@ const today = new Date().toISOString().slice(0, 10)
 const fields: { name: keyof Profile; label: string; type?: string }[] = [
   { name: 'firstName', label: 'First Name' },
   { name: 'lastName', label: 'Last Name' },
-  { name: 'initials', label: 'Name with Initials' },
   { name: 'email', label: 'Email', type: 'email' },
   { name: 'phone', label: 'Phone' },
   { name: 'dateOfBirth', label: 'Date of Birth', type: 'date' },
@@ -39,6 +39,7 @@ const SettingsPage = () => {
   const [serverError, setServerError] = useState('')
   const [notice, setNotice] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [section, setSection] = useState<'profile' | 'security'>('profile')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Edits-in-progress survive a refresh (keyed per user, so accounts never mix).
@@ -73,7 +74,7 @@ const SettingsPage = () => {
   }, [profile, storageKey])
 
   if (!user) return null
-  if (loading) return <p className="text-center text-sm text-emerald-200/60">Loading your settings…</p>
+  if (loading) return <p className="text-center text-sm text-emerald-200">Loading your settings…</p>
   if (!profile) return <p className="text-center text-sm text-red-300">{serverError || 'Profile not found.'}</p>
 
   const set = (name: keyof Profile, value: string) => {
@@ -133,7 +134,7 @@ const SettingsPage = () => {
   ]
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       <SuccessModal
         open={!!notice}
         title="Update Successful"
@@ -141,21 +142,27 @@ const SettingsPage = () => {
         closeLabel="Done"
         onClose={() => setNotice('')}
       />
-      <div className="text-center">
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-accent-300">Account</p>
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           <GradientText>Settings</GradientText>
         </h1>
-        <p className="mx-auto mt-2 max-w-md text-emerald-100/70">
-          Update your personal information. These changes are saved to your account.
+        <p className="mt-2 max-w-md text-emerald-100">
+          Manage your profile and account security.
         </p>
       </div>
 
+      <div className="inline-flex rounded-xl border border-white/10 bg-surface p-1">
+        <button type="button" onClick={() => setSection('profile')} className={`rounded-lg px-5 py-2.5 text-sm font-semibold transition ${section === 'profile' ? 'bg-accent-300 text-emerald-950' : 'text-emerald-100 hover:text-white'}`}>Profile</button>
+        <button type="button" onClick={() => setSection('security')} className={`rounded-lg px-5 py-2.5 text-sm font-semibold transition ${section === 'security' ? 'bg-accent-300 text-emerald-950' : 'text-emerald-100 hover:text-white'}`}>Security</button>
+      </div>
+
       {/* Profile picture */}
-      <Card className="flex items-center gap-5 p-6">
+      {section === 'profile' && <Card className="flex items-center gap-5 p-6">
         <Avatar userId={user.userId} name={user.name} photoPath={profile.photoPath} size="lg" />
         <div>
           <p className="text-sm font-semibold text-white">Profile picture</p>
-          <p className="mt-0.5 text-xs text-emerald-100/60">JPG, PNG or WEBP. Max 5MB.</p>
+          <p className="mt-0.5 text-xs text-emerald-100">JPG, PNG or WEBP. Max 5MB.</p>
           <input
             ref={fileInputRef}
             type="file"
@@ -174,20 +181,23 @@ const SettingsPage = () => {
             {uploading ? 'Uploading…' : 'Change Photo'}
           </Button>
         </div>
-      </Card>
+      </Card>}
 
       {/* Read-only identity */}
-      <Card className="grid gap-4 p-6 sm:grid-cols-3">
+      {section === 'profile' && <Card className="grid gap-4 p-6 sm:grid-cols-3">
         {identity.map(([k, v]) => (
           <div key={k}>
-            <p className="text-xs uppercase tracking-wide text-emerald-200/50">{k}</p>
+            <p className="text-xs uppercase tracking-wide text-emerald-200">{k}</p>
             <p className="mt-1 text-sm font-semibold text-white">{v || '—'}</p>
           </div>
         ))}
-      </Card>
+      </Card>}
 
       {/* Editable fields */}
-      <Card className="p-6 sm:p-8">
+      {section === 'profile' && <Card className="p-6 sm:p-8">
+        <div className="mb-5">
+          <h2 className="text-lg font-semibold text-white">Personal information</h2>
+        </div>
         <form onSubmit={handleSave} noValidate className="grid gap-5 sm:grid-cols-2">
           {fields
             .filter((f) => !(profile.role === 'Bank' && f.name === 'dateOfBirth'))
@@ -217,15 +227,25 @@ const SettingsPage = () => {
           />
 
           {serverError && <p className="text-sm text-red-300 sm:col-span-2">{serverError}</p>}
-          <div className="sm:col-span-2">
-            <Button type="submit" fullWidth disabled={saving || !isValid}>
+          <div className="flex justify-end sm:col-span-2">
+            <Button type="submit" disabled={saving || !isValid}>
               {saving ? 'Saving…' : 'Save Changes'}
             </Button>
           </div>
         </form>
-      </Card>
+      </Card>}
 
-      {user.role === 'Manager L1' && (
+      {section === 'security' && <Card className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+        <div>
+          <h2 className="text-lg font-semibold text-white">Sign-in password</h2>
+          <p className="mt-1 text-sm text-emerald-100">Use a strong, unique password for this account.</p>
+        </div>
+        <Link to="/change-password" className="inline-flex items-center justify-center rounded-xl border border-white/25 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white transition hover:border-accent-300/60 hover:bg-white/10">
+          Change Password
+        </Link>
+      </Card>}
+
+      {section === 'profile' && user.role === 'Manager L1' && (
         <ValuerProfileForm
           userId={user.userId}
           defaultName={`${profile.firstName} ${profile.lastName}`.trim()}

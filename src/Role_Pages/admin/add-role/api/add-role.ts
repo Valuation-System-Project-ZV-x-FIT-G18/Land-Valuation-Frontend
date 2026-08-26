@@ -5,7 +5,6 @@ export type NewRole = {
   role: string
   firstName: string
   lastName: string
-  initials: string
   nic: string
   email: string
   phone: string
@@ -19,7 +18,6 @@ export type NewRole = {
   branchName: string // Bank only
   bankName: string // Bank only
   designation: string // Bank only — the contact person's designation
-  password: string
 }
 
 // Create a new staff account (POST /api/admin/roles).
@@ -27,10 +25,30 @@ export async function addRole(
   data: NewRole,
 ): Promise<{ ok: boolean; userId?: string; error?: string }> {
   try {
+    // Explicit allow-list prevents stale browser form fields from reaching the
+    // strict backend DTO after the account form evolves.
+    const payload: NewRole = {
+      role: data.role,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      nic: data.nic,
+      email: data.email,
+      phone: data.phone,
+      district: data.district,
+      province: data.province,
+      city: data.city,
+      postalCode: data.postalCode,
+      address: data.address,
+      dateOfBirth: data.dateOfBirth,
+      branchCode: data.branchCode,
+      branchName: data.branchName,
+      bankName: data.bankName,
+      designation: data.designation,
+    }
     const res = await fetch('/api/admin/roles', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     })
     const body = await res.json().catch(() => ({}) as Record<string, unknown>)
     if (res.ok && body.ok) return { ok: true, userId: body.userId as string }

@@ -7,6 +7,11 @@ export type ProjectRow = {
   propertyType: string
   status: string
   createdAt: string
+  valuationCount: number
+  applicantName: string
+  location: string
+  valuationStatus: string
+  technicalOfficerId: string
 }
 
 // A valuation row shown under a selected project.
@@ -18,6 +23,12 @@ export type ValuationRow = {
   projectId: string
   status: string
   createdAt: string
+  technicalOfficerId: string
+  technicalOfficerName: string
+  inspectionDate: string
+  inspectionTime: string
+  bankName: string
+  branchName: string
 }
 
 // The status detail shown for a selected valuation (with its parent project).

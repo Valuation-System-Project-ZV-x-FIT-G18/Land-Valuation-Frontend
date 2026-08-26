@@ -7,20 +7,23 @@ import Table from '@/Common_Pages/components/ui/Table'
 // a count chip. Cells can be plain text or nodes (e.g. an action button).
 type FleetTableProps = {
   title: string
-  icon: string
+  subtitle?: string
   columns: string[]
   rows: ReactNode[][]
   emptyText: string
 }
 
-const FleetTable = ({ title, icon, columns, rows, emptyText }: FleetTableProps) => (
+const FleetTable = ({ title, subtitle, columns, rows, emptyText }: FleetTableProps) => (
   <Card className="p-5 sm:p-6">
-    <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
-      <span>{icon}</span> {title}
-      <span className="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-emerald-100/80">
-        {rows.length}
-      </span>
-    </h3>
+    <div className="mb-4">
+      <h3 className="flex items-center gap-2 text-lg font-bold text-white">
+        {title}
+        <span className="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-emerald-100">
+          {rows.length}
+        </span>
+      </h3>
+      {subtitle && <p className="mt-1 text-sm text-emerald-100">{subtitle}</p>}
+    </div>
 
     <Table columns={columns} rows={rows} emptyText={emptyText} />
   </Card>

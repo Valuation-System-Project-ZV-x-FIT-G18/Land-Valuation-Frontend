@@ -25,12 +25,13 @@ const RegisterApplicantPage = () => {
 
       <WorkflowStepper current="register" />
 
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-white sm:text-4xl">
-          Register <GradientText>Loan Applicant</GradientText>
+      <div className="mx-auto max-w-5xl">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-200">Applicant management</p>
+        <h1 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
+          Register <GradientText>Applicant</GradientText>
         </h1>
-        <p className="mx-auto mt-2 max-w-md text-emerald-100/70">
-          Add a new loan applicant to the system.
+        <p className="mt-2 max-w-2xl text-emerald-100">
+          Create the property owner&apos;s account first. Property and valuation details are added in the following steps.
         </p>
       </div>
 

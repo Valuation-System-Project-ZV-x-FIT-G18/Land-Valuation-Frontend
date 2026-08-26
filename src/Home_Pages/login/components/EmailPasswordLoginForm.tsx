@@ -8,9 +8,7 @@ import { useAuth } from '@/Common_Pages/components/auth/useAuth'
 import { validatePassword } from '@/Common_Pages/validation/validatePassword'
 import { submitLogin } from '@/Home_Pages/login/api/login'
 
-type Props = { allowedRoles: string[]; portalName: string }
-
-const EmailPasswordLoginForm = ({ allowedRoles, portalName }: Props) => {
+const EmailPasswordLoginForm = () => {
   const { login } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
@@ -33,10 +31,7 @@ const EmailPasswordLoginForm = ({ allowedRoles, portalName }: Props) => {
     const result = await submitLogin(email, password)
     setSubmitting(false)
     if (!result.ok) { setErrors({ password: result.error }); return }
-    if (!allowedRoles.includes(result.user.role)) {
-      setErrors({ email: `This account cannot use the ${portalName} portal.` })
-      return
-    }
+    // The account's role decides where it lands — the person never has to.
     login(result.user, result.accessToken)
     navigate(result.user.mustChangePassword ? '/change-password' : '/dashboard')
   }
@@ -54,7 +49,7 @@ const EmailPasswordLoginForm = ({ allowedRoles, portalName }: Props) => {
           error={errors.password} placeholder="Enter your password" />
         <Button type="submit" fullWidth disabled={submitting}>{submitting ? 'Signing in…' : 'Sign In'}</Button>
         <div className="pt-1 text-center text-sm">
-          <button type="button" onClick={() => setForgotOpen(true)} className="text-emerald-200 transition hover:text-gold-300">Forgot password?</button>
+          <button type="button" onClick={() => setForgotOpen(true)} className="text-emerald-200 transition hover:text-accent-300">Forgot password?</button>
         </div>
       </form>
       <ForgotPasswordModal open={forgotOpen} onClose={() => setForgotOpen(false)} />

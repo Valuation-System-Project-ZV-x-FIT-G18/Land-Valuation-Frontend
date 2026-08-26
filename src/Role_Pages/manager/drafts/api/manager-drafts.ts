@@ -36,12 +36,12 @@ export const STATUS_LABEL: Record<string, string> = {
   rejected_to_to: 'Sent back to Officer',
   rejected_to_coordinator: 'Rejected to Coordinator',
   pending_l1: 'Submitted to L1',
-  locked: '🔒 Locked',
+  locked: 'Locked',
 }
 
 // Badge colour per review state — shared by every manager table.
-export const STATUS_TONE: Record<string, 'gold' | 'info' | 'success' | 'warning' | 'neutral'> = {
-  locked: 'gold',
+export const STATUS_TONE: Record<string, 'accent' | 'info' | 'success' | 'warning' | 'neutral'> = {
+  locked: 'accent',
   pending_l2: 'info',
   pending_l1: 'info',
   rejected_l2: 'warning',

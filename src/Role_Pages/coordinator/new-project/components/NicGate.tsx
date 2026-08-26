@@ -52,8 +52,8 @@ const NicGate = ({ onConfirmed }: NicGateProps) => {
   return (
     <Card className="p-6 sm:p-8">
       <h2 className="mb-1 text-lg font-bold text-white">Land Owner (NIC)</h2>
-      <p className="mb-5 text-sm text-emerald-100/70">
-        Enter the NIC of the registered loan applicant to begin.
+      <p className="mb-5 text-sm text-emerald-100">
+        Enter the registered property owner&apos;s NIC to begin.
       </p>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
@@ -86,8 +86,8 @@ const NicGate = ({ onConfirmed }: NicGateProps) => {
             </svg>
           </div>
           <h3 className="mt-4 text-xl font-bold text-red-300">Applicant Not Registered</h3>
-          <p className="mx-auto mt-2 max-w-xs text-sm text-emerald-100/70">
-            This NIC isn&apos;t registered as a loan applicant. Register them
+          <p className="mx-auto mt-2 max-w-xs text-sm text-emerald-100">
+            This NIC isn&apos;t registered as an applicant. Register them
             first to create a project.
           </p>
           <Button

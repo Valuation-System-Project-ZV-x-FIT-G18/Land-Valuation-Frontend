@@ -74,24 +74,24 @@ const MessagesPage = () => {
           <div className="h-7 w-px bg-white/10" />
           <div>
             <h1 className="text-xl font-semibold text-white sm:text-2xl">Messages</h1>
-            <p className="text-xs text-slate-400">{threads.length} conversation{threads.length === 1 ? '' : 's'}</p>
+            <p className="text-xs text-emerald-200">{threads.length} conversation{threads.length === 1 ? '' : 's'}</p>
           </div>
         </div>
         <Button
           type="button"
           size="sm"
           onClick={newMessage}
-          className="!rounded-lg !bg-gold-400 !text-emerald-950 !shadow-none hover:!translate-y-0 hover:!bg-gold-300"
+          className="!rounded-lg !bg-accent-400 !text-emerald-950 !shadow-none hover:!translate-y-0 hover:!bg-accent-300"
         >
           <span className="text-lg leading-none" aria-hidden="true">+</span>
           New message
         </Button>
       </div>
 
-      <section className="grid h-[calc(100vh-12rem)] min-h-[540px] overflow-hidden rounded-lg border border-slate-700/60 bg-[#0b1f24] shadow-card md:grid-cols-[300px_minmax(0,1fr)]">
-        <aside className={`${composing || active ? 'hidden md:flex' : 'flex'} min-h-0 flex-col border-r border-slate-700/60 bg-[#0d292d]`}>
-          <div className="border-b border-slate-700/60 px-4 py-3">
-            <p className="text-xs font-semibold uppercase text-slate-400">Recent conversations</p>
+      <section className="grid h-[calc(100vh-12rem)] min-h-[540px] overflow-hidden rounded-lg border border-emerald-700 bg-surface shadow-card md:grid-cols-[300px_minmax(0,1fr)]">
+        <aside className={`${composing || active ? 'hidden md:flex' : 'flex'} min-h-0 flex-col border-r border-emerald-700 bg-surface`}>
+          <div className="border-b border-emerald-700 px-4 py-3">
+            <p className="text-xs font-semibold uppercase text-emerald-200">Recent conversations</p>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto p-2">
             <ThreadList
@@ -102,7 +102,7 @@ const MessagesPage = () => {
           </div>
         </aside>
 
-        <div className={`${!composing && !active ? 'hidden md:block' : 'block'} min-h-0 bg-[#0a2427]`}>
+        <div className={`${!composing && !active ? 'hidden md:block' : 'block'} min-h-0 bg-surface-sunken`}>
           {composing ? (
             <NewMessage onStart={openPartner} />
           ) : active ? (
@@ -110,8 +110,8 @@ const MessagesPage = () => {
           ) : (
             <div className="flex h-full items-center justify-center p-8 text-center">
               <div>
-                <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full border border-slate-600/60 bg-slate-800/40 text-lg text-slate-300" aria-hidden="true">@</div>
-                <p className="mt-4 text-sm font-medium text-slate-300">Choose a conversation</p>
+                <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full border border-emerald-700 bg-surface text-lg text-emerald-200" aria-hidden="true">@</div>
+                <p className="mt-4 text-sm font-medium text-emerald-200">Choose a conversation</p>
                 <p className="mt-1 text-xs text-slate-500">Select a recent thread or start a new message.</p>
               </div>
             </div>

@@ -23,8 +23,9 @@ export async function uploadPhoto(
   file: File,
   describe = false,
   photoLabel = '',
+  onProgress?: (percent: number) => void,
 ): Promise<{ ok: boolean; error?: string; description?: string }> {
-  try {
+  return new Promise((resolve) => {
     const form = new FormData()
     form.append('projectId', projectId)
     form.append('toId', toId)
@@ -32,13 +33,30 @@ export async function uploadPhoto(
     form.append('describe', describe ? 'true' : 'false')
     form.append('photoLabel', photoLabel)
     form.append('file', file)
-    const res = await fetch('/api/technical-officer/site-photos', { method: 'POST', body: form })
-    const data = await res.json().catch(() => ({}) as Record<string, unknown>)
-    if (res.ok && data.ok) return { ok: true, description: (data.description as string) ?? '' }
-    return { ok: false, error: (data.error as string) || 'Could not upload the photo.' }
-  } catch {
-    return { ok: false, error: 'Could not reach the server.' }
-  }
+    const request = new XMLHttpRequest()
+    request.open('POST', '/api/technical-officer/site-photos')
+    request.withCredentials = true
+    try {
+      const token = JSON.parse(localStorage.getItem('accessToken') ?? '""') as string
+      if (token) request.setRequestHeader('Authorization', `Bearer ${token}`)
+    } catch {
+      // The server will return 401 and the UI will keep the photo available for retry.
+    }
+    request.upload.onprogress = (event) => {
+      if (event.lengthComputable) onProgress?.(Math.round((event.loaded / event.total) * 100))
+    }
+    request.onerror = () => resolve({ ok: false, error: 'Could not reach the server.' })
+    request.onload = () => {
+      let data: Record<string, unknown> = {}
+      try { data = JSON.parse(request.responseText) as Record<string, unknown> } catch { /* use the fallback below */ }
+      if (request.status >= 200 && request.status < 300 && data.ok) {
+        resolve({ ok: true, description: (data.description as string) ?? '' })
+      } else {
+        resolve({ ok: false, error: String(data.error || data.message || 'Could not upload the photo.') })
+      }
+    }
+    request.send(form)
+  })
 }
 
 // URL to view an uploaded photo (cache-busted so a replacement shows immediately).

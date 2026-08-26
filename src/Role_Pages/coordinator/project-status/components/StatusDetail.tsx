@@ -30,7 +30,7 @@ const StatusDetail = ({ status, onBack }: StatusDetailProps) => {
   ]
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4">
+    <div className="mx-auto max-w-6xl space-y-4">
       <Button type="button" variant="outline" onClick={onBack} className="!px-5 !py-2.5 text-sm">
         ← Back to valuations
       </Button>
@@ -43,13 +43,13 @@ const StatusDetail = ({ status, onBack }: StatusDetailProps) => {
         {/* The two headline statuses */}
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
-            <p className="text-xs uppercase tracking-wide text-emerald-200/50">Project</p>
+            <p className="text-xs uppercase tracking-wide text-emerald-200">Project</p>
             <div className="mt-2">
               <StatusBadge status={status.projectStatus} />
             </div>
           </div>
           <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
-            <p className="text-xs uppercase tracking-wide text-emerald-200/50">Valuation</p>
+            <p className="text-xs uppercase tracking-wide text-emerald-200">Valuation</p>
             <div className="mt-2">
               <StatusBadge status={status.valuationStatus} />
             </div>
@@ -60,7 +60,7 @@ const StatusDetail = ({ status, onBack }: StatusDetailProps) => {
         <dl className="mt-6 grid gap-3 sm:grid-cols-2">
           {rows.map(([k, v]) => (
             <div key={k}>
-              <dt className="text-xs uppercase tracking-wide text-emerald-200/50">{k}</dt>
+              <dt className="text-xs uppercase tracking-wide text-emerald-200">{k}</dt>
               <dd className="text-sm font-medium text-white">{v}</dd>
             </div>
           ))}
@@ -69,7 +69,7 @@ const StatusDetail = ({ status, onBack }: StatusDetailProps) => {
 
       {/* Lifecycle progress checklist */}
       <Card className="p-6 sm:p-8">
-        <h4 className="mb-6 text-sm font-semibold uppercase tracking-wide text-emerald-200/50">
+        <h4 className="mb-6 text-sm font-semibold uppercase tracking-wide text-emerald-200">
           Progress
         </h4>
         <StatusTimeline steps={steps} />

@@ -111,7 +111,7 @@ npm run start:dev
 
 The API will be available at `http://localhost:4000/api`.
 
-> The initial local administrator created by `seed-admin.mjs` is `Adm001` with password `Test@123`. Change this password before using the system outside a local demonstration environment.
+> The initial local administrator created by `seed-admin.mjs` is `Adm001` with password `Test@1234`. Change this password before using the system outside a local demonstration environment.
 
 ## Frontend setup
 

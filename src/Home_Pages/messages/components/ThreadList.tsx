@@ -26,23 +26,23 @@ const ThreadList = ({ threads, activeId, onSelect }: ThreadListProps) => {
           onClick={() => onSelect(t)}
           className={`flex w-full items-start gap-3 rounded-md border px-3 py-2.5 text-left transition ${
             activeId === t.otherId
-              ? 'border-gold-400/30 bg-gold-400/10'
-              : 'border-transparent hover:border-slate-700 hover:bg-slate-800/45'
+              ? 'border-accent-400/30 bg-accent-400/10'
+              : 'border-transparent hover:border-emerald-700 hover:bg-surface'
           }`}
         >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-700/60 text-sm font-semibold text-emerald-50">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-muted text-sm font-semibold text-emerald-50">
             {t.name.charAt(0).toUpperCase()}
           </span>
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">
               <p className="truncate text-sm font-semibold text-white">{t.name}</p>
               {t.unread > 0 && (
-                <span className="ml-1 shrink-0 rounded-full bg-gold-400 px-1.5 text-[10px] font-bold text-emerald-950">
+                <span className="ml-1 shrink-0 rounded-full bg-accent-400 px-1.5 text-[10px] font-bold text-emerald-950">
                   {t.unread}
                 </span>
               )}
             </div>
-            <p className="truncate text-xs text-slate-400">{t.role}</p>
+            <p className="truncate text-xs text-emerald-200">{t.role}</p>
             <p className="mt-0.5 truncate text-xs text-slate-500">{t.lastBody}</p>
           </div>
         </button>

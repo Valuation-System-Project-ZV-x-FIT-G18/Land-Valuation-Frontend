@@ -21,7 +21,10 @@ export type TOStepId =
 
 type Step = { id: TOStepId; label: string; short: string; to: string }
 
-const STEPS: Step[] = [
+// Exported so the step footer can work out what "next" means from the same
+// single ordering the stepper draws, instead of each screen hard-coding the
+// route that follows it.
+export const STEPS: Step[] = [
   { id: 'assigned', label: 'Assigned Projects', short: 'Assigned', to: '/technical-officer/assignments' },
   { id: 'inspection', label: 'Inspection Data', short: 'Inspect', to: '/technical-officer/inspections' },
   { id: 'photos', label: 'Site Photos', short: 'Photos', to: '/technical-officer/site-photos' },
@@ -34,19 +37,19 @@ const STEPS: Step[] = [
 const markerClass = (state: 'done' | 'current' | 'upcoming') =>
   `relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-sm font-bold transition ${
     state === 'current'
-      ? 'border-gold-300 bg-gold-400 text-emerald-950 shadow-[0_0_14px_rgba(227,194,74,0.45)]'
+      ? 'border-accent-300 bg-accent-400 text-emerald-950 shadow-[0_0_14px_rgba(30, 150, 200,0.45)]'
       : state === 'done'
         ? 'border-emerald-400 bg-emerald-500/25 text-emerald-200'
-        : 'border-white/15 bg-emerald-950 text-emerald-100/45'
+        : 'border-white/15 bg-surface text-emerald-100'
   }`
 
 const labelClass = (state: 'done' | 'current' | 'upcoming') =>
   `mt-2 block text-center text-[10px] font-semibold leading-tight sm:text-[11px] ${
     state === 'current'
-      ? 'text-gold-200'
+      ? 'text-accent-200'
       : state === 'done'
-        ? 'text-emerald-100/80'
-        : 'text-emerald-100/45'
+        ? 'text-emerald-100'
+        : 'text-emerald-100'
   }`
 
 const TOWorkflowStepper = ({ current }: { current: TOStepId }) => {
@@ -75,7 +78,7 @@ const TOWorkflowStepper = ({ current }: { current: TOStepId }) => {
                   <Link
                     to={step.to}
                     aria-current={state === 'current' ? 'step' : undefined}
-                    className="flex flex-col items-center rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-gold-400/60"
+                    className="flex flex-col items-center rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
                   >
                     {marker}
                     <span className={labelClass(state)}>

@@ -8,7 +8,6 @@ const DOC = '.pdf,.jpg,.jpeg,.png'
 export const projectSections: SectionConfig[] = [
   {
     title: 'Property Identification / Address',
-    icon: '📍',
     hasMap: true,
     fields: [
       { name: 'propertyType', label: 'Type of Property', type: 'select', options: ['Residential', 'Commercial', 'Bare Land'], required: true },
@@ -25,7 +24,6 @@ export const projectSections: SectionConfig[] = [
   },
   {
     title: 'Property Situation / Administrative',
-    icon: '🏛️',
     fields: [
       { name: 'landTraditionalName', label: 'Land Traditional Name', placeholder: 'e.g. Alubogahawatta' },
       { name: 'localAuthorityType', label: 'Local Authority Type', type: 'select', options: ['Urban Council', 'Municipal Council', 'Pradeshiya Sabha'] },
@@ -36,7 +34,6 @@ export const projectSections: SectionConfig[] = [
   },
   {
     title: 'Survey Plan Details',
-    icon: '📐',
     fields: [
       { name: 'surveyPlanNumber', label: 'Survey Plan Number', required: true },
       { name: 'surveyPlanDate', label: 'Survey Plan Date', type: 'date' },
@@ -49,7 +46,6 @@ export const projectSections: SectionConfig[] = [
   },
   {
     title: 'Land Extent',
-    icon: '📏',
     fields: [
       { name: 'extentAcres', label: 'Acres (Survey Plan)', type: 'number' },
       { name: 'extentRoods', label: 'Roods (Survey Plan)', type: 'number' },
@@ -66,7 +62,6 @@ export const projectSections: SectionConfig[] = [
   },
   {
     title: 'Deed / Ownership Details',
-    icon: '📜',
     fields: [
       {
         name: 'deedType',
@@ -107,7 +102,6 @@ export const projectSections: SectionConfig[] = [
   },
   {
     title: 'Boundaries (from survey plan)',
-    icon: '🧭',
     fields: [
       { name: 'boundaryNorth', label: 'North', required: true },
       { name: 'boundaryEast', label: 'East', required: true },
@@ -119,7 +113,6 @@ export const projectSections: SectionConfig[] = [
   },
   {
     title: 'Legal & Local Authority',
-    icon: '⚖️',
     fields: [
       { name: 'assessmentNumber', label: 'Assessment Number', required: true },
       { name: 'assessmentLetterDate', label: 'Assessment Letter Date', type: 'date' },
@@ -133,7 +126,6 @@ export const projectSections: SectionConfig[] = [
   },
   {
     title: 'Planning Regulations',
-    icon: '🏗️',
     fields: [
       { name: 'planApprovedByLA', label: 'Survey Plan Approved by Local Authority?', type: 'select', options: YN },
       { name: 'planApprovalRef', label: 'Survey Plan Approval Reference Number' },
@@ -146,7 +138,7 @@ export const projectSections: SectionConfig[] = [
 // Section 13 — document uploads (Survey Plan & Title Deed required).
 export const projectUploads: UploadConfig[] = [
   { name: 'surveyPlan', label: 'Survey Plan (image)', accept: DOC, required: true },
-  { name: 'titleDeed', label: 'Title Deed (scanned)', accept: DOC, required: true },
+  { name: 'titleDeed', label: 'Deed document', accept: DOC, required: true },
   { name: 'taxCertificate', label: 'Local Authority Tax Certificate', accept: DOC },
   { name: 'streetLineCert', label: 'Street Line / Building Limit Certificate', accept: DOC },
   { name: 'planApprovalLetter', label: 'Survey Plan Approval Letter', accept: DOC },

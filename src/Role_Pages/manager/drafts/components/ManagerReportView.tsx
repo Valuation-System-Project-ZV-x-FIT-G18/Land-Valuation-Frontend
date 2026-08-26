@@ -3,7 +3,7 @@ import Button from '@/Common_Pages/components/ui/Button'
 import Modal from '@/Common_Pages/components/ui/Modal'
 import SuccessModal from '@/Common_Pages/components/ui/SuccessModal'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
-import { downloadReportPdf } from '@/Role_Pages/technical-officer/draft/api/draft'
+import { downloadReportPdf, inlineReportImages, inlineReportImagesWithLinks } from '@/Role_Pages/technical-officer/draft/api/draft'
 import { draftAction, getDraftFields, getManagerReport, STATUS_LABEL } from '@/Role_Pages/manager/drafts/api/manager-drafts'
 
 type Props = {
@@ -53,7 +53,8 @@ const ManagerReportView = ({
     ;(async () => {
       try {
         const saved = await getManagerReport(projectId)
-        setHtml(saved.reportHtml)
+        const { html: reportWithImages } = await inlineReportImagesWithLinks(saved.reportHtml)
+        setHtml(reportWithImages)
         setLoadedStatus(saved.reviewStatus || reviewStatus)
         if (saved.reviewStatus === 'locked') setFinalizedAt(saved.updatedAt)
         if (!saved.reportHtml.trim()) setError('The saved report is empty. Please contact an administrator before reviewing it.')
@@ -69,7 +70,11 @@ const ManagerReportView = ({
 
   const run = async (status: string, busyLabel: string, successTitle: string, successMessage: string, reason = '', price?: number) => {
     setBusy(busyLabel); setError('')
-    const res = await draftAction(projectId, status, current(), reason, valuationDate, price)
+    // Manager edits can start from an older report containing protected /api/
+    // image links. Freeze those images into the canonical HTML before every
+    // hand-off, especially before L1 creates the immutable final PDF.
+    const reportWithImages = await inlineReportImages(current())
+    const res = await draftAction(projectId, status, reportWithImages, reason, valuationDate, price)
     setBusy('')
     if (!res.ok) return setError(res.error ?? 'Action failed.')
     setSuccess({ title: successTitle, message: successMessage, finalized: status === 'locked' })
@@ -77,7 +82,8 @@ const ManagerReportView = ({
 
   const save = async () => {
     setBusy('Save'); setError('')
-    const res = await draftAction(projectId, loadedStatus || 'draft', current(), '', valuationDate)
+    const reportWithImages = await inlineReportImages(current())
+    const res = await draftAction(projectId, loadedStatus || 'draft', reportWithImages, '', valuationDate)
     setBusy('')
     res.ok ? setNotice('✓ Saved.') : setError(res.error ?? 'Could not save.')
   }
@@ -128,35 +134,35 @@ const ManagerReportView = ({
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-4">
+    <div className="mx-auto max-w-6xl space-y-4">
       <Button type="button" variant="outline" onClick={onBack} className="!px-5 !py-2.5 text-sm">← Back</Button>
       <div className="flex flex-col gap-4 border-b border-white/10 pb-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white sm:text-3xl">
             {locked ? 'Finalized Report' : 'Draft Report'} — <GradientText>{projectId}</GradientText>
           </h1>
-          <p className="mt-1 text-xs text-emerald-200/60">
+          <p className="mt-1 text-xs text-emerald-200">
             Valuation #{valuationId} · {STATUS_LABEL[loadedStatus] ?? loadedStatus}
           </p>
         </div>
         <div className="grid w-full gap-3 sm:w-auto sm:grid-cols-2">
           <label className="block sm:w-40">
-            <span className="mb-1 block text-xs font-medium text-emerald-100/60">Inspection date</span>
+            <span className="mb-1 block text-xs font-medium text-emerald-100">Inspection date</span>
             <input
               type="date"
               value={inspectionDate}
               readOnly
-              className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-emerald-100/65 outline-none"
+              className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-emerald-100 outline-none"
             />
           </label>
           <label className="block sm:w-40">
-            <span className="mb-1 block text-xs font-medium text-emerald-100/60">Valuation date</span>
+            <span className="mb-1 block text-xs font-medium text-emerald-100">Valuation date</span>
             <input
               type="date"
               value={valuationDate}
               disabled={readOnly}
               onChange={(e) => setValuationDate(e.target.value)}
-              className="w-full rounded-lg border border-white/15 bg-slate-800 px-3 py-2 text-sm text-white outline-none focus:border-gold-400/60 disabled:opacity-60"
+              className="w-full rounded-lg border border-white/15 bg-surface px-3 py-2 text-sm text-white outline-none focus:border-accent-400/60 disabled:opacity-60"
             />
           </label>
         </div>
@@ -170,9 +176,9 @@ const ManagerReportView = ({
       {reviewType === 'recheck' && (
         <div className="rounded-lg border border-amber-400/40 bg-amber-400/10 p-4 text-sm text-amber-100">
           <p className="font-semibold text-amber-200">Recheck Submission</p>
-          <p className="mt-1 text-amber-100/80">This report was previously returned for correction and has been resubmitted for review.</p>
+          <p className="mt-1 text-amber-100">This report was previously returned for correction and has been resubmitted for review.</p>
           {(previousReturnedAt || resubmittedAt) && (
-            <p className="mt-2 text-xs text-amber-100/60">
+            <p className="mt-2 text-xs text-amber-100">
               {previousReturnedAt && <>Previously returned {new Date(previousReturnedAt).toLocaleString('en-GB')}.</>}
               {resubmittedAt && <> Resubmitted {new Date(resubmittedAt).toLocaleString('en-GB')}.</>}
             </p>
@@ -181,9 +187,9 @@ const ManagerReportView = ({
         </div>
       )}
       {locked && (
-        <div className="rounded-lg border border-gold-400/40 bg-gold-400/10 p-3 text-center text-sm text-gold-200">
+        <div className="rounded-lg border border-accent-400/40 bg-accent-400/10 p-3 text-center text-sm text-accent-200">
           <span className="font-semibold">Finalized / Locked</span> — this report can no longer be edited or returned.
-          {finalizedAt && <span className="ml-1 text-gold-100/70">Locked {new Date(finalizedAt).toLocaleString('en-GB')}.</span>}
+          {finalizedAt && <span className="ml-1 text-accent-100">Locked {new Date(finalizedAt).toLocaleString('en-GB')}.</span>}
         </div>
       )}
 
@@ -197,7 +203,7 @@ const ManagerReportView = ({
         {level === 'L3' && (loadedStatus === 'pending_l3' || loadedStatus === 'draft' || loadedStatus === 'rejected_l3') && (
           <>
             <Button type="button" variant="outline" onClick={() => reject('rejected_to_to', 'Technical Officer')} disabled={!!busy} className="!px-5 !py-2 text-sm !border-amber-400/50 !text-amber-200">
-              {busy === 'Reject' ? 'Sending…' : '✖ Send back to Technical Officer'}
+              {busy === 'Reject' ? 'Sending…' : 'Send back to Technical Officer'}
             </Button>
             <Button
               type="button"
@@ -205,7 +211,7 @@ const ManagerReportView = ({
               disabled={!!busy}
               className="!px-5 !py-2 text-sm"
             >
-              {busy === 'Submit to L2' ? 'Submitting…' : '➡ Submit to L2'}
+              {busy === 'Submit to L2' ? 'Submitting…' : 'Submit to L2'}
             </Button>
           </>
         )}
@@ -213,7 +219,7 @@ const ManagerReportView = ({
           <>
             {loadedStatus === 'pending_l2' && (
               <Button type="button" variant="outline" onClick={() => reject('rejected_l3', 'L3')} disabled={!!busy} className="!px-5 !py-2 text-sm !border-amber-400/50 !text-amber-200">
-                {busy === 'Reject' ? 'Rejecting…' : '✖ Reject to L3'}
+                {busy === 'Reject' ? 'Rejecting…' : 'Reject to L3'}
               </Button>
             )}
             <Button
@@ -222,14 +228,14 @@ const ManagerReportView = ({
               disabled={!!busy}
               className="!px-5 !py-2 text-sm"
             >
-              {busy === 'Submit to L1' ? 'Submitting…' : '✔ Submit to L1'}
+              {busy === 'Submit to L1' ? 'Submitting…' : 'Submit to L1'}
             </Button>
           </>
         )}
         {level === 'L1' && loadedStatus === 'pending_l1' && (
           <>
             <Button type="button" variant="outline" onClick={() => reject('rejected_l2', 'L2')} disabled={!!busy} className="!px-5 !py-2 text-sm !border-amber-400/50 !text-amber-200">
-              {busy === 'Reject' ? 'Rejecting…' : '✖ Reject to L2'}
+              {busy === 'Reject' ? 'Rejecting…' : 'Reject to L2'}
             </Button>
             <Button
               type="button"
@@ -246,13 +252,13 @@ const ManagerReportView = ({
       {error && <p className="text-center text-sm text-amber-300">{error}</p>}
 
       {loading ? (
-        <p className="text-center text-sm text-emerald-200/60">Loading the report…</p>
+        <p className="text-center text-sm text-emerald-200">Loading the report…</p>
       ) : html ? (
-        <div className="rounded-xl bg-white p-2 shadow-2xl">
+        <div className="rounded-xl bg-paper p-2 shadow-card">
           {readOnly ? (
-            <div className="min-h-[60vh] rounded-md bg-white p-8" style={{ color: '#111' }} dangerouslySetInnerHTML={{ __html: html }} />
+            <div className="min-h-[60vh] rounded-md bg-paper p-8" style={{ color: '#111' }} dangerouslySetInnerHTML={{ __html: html }} />
           ) : (
-            <div ref={paperRef} contentEditable suppressContentEditableWarning className="min-h-[60vh] rounded-md bg-white p-8 outline-none" style={{ color: '#111' }} dangerouslySetInnerHTML={{ __html: html }} />
+            <div ref={paperRef} contentEditable suppressContentEditableWarning className="min-h-[60vh] rounded-md bg-paper p-8 outline-none" style={{ color: '#111' }} dangerouslySetInnerHTML={{ __html: html }} />
           )}
         </div>
       ) : null}
@@ -263,7 +269,7 @@ const ManagerReportView = ({
           <h3 className="text-xl font-bold text-white">
             Send back to <GradientText>{rejectTo?.backTo}</GradientText>
           </h3>
-          <p className="mt-1 text-sm text-emerald-100/70">
+          <p className="mt-1 text-sm text-emerald-100">
             Add a reason for the correction — it will be shown to the {rejectTo?.backTo}.
           </p>
           <textarea
@@ -272,7 +278,7 @@ const ManagerReportView = ({
             onChange={(e) => setReasonText(e.target.value)}
             rows={4}
             placeholder="e.g. The extent figures don't match the survey plan — please re-check."
-            className="mt-4 w-full resize-none rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-gold-400/60 focus:ring-2 focus:ring-gold-400/30"
+            className="mt-4 w-full resize-none rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-accent-400/60 focus:ring-2 focus:ring-accent-400/30"
           />
           <div className="mt-5 flex gap-3">
             <Button type="button" fullWidth disabled={!reasonText.trim()} onClick={confirmReject}>
@@ -288,14 +294,14 @@ const ManagerReportView = ({
       <Modal open={lockOpen} onClose={() => setLockOpen(false)}>
         <div>
           <h3 className="text-xl font-bold text-white">Final Approve &amp; Lock</h3>
-          <p className="mt-1 text-sm text-emerald-100/70">
+          <p className="mt-1 text-sm text-emerald-100">
             Are you sure you want to give final approval and lock this report? After locking, it cannot be edited or returned through the normal approval workflow.
           </p>
-          <p className="mt-3 text-sm text-emerald-100/70">Enter the final amount the applicant must pay for report <span className="font-semibold text-gold-300">{projectId}</span>.</p>
+          <p className="mt-3 text-sm text-emerald-100">Enter the final amount the applicant must pay for report <span className="font-semibold text-accent-300">{projectId}</span>.</p>
           <label className="mt-4 block">
             <span className="mb-1.5 block text-sm font-medium text-emerald-100">Report price (LKR)</span>
-            <div className="flex overflow-hidden rounded-xl border border-white/15 bg-white/5 focus-within:border-gold-400/60 focus-within:ring-2 focus-within:ring-gold-400/30">
-              <span className="flex items-center border-r border-white/15 px-4 text-sm font-semibold text-gold-200">Rs.</span>
+            <div className="flex overflow-hidden rounded-xl border border-white/15 bg-white/5 focus-within:border-accent-400/60 focus-within:ring-2 focus-within:ring-accent-400/30">
+              <span className="flex items-center border-r border-white/15 px-4 text-sm font-semibold text-accent-200">Rs.</span>
               <input
                 autoFocus
                 type="number"
@@ -304,7 +310,7 @@ const ManagerReportView = ({
                 value={reportPrice}
                 onChange={(e) => setReportPrice(e.target.value)}
                 placeholder="e.g. 7500"
-                className="w-full bg-transparent px-4 py-3 text-white outline-none placeholder:text-emerald-200/40"
+                className="w-full bg-transparent px-4 py-3 text-white outline-none placeholder:text-emerald-200"
               />
             </div>
           </label>

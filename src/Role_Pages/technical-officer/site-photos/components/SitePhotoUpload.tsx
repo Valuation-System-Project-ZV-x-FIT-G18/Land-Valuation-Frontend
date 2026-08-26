@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import StepFooter from '@/Role_Pages/technical-officer/shared/StepFooter'
+import BackButton from '@/Role_Pages/technical-officer/shared/BackButton'
 import Button from '@/Common_Pages/components/ui/Button'
 import Card from '@/Common_Pages/components/ui/Card'
 import GradientText from '@/Common_Pages/components/ui/GradientText'
@@ -14,7 +15,6 @@ import {
 type SitePhotoUploadProps = { projectId: string; toId: string; onBack: () => void; onDataSaved?: () => void; onReportNavigate?: (section: string) => void }
 
 const SitePhotoUpload = ({ projectId, toId, onBack, onDataSaved, onReportNavigate }: SitePhotoUploadProps) => {
-  const navigate = useNavigate()
   const [uploaded, setUploaded] = useState<Record<string, UploadedPhoto>>({})
 
   const load = useCallback(async () => {
@@ -28,8 +28,8 @@ const SitePhotoUpload = ({ projectId, toId, onBack, onDataSaved, onReportNavigat
     load()
   }, [load])
 
-  const handleUpload = async (photoType: string, file: File, describe: boolean, photoLabel: string) => {
-    const res = await uploadPhoto(projectId, toId, photoType, file, describe, photoLabel)
+  const handleUpload = async (photoType: string, file: File, describe: boolean, photoLabel: string, onProgress?: (percent: number) => void) => {
+    const res = await uploadPhoto(projectId, toId, photoType, file, describe, photoLabel, onProgress)
     if (res.ok) {
       await load()
       onDataSaved?.()
@@ -41,16 +41,15 @@ const SitePhotoUpload = ({ projectId, toId, onBack, onDataSaved, onReportNavigat
   const done = Object.keys(uploaded).length
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <Button type="button" variant="outline" onClick={onBack} className="!px-5 !py-2.5 text-sm">
-        ← Back to projects
-      </Button>
+    <div className="mx-auto max-w-5xl space-y-6">
+      <BackButton onClick={onBack} />
 
       <div className="text-center">
         <h1 className="text-2xl font-bold text-white sm:text-3xl">
           Site Photos — <GradientText>{projectId}</GradientText>
         </h1>
-        <p className="mt-1 text-sm text-emerald-100/70">{done} photo(s) uploaded</p>
+        <p className="mt-1 text-sm text-emerald-100">{done} photo(s) uploaded</p>
+        <p className="mx-auto mt-2 max-w-xl text-xs leading-5 text-emerald-200">Use Camera while on site or Choose file for an existing image. JPEG, PNG or WebP up to 10 MB.</p>
       </div>
 
       {photoSections.map((section) => (
@@ -73,15 +72,13 @@ const SitePhotoUpload = ({ projectId, toId, onBack, onDataSaved, onReportNavigat
         </div>
       ))}
 
-      {/* Photos save on upload — continue to the next step in the flow. */}
-      <Button
-        type="button"
-        fullWidth
-        disabled={!done}
-        onClick={() => navigate('/technical-officer/gps-map', { state: { projectId } })}
-      >
-        {done ? 'Done — Continue to GPS & Map →' : 'Upload at least one photo to continue'}
-      </Button>
+      {/* Photos save as they upload, so this step has no save of its own. */}
+      <StepFooter
+        current="photos"
+        nextState={{ projectId }}
+        nextDisabled={!done}
+        hint="Upload at least one photo to continue."
+      />
     </div>
   )
 }

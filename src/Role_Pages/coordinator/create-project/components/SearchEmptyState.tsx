@@ -4,7 +4,7 @@
 const chips = ['NIC Lookup', 'Linked Projects', 'Instant Results']
 
 const SearchEmptyState = () => (
-  <div className="mx-auto mt-6 max-w-md rounded-2xl border border-white/10 bg-white/5 p-8 text-center backdrop-blur-sm">
+  <div className="mx-auto mt-6 max-w-md rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
     <svg viewBox="0 0 120 96" className="mx-auto h-24 w-auto" fill="none">
       {/* house */}
       <path d="M28 48 L55 26 L82 48 V82 H28 Z" fill="#d1fae5" />
@@ -13,17 +13,17 @@ const SearchEmptyState = () => (
       <rect x="34" y="56" width="10" height="10" rx="1" fill="#6ee7b7" />
       <rect x="66" y="56" width="10" height="10" rx="1" fill="#6ee7b7" />
       {/* magnifier */}
-      <circle cx="84" cy="44" r="15" fill="#064e3b" stroke="#E3C24A" strokeWidth="4" />
+      <circle cx="84" cy="44" r="15" fill="#0A3A4B" stroke="#1E96C8" strokeWidth="4" />
       <circle cx="84" cy="44" r="15" fill="#38bdf8" opacity="0.12" />
-      <line x1="95" y1="55" x2="108" y2="68" stroke="#E3C24A" strokeWidth="6" strokeLinecap="round" />
+      <line x1="95" y1="55" x2="108" y2="68" stroke="#1E96C8" strokeWidth="6" strokeLinecap="round" />
       {/* sparkles */}
-      <circle cx="22" cy="40" r="2" fill="#E3C24A" />
-      <circle cx="98" cy="74" r="2" fill="#E3C24A" />
+      <circle cx="22" cy="40" r="2" fill="#1E96C8" />
+      <circle cx="98" cy="74" r="2" fill="#1E96C8" />
       <circle cx="70" cy="20" r="1.5" fill="#6ee7b7" />
     </svg>
 
     <h3 className="mt-4 text-xl font-bold text-white">Search for an Applicant</h3>
-    <p className="mx-auto mt-2 max-w-xs text-sm text-emerald-100/70">
+    <p className="mx-auto mt-2 max-w-xs text-sm text-emerald-100">
       Enter an applicant NIC number above to instantly find their account and
       linked projects.
     </p>
@@ -32,7 +32,7 @@ const SearchEmptyState = () => (
       {chips.map((label) => (
         <span
           key={label}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-emerald-100/80"
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-emerald-100"
         >
           {label}
         </span>

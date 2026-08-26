@@ -1,6 +1,6 @@
 // Sri Lanka map with valuation location markers.
 // Uses the Sri Lanka map image in public/images/map.png and
-// overlays animated gold pins at real city positions.
+// overlays animated accent pins at real city positions.
 
 // Positions are % of the square map area (derived from the map's coordinates).
 const locations = [
@@ -16,10 +16,15 @@ const SriLankaMap = () => {
   return (
     <div className="relative mx-auto aspect-square w-full max-w-[22rem]">
       {/* Accurate, gradient-filled Sri Lanka outline */}
+      {/* The source PNG colours each province a different bright hue, which
+          fights the single-accent palette. Desaturating it and tinting the
+          result with the accent keeps the shape and the province divisions
+          while leaving one colour on the page. */}
       <img
         src="/images/map.png"
         alt="Map of Sri Lanka showing valuation coverage locations"
-        className="h-full w-full object-contain drop-shadow-[0_8px_24px_rgba(217,180,60,0.25)]"
+        className="h-full w-full object-contain"
+        style={{ filter: 'grayscale(1) brightness(1.06) sepia(0.55) hue-rotate(160deg) saturate(2.2)' }}
       />
 
     
@@ -32,9 +37,9 @@ const SriLankaMap = () => {
           title={loc.name}
         >
           {/* Pulsing ring */}
-          <span className="absolute inset-0 -m-1 animate-ping rounded-full bg-gold-400/60" />
+          <span className="absolute inset-0 -m-1 animate-ping rounded-full bg-accent-400/60" />
           {/* Solid pin */}
-          <span className="relative block h-2.5 w-2.5 rounded-full bg-gold-400 ring-2 ring-white shadow-md" />
+          <span className="relative block h-2.5 w-2.5 rounded-full bg-accent-400 ring-2 ring-white shadow-md" />
         </span>
       ))}
     </div>

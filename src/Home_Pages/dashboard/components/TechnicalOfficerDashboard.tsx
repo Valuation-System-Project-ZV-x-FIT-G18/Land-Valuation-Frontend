@@ -1,94 +1,60 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import type { AuthUser } from '@/Common_Pages/components/auth/useAuth'
-import Badge from '@/Common_Pages/components/ui/Badge'
 import Card from '@/Common_Pages/components/ui/Card'
+import GradientText from '@/Common_Pages/components/ui/GradientText'
 import WelcomeCard from './WelcomeCard'
-import { EmptyState, LoadingRows, SectionCard, SummaryCards } from './RoleDashboardParts'
-import { getAssignments, type Assignment } from '@/Role_Pages/technical-officer/assignments/api/assignments'
 
-const isCorrection = (assignment: Assignment) => assignment.reviewStatus.toLowerCase().includes('reject')
-const isCompleted = (assignment: Assignment) =>
-  assignment.reviewStatus.toLowerCase().includes('locked') || assignment.status.toLowerCase().includes('complete')
+const TechnicalOfficerDashboard = ({ user }: { user: AuthUser }) => (
+  <div className="space-y-6">
+    <h1 className="text-3xl font-bold text-white sm:text-4xl">
+      <GradientText>Dashboard</GradientText>
+    </h1>
 
-const TechnicalOfficerDashboard = ({ user }: { user: AuthUser }) => {
-  const [assignments, setAssignments] = useState<Assignment[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+    <WelcomeCard
+      name={user.name}
+      role={user.role}
+      userId={user.userId}
+      photoPath={user.photoPath}
+    />
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    setError('')
-    const result = await getAssignments(user.userId)
-    setAssignments(result.assignments)
-    setError(result.error ?? '')
-    setLoading(false)
-  }, [user.userId])
-
-  useEffect(() => { load() }, [load])
-
-  const active = useMemo(() => assignments.filter((item) => !isCompleted(item)), [assignments])
-  const awaiting = active.filter((item) => item.status === 'Technical Officer Assigned' && !isCorrection(item))
-  const corrections = active.filter(isCorrection)
-  const completed = assignments.filter(isCompleted)
-  const priority = [...corrections, ...awaiting, ...active.filter((item) => !corrections.includes(item) && !awaiting.includes(item))]
-
-  return (
-    <div className="space-y-6">
-      <WelcomeCard name={user.name} role={user.role} userId={user.userId} photoPath={user.photoPath} />
-
-      {error && (
-        <Card className="border-red-400/30 p-4 text-sm text-red-200">
-          {error} <button type="button" className="ml-2 text-gold-200 underline" onClick={load}>Try again</button>
-        </Card>
-      )}
-
-      <SummaryCards loading={loading} items={[
-        { label: 'Active Projects', value: active.length, hint: 'Current Technical Officer workload', tone: 'bg-sky-300' },
-        { label: 'Awaiting Response', value: awaiting.length, hint: 'Assignments awaiting acceptance', tone: 'bg-amber-300' },
-        { label: 'Corrections', value: corrections.length, hint: 'Drafts returned for correction', tone: 'bg-red-300' },
-        { label: 'Completed', value: completed.length, hint: 'Completed and locked valuations', tone: 'bg-emerald-300' },
-      ]} />
-
-      <SectionCard title="Projects Requiring Attention" subtitle="Assignments and corrections currently waiting for Technical Officer action.">
-        {loading ? <LoadingRows /> : priority.length === 0 ? <EmptyState>No active assignments currently require your attention.</EmptyState> : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
-              <thead className="border-b border-white/10 text-xs uppercase text-emerald-100/45">
-                <tr><th className="p-3">Project</th><th className="p-3">Applicant</th><th className="p-3">Location</th><th className="p-3">Current Stage</th><th className="p-3">Action</th></tr>
-              </thead>
-              <tbody className="divide-y divide-white/10">
-                {priority.slice(0, 6).map((item) => (
-                  <tr key={item.valuationRowId}>
-                    <td className="p-3 font-semibold text-gold-200">{item.projectId}</td>
-                    <td className="p-3 text-emerald-50">{item.owner.name || item.owner.nic || '—'}</td>
-                    <td className="p-3 text-emerald-100/70">{item.location.district || item.location.address || '—'}</td>
-                    <td className="p-3"><Badge status={isCorrection(item) ? 'Correction required' : item.status}>{isCorrection(item) ? 'Correction required' : item.status}</Badge></td>
-                    <td className="p-3"><Link to={isCorrection(item) ? '/technical-officer/corrections' : '/technical-officer/assignments'} className="text-gold-200 hover:underline">Open project →</Link></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+    <Card className="overflow-hidden">
+      <div className="grid lg:grid-cols-[1.35fr_0.65fr]">
+        <div className="p-6 sm:p-8">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-400/15 text-accent-300">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 19V9m5 10V5m5 14v-7m5 7V8" />
+              </svg>
+            </span>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-300">Workspace overview</p>
+              <h2 className="mt-1 font-display text-xl font-semibold text-white">Field valuation workspace</h2>
+            </div>
           </div>
-        )}
-      </SectionCard>
 
-      <SectionCard title="Technical Officer Workflow" subtitle="Continue the next stage of field work and valuation preparation.">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {[
-            ['Assigned Projects', '/technical-officer/assignments'],
-            ['Inspection Data', '/technical-officer/inspections'],
-            ['Site Photos', '/technical-officer/site-photos'],
-            ['Create Draft', '/technical-officer/draft'],
-          ].map(([label, to]) => (
-            <Link key={to} to={to} className="rounded-xl border border-white/10 bg-white/[0.025] px-4 py-4 font-medium text-emerald-50 transition hover:border-gold-400/45 hover:bg-gold-400/5 hover:text-gold-200">
-              {label} <span className="float-right text-emerald-100/40">→</span>
-            </Link>
-          ))}
+          <p className="mt-5 max-w-2xl text-sm leading-6 text-emerald-100">
+            Manage assigned valuations, site inspections, property evidence and draft preparation from one organised workflow. Open an assigned project once, then follow the guided steps through to submission.
+          </p>
+
+          <div className="mt-6 flex items-center gap-2 text-xs text-emerald-200">
+            <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.65)]" />
+            Technical Officer workspace is ready
+          </div>
         </div>
-      </SectionCard>
-    </div>
-  )
-}
+
+        <div className="flex flex-col justify-center border-t border-white/10 bg-white/[0.025] p-6 sm:p-8 lg:border-l lg:border-t-0">
+          <p className="text-xs font-medium uppercase tracking-wider text-emerald-200">Today</p>
+          <p className="mt-2 font-display text-2xl font-semibold text-white">
+            {new Intl.DateTimeFormat(undefined, { weekday: 'long' }).format(new Date())}
+          </p>
+          <p className="mt-1 text-sm text-emerald-100">
+            {new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date())}
+          </p>
+          <div className="mt-5 h-px bg-gradient-to-r from-accent-400/40 to-transparent" />
+          <p className="mt-4 text-xs leading-5 text-emerald-200">Open Assigned Projects to begin or resume valuation work.</p>
+        </div>
+      </div>
+    </Card>
+  </div>
+)
 
 export default TechnicalOfficerDashboard

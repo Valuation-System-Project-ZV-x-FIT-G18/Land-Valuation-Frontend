@@ -52,13 +52,13 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
 
   const filtered = filterProjects(projects, q)
 
-  const card = 'group flex w-full items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 text-left transition hover:border-gold-400/40 hover:bg-white/10'
-  const chip = 'shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-xs font-medium text-emerald-100/80 transition group-hover:border-gold-400/50 group-hover:text-gold-200'
+  const card = 'group flex w-full items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 text-left transition hover:border-accent-400/40 hover:bg-white/10'
+  const chip = 'shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-xs font-medium text-emerald-100 transition group-hover:border-accent-400/50 group-hover:text-accent-200'
   const badge = (status: string) => {
     const c = status.startsWith('rejected') ? 'border-amber-400/40 bg-amber-400/10 text-amber-200'
-      : status === 'locked' ? 'border-gold-400/50 bg-gold-400/10 text-gold-200'
+      : status === 'locked' ? 'border-accent-400/50 bg-accent-400/10 text-accent-200'
       : status.startsWith('pending') ? 'border-sky-400/40 bg-sky-400/10 text-sky-200'
-      : 'border-white/15 bg-white/5 text-emerald-100/70'
+      : 'border-white/15 bg-white/5 text-emerald-100'
     return <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${c}`}>{STATUS_LABEL[status] ?? status}</span>
   }
   const reviewBadge = (reviewType: ManagerProject['reviewType']) => (
@@ -108,19 +108,19 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
   // Level 2 — the valuations inside the chosen project.
   if (project) {
     return (
-      <div className="mx-auto max-w-3xl space-y-4">
+      <div className="mx-auto max-w-5xl space-y-4">
         <Button type="button" variant="outline" onClick={() => setProject(null)} className="!px-5 !py-2 text-sm">← All projects</Button>
         <Card className="p-4">
-          <p className="flex flex-wrap items-center gap-2 font-semibold text-gold-300">
+          <p className="flex flex-wrap items-center gap-2 font-semibold text-accent-300">
             {project.projectId} {badge(project.reviewStatus)} {!isCorr && reviewBadge(project.reviewType)}
           </p>
-          <p className="text-sm text-emerald-100/80">{project.ownerName} · {project.location || '—'}</p>
+          <p className="text-sm text-emerald-100">{project.ownerName} · {project.location || '—'}</p>
         </Card>
         {project.valuations.map((v) => (
           <button key={v.valuationId} type="button" onClick={() => setValuationId(v.valuationId)} className={card}>
             <div className="min-w-0">
-              <p className="font-semibold text-gold-300">Valuation #{v.valuationId}</p>
-              <p className="mt-0.5 text-xs text-emerald-200/50">{v.status}{v.technicalOfficerId ? ` · ${v.technicalOfficerId}` : ''}</p>
+              <p className="font-semibold text-accent-300">Valuation #{v.valuationId}</p>
+              <p className="mt-0.5 text-xs text-emerald-200">{v.status}{v.technicalOfficerId ? ` · ${v.technicalOfficerId}` : ''}</p>
             </div>
             <span className={chip}>View report →</span>
           </button>
@@ -155,7 +155,7 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
             : isCorr ? <>My <GradientText>Corrections</GradientText></>
             : <>Check <GradientText>Drafts</GradientText></>}
         </h1>
-        <p className="mx-auto mt-2 max-w-md text-emerald-100/70">
+        <p className="mx-auto mt-2 max-w-md text-emerald-100">
           {isFinal
             ? 'Locked, finalised valuation reports. Open one to view or download it.'
             : isCorr
@@ -171,11 +171,11 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
       {projects.length > 0 && <SearchBox value={q} onChange={setQ} />}
 
       {loading ? (
-        <p className="text-center text-sm text-emerald-200/60">Loading projects…</p>
+        <p className="text-center text-sm text-emerald-200">Loading projects…</p>
       ) : projects.length === 0 ? (
         <Card className="p-8 text-center">
-          <p className="font-semibold text-gold-200">{isFinal ? 'No final reports' : isCorr ? 'No corrections' : 'Nothing to review'}</p>
-          <p className="mt-1 text-sm text-emerald-100/70">
+          <p className="font-semibold text-accent-200">{isFinal ? 'No final reports' : isCorr ? 'No corrections' : 'Nothing to review'}</p>
+          <p className="mt-1 text-sm text-emerald-100">
             {isFinal ? 'Locked, finalised reports will appear here.'
               : isCorr ? 'Drafts sent back to you for fixing will appear here.'
               : 'Drafts waiting for your check will appear here.'}
@@ -183,14 +183,14 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
         </Card>
       ) : noResults ? (
         <Card className="p-8 text-center">
-          <p className="font-semibold text-gold-200">No matches</p>
-          <p className="mt-1 text-sm text-emerald-100/70">No project matches “{q.trim()}”. Try a different Project ID, owner or location.</p>
+          <p className="font-semibold text-accent-200">No matches</p>
+          <p className="mt-1 text-sm text-emerald-100">No project matches “{q.trim()}”. Try a different Project ID, owner or location.</p>
         </Card>
       ) : isFinal ? (
         <Card className="overflow-hidden">
-          <div className="h-1 w-full bg-gradient-to-r from-amber-200 via-gold-300 to-amber-400" />
+          <div className="h-1 w-full bg-gradient-to-r from-amber-200 via-accent-300 to-amber-400" />
           <div className="p-6 sm:p-8">
-            <p className="mb-4 text-sm text-emerald-100/70">
+            <p className="mb-4 text-sm text-emerald-100">
               <span className="font-semibold text-white">{finalRows.length}</span> final report{finalRows.length === 1 ? '' : 's'}
             </p>
             <Table
@@ -206,10 +206,10 @@ const ManagerDraftsPage = ({ view = 'check' }: { view?: 'check' | 'corrections' 
           {filtered.map((p) => (
             <button key={p.projectId} type="button" onClick={() => setProject(p)} className={card}>
               <div className="min-w-0">
-                <p className="flex flex-wrap items-center gap-2 font-semibold text-gold-300">
+                <p className="flex flex-wrap items-center gap-2 font-semibold text-accent-300">
                   {p.projectId} {badge(p.reviewStatus)} {!isCorr && reviewBadge(p.reviewType)}
                 </p>
-                <p className="mt-0.5 truncate text-sm text-emerald-100/80">{p.ownerName} · {p.location || '—'}</p>
+                <p className="mt-0.5 truncate text-sm text-emerald-100">{p.ownerName} · {p.location || '—'}</p>
               </div>
               <span className={chip}>{p.valuations.length} valuation{p.valuations.length > 1 ? 's' : ''} →</span>
             </button>

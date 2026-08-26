@@ -23,7 +23,7 @@ const SuccessModal = ({ open, title, message, closeLabel = 'OK', onClose }: Prop
       <h3 className="mt-4 text-2xl">
         <GradientText>{title}</GradientText>
       </h3>
-      {message && <p className="mx-auto mt-2 max-w-xs text-sm text-emerald-100/70">{message}</p>}
+      {message && <p className="mx-auto mt-2 max-w-xs text-sm text-emerald-100">{message}</p>}
       <Button type="button" fullWidth className="mt-5" onClick={onClose}>
         {closeLabel}
       </Button>

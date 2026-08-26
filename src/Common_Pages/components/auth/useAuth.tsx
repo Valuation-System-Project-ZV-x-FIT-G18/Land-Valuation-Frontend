@@ -1,8 +1,8 @@
-import { createContext, useContext, useEffect, type ReactNode } from 'react'
-import { useSessionState } from '@/Common_Pages/hooks/useSessionState'
+import { createContext, useContext, useLayoutEffect, type ReactNode } from 'react'
+import { useLocalState } from '@/Common_Pages/hooks/useLocalState'
 
 // Holds the currently logged-in user for the whole app.
-// Stored in sessionStorage, so it survives a refresh but clears when the tab closes.
+// Stored in localStorage so login/logout state is shared across browser tabs.
 
 export type AuthUser = {
   userId: string
@@ -21,28 +21,38 @@ type AuthValue = {
 const AuthContext = createContext<AuthValue | null>(null)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useSessionState<AuthUser | null>('authUser', null)
-  const [accessToken, setAccessToken] = useSessionState<string>('accessToken', '')
+  const [user, setUser] = useLocalState<AuthUser | null>('authUser', null)
+  const [accessToken, setAccessToken] = useLocalState<string>('accessToken', '')
 
-  useEffect(() => {
+  // Install authenticated fetch before child pages run their passive effects.
+  // A normal useEffect races page-load API calls after a hard refresh.
+  useLayoutEffect(() => {
     const originalFetch = window.fetch.bind(window)
     window.fetch = async (input, init = {}) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
-      if (!url.startsWith('/api/') || !accessToken) return originalFetch(input, init)
+      if (!url.startsWith('/api/')) return originalFetch(input, init)
       const headers = new Headers(init.headers ?? (input instanceof Request ? input.headers : undefined))
-      headers.set('Authorization', `Bearer ${accessToken}`)
-      const response = await originalFetch(input, { ...init, headers })
-      // A request started with an older token may finish after the user has
-      // logged in again. Never let that stale 401 erase the new session.
-      const storedToken = (() => {
-        try { return JSON.parse(sessionStorage.getItem('accessToken') ?? '""') as string }
-        catch { return '' }
-      })()
-      if (response.status === 401 && storedToken === accessToken) {
+      if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`)
+      const requestInit = { ...init, headers, credentials: 'include' as RequestCredentials }
+      const response = await originalFetch(input, requestInit)
+      if (response.status !== 401 || url.startsWith('/api/auth/login') || url.startsWith('/api/auth/refresh')) {
+        return response
+      }
+
+      const refreshed = await originalFetch('/api/auth/refresh', {
+        method: 'POST',
+        credentials: 'include',
+      })
+      if (!refreshed.ok) {
         setUser(null)
         setAccessToken('')
+        return response
       }
-      return response
+      const body = await refreshed.json() as { accessToken?: string }
+      if (!body.accessToken) return response
+      setAccessToken(body.accessToken)
+      headers.set('Authorization', `Bearer ${body.accessToken}`)
+      return originalFetch(input, { ...requestInit, headers })
     }
     return () => { window.fetch = originalFetch }
   }, [accessToken])
@@ -51,7 +61,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(nextUser)
     if (token) setAccessToken(token)
   }
-  const logout = () => { setUser(null); setAccessToken('') }
+  const logout = () => {
+    void fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+    setUser(null)
+    setAccessToken('')
+  }
   return (
     <AuthContext.Provider
       value={{ user: accessToken ? user : null, login, logout }}

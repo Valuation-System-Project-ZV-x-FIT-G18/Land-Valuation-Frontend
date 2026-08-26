@@ -19,7 +19,7 @@ const ROLE_SECTIONS: { prefix: string; allow: (role: string) => boolean }[] = [
 
 // Routes that live under a role's URL prefix but are shared with every role
 // (e.g. Project Status is under /coordinator but every role links to it).
-const SHARED_ROUTES = ['/coordinator/project-states']
+const SHARED_ROUTES = ['/coordinator/projects']
 
 // App shell for all internal (logged-in staff) pages.
 // Fixed sidebar on the left (256px); content fills the area beside it.
@@ -30,7 +30,7 @@ const InternalLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   // Not logged in -> send to the internal login page.
-  if (!user) return <Navigate to="/login/internal" replace />
+  if (!user) return <Navigate to="/login" replace />
 
   // First login (loan applicant) -> must change password before anything else.
   if (user.mustChangePassword && location.pathname !== '/change-password') {
@@ -45,7 +45,7 @@ const InternalLayout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-green-900">
+    <div className="min-h-screen bg-surface-sunken">
       <FormDraftPersistence />
       <FloatingChatbot />
       <Sidebar open={mobileOpen} onClose={() => setMobileOpen(false)} />
@@ -55,9 +55,12 @@ const InternalLayout = () => {
         {/* Top bar: messages, notifications, and the user profile on the right */}
         <InternalTopbar onMenu={() => setMobileOpen(true)} />
 
-        <main className="px-4 py-8 sm:px-6 lg:px-10">
-          {/* `key`ed on the path so each page fades up on navigation. */}
-          <div key={location.pathname} className="mx-auto max-w-6xl animate-fade-up">
+        <main className="px-4 py-8 sm:px-6 lg:px-8">
+          {/* `key`ed on the path so each page fades up on navigation.
+              The cap is deliberately generous: pages that are mostly reading
+              set their own narrower width, while the split-pane workspaces
+              (form beside the live report) want every pixel they can get. */}
+          <div key={location.pathname} className="mx-auto max-w-[1600px] animate-fade-up">
             <Outlet />
           </div>
         </main>

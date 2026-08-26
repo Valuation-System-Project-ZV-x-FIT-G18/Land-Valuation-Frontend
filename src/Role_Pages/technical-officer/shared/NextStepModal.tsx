@@ -26,9 +26,9 @@ const NextStepModal = ({ open, onClose, nextLabel, nextTo, projectId, message }:
         <h3 className="mt-4 text-2xl">
           <GradientText>Saved</GradientText>
         </h3>
-        <p className="mx-auto mt-2 max-w-xs text-sm text-emerald-100/70">
+        <p className="mx-auto mt-2 max-w-xs text-sm text-emerald-100">
           {message ?? 'This step has been saved.'} Continue to{' '}
-          <span className="font-semibold text-gold-300">{nextLabel}</span> next?
+          <span className="font-semibold text-accent-300">{nextLabel}</span> next?
         </p>
         <div className="mt-5 flex gap-3">
           <Button

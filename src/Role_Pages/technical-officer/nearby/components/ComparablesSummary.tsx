@@ -21,8 +21,8 @@ const median = (sorted: number[]) => {
 
 const Stat = ({ label, value, accent, wide }: { label: string; value: string; accent?: boolean; wide?: boolean }) => (
   <div className={`rounded-xl border border-white/10 bg-white/5 p-3 text-center ${wide ? 'col-span-2' : ''}`}>
-    <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-200/50">{label}</p>
-    <p className={`mt-1 break-words text-[13px] font-bold leading-5 ${accent ? 'text-gold-200' : 'text-white'}`}>{value}</p>
+    <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-200">{label}</p>
+    <p className={`mt-1 break-words text-[13px] font-bold leading-5 ${accent ? 'text-accent-200' : 'text-white'}`}>{value}</p>
   </div>
 )
 
@@ -34,8 +34,8 @@ const ComparablesSummary = ({ comparables, adoptedRate, onApplyRate }: Props) =>
   if (n === 0) {
     return (
       <Card className="p-5 sm:p-6">
-        <h3 className="mb-1 text-sm font-semibold text-gold-300">Price Evidence Summary</h3>
-        <p className="text-xs text-emerald-100/60">
+        <h3 className="mb-1 text-sm font-semibold text-accent-300">Price Evidence Summary</h3>
+        <p className="text-xs text-emerald-100">
           Add at least one comparable with a per-perch price to see the price analysis.
         </p>
       </Card>
@@ -61,7 +61,7 @@ const ComparablesSummary = ({ comparables, adoptedRate, onApplyRate }: Props) =>
 
   return (
     <Card className="p-5 sm:p-6">
-      <h3 className="mb-3 text-sm font-semibold text-gold-300">Price Evidence Summary</h3>
+      <h3 className="mb-3 text-sm font-semibold text-accent-300">Price Evidence Summary</h3>
 
       <div className="grid grid-cols-2 gap-2">
         <Stat label="Comparables" value={String(n)} />
@@ -71,13 +71,13 @@ const ComparablesSummary = ({ comparables, adoptedRate, onApplyRate }: Props) =>
         <Stat label="Median / P" value={rs(med)} accent wide />
       </div>
 
-      <p className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3 text-xs leading-relaxed text-emerald-100/80">
+      <p className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3 text-xs leading-relaxed text-emerald-100">
         Based on <b className="text-white">{n}</b> comparable{n > 1 ? 's' : ''}
         {knownCount > 0 && ` (${portalCount} from portals, ${knownCount} known/field)`}, per-perch
-        values range from <b className="text-gold-200">{rs(min)}</b> to{' '}
-        <b className="text-gold-200">{rs(max)}</b>, with an average of{' '}
-        <b className="text-gold-200">{rs(avg)}</b> and a median of{' '}
-        <b className="text-gold-200">{rs(med)}</b>. A rate around the median is a fair and defensible
+        values range from <b className="text-accent-200">{rs(min)}</b> to{' '}
+        <b className="text-accent-200">{rs(max)}</b>, with an average of{' '}
+        <b className="text-accent-200">{rs(avg)}</b> and a median of{' '}
+        <b className="text-accent-200">{rs(med)}</b>. A rate around the median is a fair and defensible
         basis for the subject property, adjusted for its size, frontage, access and condition.
         {stance && (
           <>

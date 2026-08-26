@@ -16,12 +16,21 @@ const NewProjectPage = () => {
 
   return (
     <div className="space-y-8">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => navigate('/coordinator/projects')}
+        className="!px-5 !py-2.5 text-sm"
+      >
+        ← Projects
+      </Button>
+
       <WorkflowStepper current="project" />
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">
           Create <GradientText>Project</GradientText>
         </h1>
-        <p className="mx-auto mt-2 max-w-md text-emerald-100/70">
+        <p className="mx-auto mt-2 max-w-md text-emerald-100">
           Enter the applicant&apos;s NIC, then complete the land valuation details.
         </p>
       </div>
@@ -29,7 +38,7 @@ const NewProjectPage = () => {
       <ProjectForm onDone={(projectId, nic) => setDone({ projectId, nic })} />
 
       {/* Success popup */}
-      <Modal open={!!done} onClose={() => navigate('/dashboard')}>
+      <Modal open={!!done} onClose={() => navigate('/coordinator/projects')}>
         {done && (
           <div className="text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-400/15 text-2xl">
@@ -41,12 +50,12 @@ const NewProjectPage = () => {
 
             <dl className="mx-auto mt-5 max-w-xs space-y-2 text-sm">
               <div className="flex justify-between border-b border-white/10 pb-2">
-                <dt className="text-emerald-200/60">NIC</dt>
+                <dt className="text-emerald-200">NIC</dt>
                 <dd className="font-medium text-white">{done.nic}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-emerald-200/60">Project ID</dt>
-                <dd className="font-semibold text-gold-300">{done.projectId}</dd>
+                <dt className="text-emerald-200">Project ID</dt>
+                <dd className="font-semibold text-accent-300">{done.projectId}</dd>
               </div>
             </dl>
 
@@ -56,14 +65,14 @@ const NewProjectPage = () => {
                 type="button"
                 fullWidth
                 onClick={() =>
-                  navigate('/coordinator/new-valuation', {
+                  navigate('/coordinator/valuations/new', {
                     state: { nic: done.nic, projectId: done.projectId },
                   })
                 }
               >
                 Yes, new valuation
               </Button>
-              <Button type="button" variant="outline" fullWidth onClick={() => navigate('/dashboard')}>
+              <Button type="button" variant="outline" fullWidth onClick={() => navigate('/coordinator/projects')}>
                 No
               </Button>
             </div>

@@ -30,25 +30,42 @@ export const avatarUrl = (userId: string, photoPath: string) =>
   `/api/auth/avatar?userId=${encodeURIComponent(userId)}&v=${encodeURIComponent(photoPath)}`
 
 const Avatar = ({ userId, name, photoPath, size = 'md', className = '' }: AvatarProps) => {
-  const [imageFailed, setImageFailed] = useState(false)
+  // The avatar endpoint requires a token, and a plain <img src> cannot send
+  // one. So fetch the image through the authenticated fetch and render the
+  // bytes from a local object URL instead.
+  const [source, setSource] = useState('')
   const base = `flex shrink-0 items-center justify-center overflow-hidden rounded-full font-bold text-emerald-950 shadow ring-2 ring-white/10 ${sizeClasses[size]} ${className}`
 
-  useEffect(() => setImageFailed(false), [userId, photoPath])
+  useEffect(() => {
+    setSource('')
+    if (!photoPath || !userId) return
 
-  if (photoPath && !imageFailed) {
-    return (
-      <img
-        src={avatarUrl(userId, photoPath)}
-        alt={name}
-        onError={() => setImageFailed(true)}
-        className={`${base} bg-emerald-900 object-cover`}
-      />
-    )
+    let objectUrl = ''
+    let cancelled = false
+    fetch(avatarUrl(userId, photoPath))
+      .then((response) => (response.ok ? response.blob() : null))
+      .then((blob) => {
+        if (!blob || cancelled) return
+        objectUrl = URL.createObjectURL(blob)
+        setSource(objectUrl)
+      })
+      .catch(() => {
+        /* fall back to initials */
+      })
+
+    return () => {
+      cancelled = true
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [photoPath, userId])
+
+  if (source) {
+    return <img src={source} alt={name} className={`${base} bg-surface object-cover`} />
   }
 
   return (
-    <span className={`${base} bg-gradient-to-br from-emerald-400 to-gold-400`}>
-      {getInitials(name) || '👤'}
+    <span className={`${base} bg-gradient-to-br from-emerald-400 to-accent-400`}>
+      {getInitials(name)}
     </span>
   )
 }

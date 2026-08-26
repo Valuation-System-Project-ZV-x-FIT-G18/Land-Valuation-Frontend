@@ -25,3 +25,9 @@ export const districtsByProvince: Record<string, string[]> = {
   Uva: ['Badulla', 'Monaragala'],
   Sabaragamuwa: ['Ratnapura', 'Kegalle'],
 }
+
+// Every district in one sorted list. Use this where a form collects a
+// single location and there is no Province field to filter against.
+export const allDistricts = Object.values(districtsByProvince)
+  .flat()
+  .sort((a, b) => a.localeCompare(b))

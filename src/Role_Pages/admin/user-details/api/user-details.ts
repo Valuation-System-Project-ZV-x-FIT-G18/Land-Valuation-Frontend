@@ -3,6 +3,8 @@
 export type RegisteredUser = {
   userId: string
   name: string
+  firstName: string
+  lastName: string
   role: string
   email: string
   phone: string
@@ -11,6 +13,9 @@ export type RegisteredUser = {
   district: string
   city: string
   photoPath: string
+  status: 'Active' | 'Suspended' | 'Deactivated'
+  createdAt: string
+  lastLoginAt: string | null
 }
 
 export type EditableUser = {
@@ -53,13 +58,51 @@ export async function updateUser(
   }
 }
 
-export async function deleteUser(userId: string): Promise<{ ok: boolean; error?: string }> {
+// Email the user a fresh temporary password and force a change at next login.
+export async function resetUserPassword(
+  userId: string,
+): Promise<{ ok: boolean; email?: string; error?: string }> {
   try {
-    const res = await fetch(`/api/admin/users/${encodeURIComponent(userId)}`, { method: 'DELETE' })
+    const res = await fetch(`/api/admin/users/${encodeURIComponent(userId)}/reset-password`, {
+      method: 'POST',
+    })
     const body = await res.json().catch(() => ({}) as Record<string, unknown>)
-    if (res.ok && body.ok) return { ok: true }
-    return { ok: false, error: (body.error as string) || 'Could not delete this user.' }
+    if (res.ok && body.ok) return { ok: true, email: body.email as string }
+    const message = Array.isArray(body.message) ? body.message.join(' ') : (body.message as string)
+    return { ok: false, error: message || 'Could not reset this password.' }
   } catch {
     return { ok: false, error: 'Could not reach the server. Please try again.' }
+  }
+}
+
+export async function updateUserStatus(
+  userId: string,
+  status: RegisteredUser['status'],
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch(`/api/admin/users/${encodeURIComponent(userId)}/status`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }),
+    })
+    const body = await res.json().catch(() => ({}) as Record<string, unknown>)
+    if (res.ok && body.ok) return { ok: true }
+    return { ok: false, error: (body.message as string) || 'Could not change this account status.' }
+  } catch {
+    return { ok: false, error: 'Could not reach the server. Please try again.' }
+  }
+}
+
+export type AdminAuditLog = {
+  id: string; actorUserId: string | null; action: string; targetUserId: string | null
+  details: Record<string, unknown>; createdAt: string
+}
+
+export async function getAuditLogs(): Promise<{ logs: AdminAuditLog[]; error?: string }> {
+  try {
+    const res = await fetch('/api/admin/audit-logs')
+    if (!res.ok) return { logs: [], error: 'Could not load the audit log.' }
+    const body = await res.json()
+    return { logs: (body.logs as AdminAuditLog[]) ?? [] }
+  } catch {
+    return { logs: [], error: 'Could not reach the server.' }
   }
 }

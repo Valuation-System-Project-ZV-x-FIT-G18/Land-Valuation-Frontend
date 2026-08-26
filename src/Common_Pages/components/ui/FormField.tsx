@@ -27,16 +27,20 @@ type FormFieldProps = {
   min?: string
   max?: string
   autoComplete?: string
+  helperText?: string
   // Hard-stops browser autofill. Chrome ignores autoComplete="off" for
   // name/email/phone fields, so we render the input read-only at page load
   // (browsers never autofill a read-only field) and flip it editable the
   // moment the user focuses it. This is invisible to the user.
   preventAutofill?: boolean
+  // Optional suggestion list. Renders a native datalist, so the field
+  // offers a dropdown while still accepting any typed value.
+  suggestions?: string[]
 }
 
 // Inner input styling (the border/ring lives on the wrapper below).
 const field =
-  'w-full bg-transparent px-4 py-3 text-white placeholder-emerald-200/40 outline-none'
+  'min-h-11 w-full bg-transparent px-3.5 py-2.5 text-[15px] text-white placeholder-emerald-100/30 outline-none'
 
 const FormField = ({
   label,
@@ -56,7 +60,9 @@ const FormField = ({
   min,
   max,
   autoComplete,
+  helperText,
   preventAutofill = false,
+  suggestions,
 }: FormFieldProps) => {
   // Password fields get a show/hide (eye) toggle instead of staying masked.
   const [reveal, setReveal] = useState(false)
@@ -72,19 +78,19 @@ const FormField = ({
   // autofill lock — only the former should look/behave dimmed.
   const domReadOnly = readOnly || autofillLocked
 
-  // Border/ring turns red when there is an error, gold otherwise.
+  // Border/ring turns red when there is an error, accent otherwise.
   // Read-only (auto) fields are dimmed and not editable.
   const borderClass = error
     ? 'border-red-400/70 focus-within:border-red-400 focus-within:ring-red-400/30'
     : readOnly
       ? 'border-white/10'
-      : 'border-white/15 focus-within:border-gold-400/60 focus-within:ring-gold-400/30'
+      : 'border-white/15 focus-within:border-accent-400/60 focus-within:ring-accent-400/30'
 
   return (
     <div>
       <label
         htmlFor={name}
-        className="mb-1.5 block text-sm font-medium text-emerald-100"
+        className="mb-1.5 block text-sm font-semibold text-emerald-50"
       >
         {label}
       </label>
@@ -92,10 +98,10 @@ const FormField = ({
       {/* Wrapper carries the border + focus ring so the prefix and input
           read as a single field. */}
       <div
-        className={`flex items-stretch overflow-hidden rounded-xl border bg-white/5 transition focus-within:ring-2 ${borderClass}`}
+        className={`flex items-stretch overflow-hidden rounded-lg border bg-surface shadow-sm transition focus-within:bg-surface focus-within:ring-2 ${borderClass}`}
       >
         {prefix && (
-          <span className="flex select-none items-center border-r border-white/15 px-3 text-sm font-medium text-emerald-100/90">
+          <span className="flex select-none items-center border-r border-white/15 px-3 text-sm font-medium text-emerald-100">
             {prefix}
           </span>
         )}
@@ -130,7 +136,8 @@ const FormField = ({
             min={min}
             max={max}
             autoComplete={autoComplete}
-            className={`${field} ${readOnly ? 'cursor-default text-emerald-100/70' : ''}`}
+            list={suggestions ? `${name}-suggestions` : undefined}
+            className={`${field} ${readOnly ? 'cursor-default text-emerald-100' : ''}`}
           />
         )}
 
@@ -141,7 +148,7 @@ const FormField = ({
             aria-label={reveal ? 'Hide password' : 'Show password'}
             aria-pressed={reveal}
             title={reveal ? 'Hide password' : 'Show password'}
-            className="flex select-none items-center px-3 text-emerald-100/60 transition hover:text-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400/70"
+            className="flex select-none items-center px-3 text-emerald-100 transition hover:text-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-400/70"
           >
             {reveal ? (
               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
@@ -160,8 +167,20 @@ const FormField = ({
         )}
       </div>
 
+      {suggestions && (
+        <datalist id={`${name}-suggestions`}>
+          {suggestions.map((option) => (
+            <option key={option} value={option} />
+          ))}
+        </datalist>
+      )}
+
       {/* Error message (only shown when the field has an error) */}
-      {error && <p className="mt-1.5 text-xs text-red-300">{error}</p>}
+      {error ? (
+        <p className="mt-1.5 text-xs font-medium text-red-300">{error}</p>
+      ) : helperText ? (
+        <p className="mt-1.5 text-xs leading-relaxed text-emerald-100">{helperText}</p>
+      ) : null}
     </div>
   )
 }
